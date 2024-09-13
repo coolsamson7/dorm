@@ -169,10 +169,10 @@ class QueryManager(public val objectManager: ObjectManager, private val entityMa
             .select(attributeEntity)
             .where(
                 builder.`in`(attributeEntity.get<Int>("entity")).value(subQuery),
-                *projection.map { objectPath: ObjectPath -> builder.equal(attributeEntity.get<String>("attribute"), (objectPath as PropertyPath).property.name) }.toTypedArray()
+                // filter only requested attributes
+                builder.or(*projection.map { objectPath: ObjectPath -> builder.equal(attributeEntity.get<String>("attribute"), (objectPath as PropertyPath).property.name) }.toTypedArray())
             )
             .orderBy(builder.asc(attributeEntity.get<Int>("entity")))
-            //.groupBy(attributeEntity.get<Int>("entity"), attributeEntity.get<Int>("attribute"))
 
         // execute
 

@@ -131,7 +131,7 @@ class ObjectManager() {
         return QueryManager(this, entityManager, mapper)
     }
 
-    fun query(query: String) : Query<DataObject> {
+    fun <T: Any> query(query: String, resultType: Class<T> = DataObject::class.java as Class<T>) : Query<T> {
         val tokenStream = CommonTokenStream(OQLLexer(ANTLRInputStream(query)))
 
         val parser = OQLParser(tokenStream)
@@ -140,7 +140,7 @@ class ObjectManager() {
         try {
             parser.file()
 
-            return parser.query!!
+            return parser.query as Query<T>!!
         }
         catch (e: RecognitionException) {
             throw IllegalArgumentException(e.message)
