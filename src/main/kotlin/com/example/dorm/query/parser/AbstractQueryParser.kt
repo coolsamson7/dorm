@@ -50,10 +50,10 @@ abstract class AbstractQueryParser(input: TokenStream) : Parser(input) {
         return when (operator) {
             "=" -> query!!.eq(path, value)
             "<>" -> query!!.neq(path, value)
-            "<" -> query!!.lt(path, value as Number)
-            ">" -> query!!.gt(path, value as Number)
-            "<=" -> query!!.le(path, value as Number)
-            ">=" -> query!!.ge(path, value as Number) // TODO
+            "<" -> query!!.lt(path, value)
+            ">" -> query!!.gt(path, value)
+            "<=" -> query!!.le(path, value)
+            ">=" -> query!!.ge(path, value)
             else -> {
                 throw Error("unsupported operator ${operator}")
             }
