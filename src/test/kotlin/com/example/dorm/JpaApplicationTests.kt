@@ -215,6 +215,18 @@ internal class JPATest {
 
             assertEquals(1, queryResult.size)
 
+            // hql with and
+
+            query = manager.query<DataObject>("SELECT p FROM person AS p WHERE p.age = :age AND p.name = :name")
+
+            queryResult = query.executor()
+                .set("age", 100)
+                .set("name", "Andi")
+                .execute()
+                .getResultList()
+
+            assertEquals(1, queryResult.size)
+
             // tuple
 
             query = manager.query("SELECT p.age, p.name FROM person AS p WHERE p.age = :age")

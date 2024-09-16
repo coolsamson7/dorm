@@ -52,14 +52,14 @@ abstract class ComparisonExpression(val path: ObjectPath) : BooleanExpression() 
 class And(vararg expr: BooleanExpression) : BooleanExpression() {
     val expressions = expr
     override fun createWhere(executor: QueryExecutor<Any>, builder: CriteriaBuilder, query: CriteriaQuery<Any>, from: Root<Any>) : Predicate {
-        return builder.and(*expressions.map { expr -> createWhere(executor, builder, query, from) }.toTypedArray())
+        return builder.and(*expressions.map { expr -> expr.createWhere(executor, builder, query, from) }.toTypedArray())
     }
 }
 
 class Or(vararg expr: BooleanExpression) : BooleanExpression() {
     val expressions = expr
     override fun createWhere(executor: QueryExecutor<Any>, builder: CriteriaBuilder, query: CriteriaQuery<Any>, from: Root<Any>) : Predicate {
-        return builder.or(*expressions.map { expr -> createWhere(executor, builder, query, from) }.toTypedArray())
+        return builder.or(*expressions.map { expr -> expr.createWhere(executor, builder, query, from) }.toTypedArray())
     }
 }
 
