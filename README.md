@@ -5,15 +5,16 @@ dynamic entities on a database based on a couple of technical tables only.
 
 ## What's the problem anyway...
 
-Before we describe the solution, let's figure out wht the problem is....
+Before we describe the solution, let's figure out what the problem is....
 
 Typical applications use the normal ORMs that persist entities on table structures that are known at compile time and 
-relie on existing tables. 
+relie on predefined tables. 
 While this is fine for most cases, there are some situations, where we need to configure entities dynamically.
 Think of a custom workflow definition ( e.g. with Camunda ) that wants to persist some complex internal state, which is not known upfront.
 
 Exactly this problem is solved by the current implementation.
 
+## Sample 
 Let's look a simple example first:
 
 Assuming we have an injected `ObjectManager` which is responsible for transaction and object lifecycle management, we are able to
@@ -95,3 +96,76 @@ finally {
     manager.commit() // will update
 }
 ```
+## Solution design
+
+The solution is pretty simple: Entities are stored as a combination of two technical tables
+* `ENTITY` a table referencing the entity definition and a generated primary key
+* `ATTRIBUTE` a table that will store all attributes of an entity
+
+The attribute table defines the columns
+
+* 'TYPE' the id of the entity structure
+* 'ENTITY' the id of the corresponding entity
+
+and a number of columns that are able to store payload data
+* 'STRING_VALUE' and string value
+* 'INT_VALUE' int values
+* 'DOUBLE_VALUE' floating point values
+
+As the definition of an entity is known, the engine will know which attributes are stored in what columns.
+
+Let's look at a simple query, that will read all persons.
+
+```Sql
+  select
+        ae1_0.ATTRIBUTE,
+        ae1_0.ENTITY,
+        ae1_0.DOUBLE_VALUE,
+        ae1_0.INT_VALUE,
+        ae1_0.STRING_VALUE,
+        ae1_0.TYPE 
+    from
+        ATTRIBUTE ae1_0 
+    where
+        ae1_0.ENTITY=?
+```
+
+If we talk about queries, that code gets a little bit more complicated. Querying for an attribute "age" by the operator "=" will result in
+```Sql
+select
+        ae1_0.ATTRIBUTE,
+        ae1_0.ENTITY,
+        ae1_0.DOUBLE_VALUE,
+        ae1_0.INT_VALUE,
+        ae1_0.STRING_VALUE,
+        ae1_0.TYPE 
+    from
+        ATTRIBUTE ae1_0 
+    where
+        ae1_0.ENTITY in (
+            (select distinct ae2_0.ENTITY 
+               from ATTRIBUTE ae2_0 
+              where
+                    ae2_0.TYPE=? 
+                    and ae2_0.ATTRIBUTE=? 
+                    and ae2_0.INT_VALUE=?)) 
+    order by
+        ae1_0.ENTITY
+```
+
+## Performance
+
+Of course, the performance is not as good as if we would map on static tables, since
+* we have a lot a attribute rows
+* indexes are much bigger
+* we required s subselect for every condition
+
+Let's look at some benchmarks:
+
+TODO
+
+## Possible Optimizations
+
+## Reference
+
+TODO
