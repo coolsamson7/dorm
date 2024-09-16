@@ -37,7 +37,7 @@ manager.begin()
 try {
     val person = manager.create(personDescriptor)
 
-    // set some values
+    // set some values by the custom get and set operators
     
     person["name"] = "Andi"
     person["age"] = 58
@@ -68,12 +68,33 @@ try {
     queryResult[0]["name"] = name + "X"
 }
 finally {
-    manager.commit()
+    manager.commit() // will update all dirty objects
 }
 ``` 
 
-Since the objects are managed by the `ObjectManager` we can update values easily. The manager will know aboutr any changes and will
+Since the objects are managed by the `ObjectManager` we can update values easily. The manager will know about any changes and will
 persist them at the end of the transaction.
+
+Projections are possible as well, as seen here
+
+```Kotlin
+val queryManager = manager.queryManager()
+manager.begin()
+try {
+    val person = queryManager.from(personDescriptor)
+    val query = queryManager
+        .create()
+        .select(person.get("age"), person.get("name")
+        .from(person)
+
+    val tupleResult = query.execute().getResultList() // we know, just one so far!
+
+    val name = tupleResult[0][1]
+}
+finally {
+    manager.commit()
+}
+``` 
 
 In addition to a criteria api like query, we are of course able to specify hql like queries as well:
 
@@ -98,7 +119,7 @@ finally {
 ```
 ## Solution design
 
-The solution is pretty simple: Entities are stored as a combination of two technical tables
+The solution is pretty straight forward. Entities are stored as a combination of two technical tables
 * `ENTITY` a table referencing the entity definition and a generated primary key
 * `ATTRIBUTE` a table that will store all attributes of an entity
 
@@ -106,11 +127,12 @@ The attribute table defines the columns
 
 * `TYPE` the id of the entity structure
 * `ENTITY` the id of the corresponding entity
+* `ATTRIBUTE` the attribute name
 
-and a number of columns that are able to store payload data
+and a number of columns that are able to store payload data with respect to the supported low-level data types
 * `STRING_VALUE` a string value
-* `INT_VALUE` a int value
-* `DOUBLE_VALUE` a floating point value 
+* `INT_VALUE` a int value ( stores boolean values well )
+* `DOUBLE_VALUE` a floating point value
 
 As the definition of an entity is known, the engine will know which attributes are stored in which columns.
 
@@ -157,7 +179,7 @@ select
 
 ## Performance
 
-Of course, the performance is not as good as if we would map on static tables, since
+Of course, the performance and storage requirements are not as good as if we would map on static tables, since
 * we have a lot a attribute rows
 * indexes are much bigger
 * we require a subselect for every condition
@@ -166,7 +188,16 @@ Let's look at some benchmarks:
 
 TODO
 
-## Possible Optimizations
+## Optimizations
+
+The `ENTITY` table already stores a json object covering all attributes.
+
+Reading objects given an id is already based on the json value and does not need to reread attributes.
+
+Still every attribute is present as a row, since we we need tp specify queries on attributes.
+An optimization not yet implemented could be to mark specific attributes as "searchable" which would allow us to store
+single attribute values only for this subset.
+
 
 ## Reference
 
