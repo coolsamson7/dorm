@@ -104,17 +104,17 @@ The solution is pretty simple: Entities are stored as a combination of two techn
 
 The attribute table defines the columns
 
-* 'TYPE' the id of the entity structure
-* 'ENTITY' the id of the corresponding entity
+* `TYPE` the id of the entity structure
+* `ENTITY` the id of the corresponding entity
 
 and a number of columns that are able to store payload data
-* 'STRING_VALUE' and string value
-* 'INT_VALUE' int values
-* 'DOUBLE_VALUE' floating point values
+* `STRING_VALUE` a string value
+* `INT_VALUE` a int value
+* `DOUBLE_VALUE` a floating point value 
 
-As the definition of an entity is known, the engine will know which attributes are stored in what columns.
+As the definition of an entity is known, the engine will know which attributes are stored in which columns.
 
-Let's look at a simple query, that will read all persons.
+Let's look at a simple query, that will read a single person.
 
 ```Sql
   select
@@ -130,7 +130,9 @@ Let's look at a simple query, that will read all persons.
         ae1_0.ENTITY=?
 ```
 
-If we talk about queries, that code gets a little bit more complicated. Querying for an attribute "age" by the operator "=" will result in
+After reading the result set, the engine will create the appropriate `DataObject` instance and store the appropriate values in the correct places.
+
+If we talk about queries, that code gets a little bit more complicated. Querying for an integer attribute "age" with the operator "=" will result in something like
 ```Sql
 select
         ae1_0.ATTRIBUTE,
@@ -158,7 +160,7 @@ select
 Of course, the performance is not as good as if we would map on static tables, since
 * we have a lot a attribute rows
 * indexes are much bigger
-* we required s subselect for every condition
+* we require a subselect for every condition
 
 Let's look at some benchmarks:
 
