@@ -1,10 +1,13 @@
 package com.example.dorm
 
+import com.example.dorm.model.ObjectDescriptor
 import com.example.dorm.type.base.int
 import com.example.dorm.type.base.string
 import com.fasterxml.jackson.databind.ObjectMapper
 import jakarta.persistence.*
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.domain.EntityScan
@@ -12,6 +15,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Import
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
+import org.springframework.test.context.event.annotation.BeforeTestClass
 
 @Configuration()
 @Import(DORMConfiguration::class)
@@ -24,24 +28,68 @@ internal class JPATest {
     @Autowired
     lateinit var manager : ObjectManager
 
+    var personDescriptor : ObjectDescriptor? = null
+
+    @BeforeEach
+    fun setupSchema() {
+        if ( personDescriptor == null) {
+            val stringType = string().length(100)
+            val intType = int()
+
+            personDescriptor = manager.type("person")
+                .attribute("name", stringType)
+                .attribute("age", intType)
+                .attribute("v1", stringType)
+                .attribute("v2", stringType)
+                .attribute("v3", stringType)
+                .register()
+
+            /* create test object
+
+            manager.begin()
+            try {
+                val person1 = manager.create(personDescriptor!!)
+
+                person1["name"] = "Andi"
+                person1["age"] = 58
+                person1["v1"] = "v1"
+                person1["v2"] = "v2"
+                person1["v3"] = "v3"
+
+                val person2 = manager.create(personDescriptor!!)
+
+                person2["name"] = "Ernst"
+                person2["age"] = 59
+                person2["v1"] = "v1"
+                person2["v2"] = "v2"
+                person2["v3"] = "v3"
+            }
+            finally {
+                manager.commit()
+            }*/
+        }
+    }
+    /*@Test
+    fun testProjection() {
+        val queryManager = manager.queryManager()
+
+        val query = manager.query<Any>("SELECT p.age, p.name FROM person AS p WHERE p.age = :age")// TODO >
+
+        val tupleResult = query.executor()
+             .set("age", 59)
+            .execute()
+            .getResultList()
+
+        assertEquals(1, tupleResult.size)
+    }*/
+
     @Test
     fun test() {
-        val stringType = string().length(100)
-        val intType = int()
-
-        val personDescriptor = manager.type("person")
-            .attribute("name", stringType)
-            .attribute("age", intType)
-            .attribute("v1", stringType)
-            .attribute("v2", stringType)
-            .attribute("v3", stringType)
-            .register()
-
         // tx & write
 
         manager.begin()
         try {
-            val person1 = manager.create(personDescriptor)
+            val person1 = manager.create(personDescriptor!!)
 
             person1["name"] = "Andi"
             person1["age"] = 58
@@ -49,7 +97,7 @@ internal class JPATest {
             person1["v2"] = "v2"
             person1["v3"] = "v3"
 
-            val person2 = manager.create(personDescriptor)
+            val person2 = manager.create(personDescriptor!!)
 
             person2["name"] = "Ernst"
             person2["age"] = 59
@@ -67,7 +115,7 @@ internal class JPATest {
 
         manager.begin()
         try {
-            val person = queryManager.from(personDescriptor)
+            val person = queryManager.from(personDescriptor!!)
 
             // no where
 
@@ -90,7 +138,7 @@ internal class JPATest {
 
         manager.begin()
         try {
-            val person = queryManager.from(personDescriptor)
+            val person = queryManager.from(personDescriptor!!)
 
             // no where
 
@@ -116,7 +164,7 @@ internal class JPATest {
 
         manager.begin()
         try {
-            val person = queryManager.from(personDescriptor)
+            val person = queryManager.from(personDescriptor!!)
 
             // no where
 
@@ -144,13 +192,13 @@ internal class JPATest {
 
         manager.begin()
         try {
-            val person = queryManager.from(personDescriptor)
+            val person = queryManager.from(personDescriptor!!)
 
             // hql
 
-            var query = manager.query("SELECT p FROM person AS p")
+            var query = manager.query<DataObject>("SELECT p FROM person AS p")
 
-            query = manager.query("SELECT p FROM person AS p WHERE p.age = 100")
+            query = manager.query<DataObject>("SELECT p FROM person AS p WHERE p.age = 100")
 
             var queryResult = query.execute().getResultList()
 
@@ -158,7 +206,7 @@ internal class JPATest {
 
             // hql with parameter
 
-            query = manager.query("SELECT p FROM person AS p WHERE p.age = :age")
+            query = manager.query<DataObject>("SELECT p FROM person AS p WHERE p.age = :age")
 
             queryResult = query.executor()
                 .set("age", 100)
@@ -166,6 +214,17 @@ internal class JPATest {
                 .getResultList()
 
             assertEquals(1, queryResult.size)
+
+            // tuple
+
+            query = manager.query("SELECT p.age, p.name FROM person AS p WHERE p.age = :age")
+
+            val tupleResult = query.executor()
+                .set("age", 100)
+                .execute()
+                .getResultList()
+
+            assertEquals(1, tupleResult.size)
 
             // no where
 
@@ -193,7 +252,7 @@ internal class JPATest {
 
             var tupleQuery = queryManager
                 .create(Array<Any>::class.java) // object query
-                .select(person.get("age")) // , person.get("name")
+                .select(person.get("age"), person.get("name"))
                 .from(person)
 
             var tupleQueryResult = tupleQuery.execute().getResultList()
@@ -221,7 +280,7 @@ internal class JPATest {
 
         manager.begin()
         try {
-            val person = queryManager.from(personDescriptor)
+            val person = queryManager.from(personDescriptor!!)
 
             // no where
 

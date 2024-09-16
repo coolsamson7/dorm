@@ -14,56 +14,100 @@ class From(val objectDescriptor: ObjectDescriptor) : ObjectPath(null) {
         return root as Path<Any>
     }
 
-    override fun expression(root: Root<AttributeEntity>): Path<Any> {
-        return root as Path<Any> // TODO
+    override fun <T> expression(root: Root<AttributeEntity>): Path<T> {
+        return root as Path<T>
     }
 }
 
-class Eq(path: ObjectPath, val value: Value<out Any>) : ObjectExpression(path) {
-    // override
+abstract class BooleanExpression :  ObjectExpression()
+abstract class ComparisonExpression(val path: ObjectPath) : BooleanExpression() {
 
-    override fun createWhere(executor: QueryExecutor<Any>, builder: CriteriaBuilder, from: Root<AttributeEntity>) : Predicate {
-        return builder.equal(path.expression(from), value.resolve(executor))
+    abstract fun where(executor: QueryExecutor<Any>, builder: CriteriaBuilder, attribute: Root<AttributeEntity>) : Predicate
+
+    override fun createWhere(executor: QueryExecutor<Any>, builder: CriteriaBuilder, query: CriteriaQuery<Any>, from: Root<Any>) : Predicate {
+        val subQuery = query.subquery(Int::class.java)
+        val attribute = subQuery.from(AttributeEntity::class.java) // type: string, entity: Int
+
+        subQuery
+            .select(attribute.get("entity"))
+            .distinct(true)
+            .where(
+                // object type
+
+                builder.equal(attribute.get<String>("type"), executor.query.root!!.objectDescriptor.name),
+
+                // the attribute
+
+                builder.equal(attribute.get<String>("attribute"), path.attributeName()),
+
+                // where
+
+                this.where(executor, builder, attribute)
+            )
+
+        return builder.`in`(from.get<Int>("entity")).value(subQuery)
     }
 }
 
-class Neq(path: ObjectPath, val value: Value<out Any>) : ObjectExpression(path) {
-    // override
-
-    override fun createWhere(executor: QueryExecutor<Any>, builder: CriteriaBuilder, from: Root<AttributeEntity>) : Predicate {
-        return builder.notEqual(path.expression(from), value.resolve(executor))
+class And(vararg expr: BooleanExpression) : BooleanExpression() {
+    val expressions = expr
+    override fun createWhere(executor: QueryExecutor<Any>, builder: CriteriaBuilder, query: CriteriaQuery<Any>, from: Root<Any>) : Predicate {
+        return builder.and(*expressions.map { expr -> createWhere(executor, builder, query, from) }.toTypedArray())
     }
 }
 
-class Lt(path: ObjectPath, val value: Value<out Any>) : ObjectExpression(path) {
-    // override
-
-    override fun createWhere(executor: QueryExecutor<Any>, builder: CriteriaBuilder, from: Root<AttributeEntity>) : Predicate {
-        return builder.lt(path.expression(from) as Expression<Number>, value.resolve(executor) as Number)
+class Or(vararg expr: BooleanExpression) : BooleanExpression() {
+    val expressions = expr
+    override fun createWhere(executor: QueryExecutor<Any>, builder: CriteriaBuilder, query: CriteriaQuery<Any>, from: Root<Any>) : Predicate {
+        return builder.or(*expressions.map { expr -> createWhere(executor, builder, query, from) }.toTypedArray())
     }
 }
 
-class Le(path: ObjectPath, val value: Value<out Any>) : ObjectExpression(path) {
+class Eq(path: ObjectPath, val value: Value<out Any>) : ComparisonExpression(path) {
     // override
 
-    override fun createWhere(executor: QueryExecutor<Any>, builder: CriteriaBuilder, from: Root<AttributeEntity>) : Predicate {
-        return builder.le(path.expression(from) as Expression<Number>, value.resolve(executor) as Number) // TODO??
+    override fun where(executor: QueryExecutor<Any>, builder: CriteriaBuilder, attribute: Root<AttributeEntity>) : Predicate {
+        return builder.equal(path.expression<Any>(attribute), value.resolve(executor))
     }
 }
 
-class Gt(path: ObjectPath, val value: Value<out Any>) : ObjectExpression(path) {
+class Neq(path: ObjectPath, val value: Value<out Any>) : ComparisonExpression(path) {
     // override
 
-    override fun createWhere(executor: QueryExecutor<Any>, builder: CriteriaBuilder, from: Root<AttributeEntity>) : Predicate {
-        return builder.gt(path.expression(from) as Expression<Number>, value.resolve(executor) as Number)
+    override fun where(executor: QueryExecutor<Any>, builder: CriteriaBuilder, attribute: Root<AttributeEntity>) : Predicate {
+        return builder.notEqual(path.expression<Any>(attribute), value.resolve(executor))
     }
 }
 
-class Ge(path: ObjectPath, val value: Value<out Any>) : ObjectExpression(path) {
+class Lt(path: ObjectPath, val value: Value<out Any>) : ComparisonExpression(path) {
     // override
 
-    override fun createWhere(executor: QueryExecutor<Any>, builder: CriteriaBuilder, from: Root<AttributeEntity>): Predicate {
-        return builder.ge(path.expression(from) as Expression<Number>, value.resolve(executor) as Number)
+    override fun where(executor: QueryExecutor<Any>, builder: CriteriaBuilder, attribute: Root<AttributeEntity>) : Predicate {
+        return builder.lt(path.expression(attribute), value.resolve(executor) as Number)
+    }
+}
+
+class Le(path: ObjectPath, val value: Value<out Any>) : ComparisonExpression(path) {
+    // override
+
+    override fun where(executor: QueryExecutor<Any>, builder: CriteriaBuilder, attribute: Root<AttributeEntity>) : Predicate {
+        return builder.le(path.expression(attribute), value.resolve(executor) as Number)
+    }
+}
+
+class Gt(path: ObjectPath, val value: Value<out Any>) : ComparisonExpression(path) {
+    // override
+
+    override fun where(executor: QueryExecutor<Any>, builder: CriteriaBuilder, attribute: Root<AttributeEntity>) : Predicate {
+        return builder.gt(path.expression(attribute), value.resolve(executor) as Number) // TODO
+    }
+}
+
+class Ge(path: ObjectPath, val value: Value<out Any>) : ComparisonExpression(path) {
+    // override
+
+    override fun where(executor: QueryExecutor<Any>, builder: CriteriaBuilder, attribute: Root<AttributeEntity>) : Predicate {
+        return builder.ge(path.expression(attribute), value.resolve(executor) as Number)
     }
 }
 
@@ -81,7 +125,7 @@ class QueryExecutor<T : Any>(val query: Query<T>, val queryManager: QueryManager
 
             parameters[name] = value
         }
-        else throw Error("unknown paramater ${name}")
+        else throw Error("unknown parameter ${name}")
 
         return this
     }
@@ -144,7 +188,17 @@ class Query<T : Any>(val resultType: Class<T>, val queryManager: QueryManager, v
         return param
     }
 
-    // expressions
+    // boolean expressions
+
+    fun and(vararg expressions: BooleanExpression) : ObjectExpression {
+        return And(*expressions)
+    }
+
+    fun or(vararg expressions: BooleanExpression) : ObjectExpression {
+        return Or(*expressions)
+    }
+
+    // arithmetic expressions
 
     fun eq(path: ObjectPath, value: Any) : ObjectExpression {
         return Eq(path, if ( value is Value<*>) value else Constant(value))

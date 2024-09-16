@@ -14,14 +14,18 @@ class PropertyPath(parent: ObjectPath, val property: PropertyDescriptor<Any>) : 
         return parent!!.path(root).get(property.name)
     }
 
-    override fun expression(root: Root<AttributeEntity>): Path<Any> {
+    override fun attributeName() : String {
+        return property.name
+    }
+
+    override fun <T> expression(root: Root<AttributeEntity>): Path<T> {
         return when ( property.type.baseType ) { // TODO: wrong place, right?
-            String::class.java -> root.get<String>("stringValue") as Path<Any>
-            Short::class.java -> root.get<Int>("intValue") as Path<Any>
-            Integer::class.java -> root.get<Int>("intValue") as Path<Any>
-            Long::class.java -> root.get<Int>("intValue") as Path<Any>
-            Float::class.java -> root.get<Int>("doubleValue") as Path<Any>
-            Double::class.java -> root.get<Int>("doubleValue") as Path<Any>
+            String::class.java -> root.get<String>("stringValue") as Path<T>
+            Short::class.java -> root.get<Int>("intValue") as Path<T>
+            Integer::class.java -> root.get<Int>("intValue") as Path<T>
+            Long::class.java -> root.get<Int>("intValue") as Path<T>
+            Float::class.java -> root.get<Int>("doubleValue") as Path<T>
+            Double::class.java -> root.get<Int>("doubleValue") as Path<T>
 
             else -> {
                 throw Error("unsupported type")

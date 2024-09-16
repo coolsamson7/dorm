@@ -11,24 +11,164 @@ import com.example.dorm.query.*
 import org.antlr.v4.runtime.Parser
 import org.antlr.v4.runtime.TokenStream
 
-class SelectPath {
-    val path = ArrayList<String>()
+// syntax tree classes
 
-    fun add(leg: String) {
-        path.add(leg)
-    }
-
-    fun resolve(parser: AbstractQueryParser) : ObjectPath {
-        var result : ObjectPath = parser.fetchSchema(path[0])
-
-        for (i in 1..path.size-1)
-            result = result.get(path[i])
-
-        return result
+abstract class EXPR {
+    open fun <T:Any> build(select: SELECT, query: Query<T>) : ObjectExpression {
+        throw Error("NYI")
     }
 }
+
+
+abstract class VALUE(val value: Any) : EXPR() {
+    abstract fun <T: Any> resolve(query: Query<T>) : Value<Any>
+}
+
+class PARAMETER(private val name: String) : VALUE("null") { // TODO
+    // override
+
+    override fun <T: Any> resolve(query: Query<T>) : Value<Any> {
+        return query.parameter(name)
+    }
+}
+
+class CONSTANT(value: Any) : VALUE(value) {
+    override fun <T: Any> resolve(query: Query<T>) : Value<Any> {
+        return Constant(value)
+    }
+}
+
+class FROM_ALIAS(val schema: String, val alias : String) : EXPR() {
+    // public
+}
+
+
+class SELECT() {
+    // instance data
+
+    @JvmField
+    var select : List<PATH> = ArrayList()
+    @JvmField
+    var from : FROM_ALIAS? = null
+    @JvmField
+    var where: BOOLEAN_EXPR? = null
+
+    val alias = HashMap<String,From>()
+
+    // public
+
+    fun <T:Any> transform(queryManager: QueryManager) : Query<T> {
+        // remember aliases
+
+        if ( from != null) {
+            alias[from!!.alias] = From(queryManager.objectManager.get(from!!.schema))
+        }
+
+        // create query
+
+        val from = alias.get(from!!.alias) // TODO
+
+        val query = queryManager
+            .create() // object query
+            .select(*select.map({path -> path.buildPath(alias)}).toTypedArray())
+            .from(from!!)
+
+        if ( where != null)
+            query.where(where!!.build(this, query))
+
+        return query as Query<T>
+    }
+}
+abstract class PATH : EXPR() {
+    // public
+
+    fun property(property: String) : PROPERTY {
+        return PROPERTY(this, property)
+    }
+
+    open fun buildPath(alias: HashMap<String,From>) : ObjectPath {
+        throw Error("abstract")
+    }
+}
+
+class PATH_ROOT(val schema: String) : PATH() {
+
+    // override
+    override fun buildPath(alias: HashMap<String,From>) : ObjectPath {
+        return alias[schema]!!
+    }
+}
+
+class PROPERTY(val root: PATH, val property: String) : PATH() {
+    override fun buildPath(alias: HashMap<String,From>) : ObjectPath {
+        return root.buildPath(alias).get(property)
+    }
+}
+
+
+abstract class BOOLEAN_EXPR : EXPR() {}
+
+// arithmetic operators
+
+class LT(val expression: PATH, val value: VALUE) : BOOLEAN_EXPR() {
+    override fun <T:Any> build(select: SELECT, query: Query<T>) : ObjectExpression {
+        return query.lt(expression.buildPath(select.alias), value.resolve(query))
+    }
+}
+
+class LE(val expression: PATH, val value: VALUE) : BOOLEAN_EXPR() {
+    override fun <T:Any> build(select: SELECT, query: Query<T>) : ObjectExpression {
+        return query.le(expression.buildPath(select.alias), value.resolve(query))
+    }
+}
+
+class GT(val expression: PATH, val value: VALUE) : BOOLEAN_EXPR() {
+    override fun <T:Any> build(select: SELECT, query: Query<T>) : ObjectExpression {
+        return query.gt(expression.buildPath(select.alias), value.resolve(query))
+    }
+}
+
+class GE(val expression: PATH, val value: VALUE) : BOOLEAN_EXPR() {
+    override fun <T:Any> build(select: SELECT, query: Query<T>) : ObjectExpression {
+        return query.ge(expression.buildPath(select.alias), value.resolve(query))
+    }
+}
+
+class EQ(val expression: PATH, val value: VALUE) : BOOLEAN_EXPR() {
+    override fun <T:Any> build(select: SELECT, query: Query<T>) : ObjectExpression {
+        return query.eq(expression.buildPath(select.alias), value.resolve(query))
+    }
+}
+
+class NE(val expression: PATH, val value: VALUE) : BOOLEAN_EXPR() {
+    override fun <T:Any> build(select: SELECT, query: Query<T>) : ObjectExpression {
+        return query.neq(expression.buildPath(select.alias), value.resolve(query))
+    }
+}
+
+// logical operators
+
+class AND(vararg expr: BOOLEAN_EXPR) : BOOLEAN_EXPR() {
+    val expressions = expr
+
+    override fun <T:Any> build(select: SELECT, query: Query<T>) : ObjectExpression {
+        return query.and(*expressions.map({expr -> expr.build(select, query) as BooleanExpression}).toTypedArray())
+    }
+}
+
+class OR(vararg expr: BOOLEAN_EXPR) : BOOLEAN_EXPR() {
+    val expressions = expr
+
+    override fun <T:Any> build(select: SELECT, query: Query<T>) : ObjectExpression {
+        return query.or(*expressions.map({expr -> expr.build(select, query) as BooleanExpression}).toTypedArray())
+    }
+}
+
 abstract class AbstractQueryParser(input: TokenStream) : Parser(input) {
     // instance data
+
+    @JvmField
+    var select : SELECT? = null
 
     lateinit var queryManager: QueryManager
     var query: Query<DataObject>? = null
@@ -44,39 +184,17 @@ abstract class AbstractQueryParser(input: TokenStream) : Parser(input) {
 
     // protected
 
-    protected fun condition(selectPath: SelectPath, operator: String, value: Value<Any>) : ObjectExpression {
-        val path = selectPath.resolve(this)
-
+    protected fun comparison(path: PATH, operator: String, value: VALUE) : BOOLEAN_EXPR {
         return when (operator) {
-            "=" -> query!!.eq(path, value)
-            "<>" -> query!!.neq(path, value)
-            "<" -> query!!.lt(path, value)
-            ">" -> query!!.gt(path, value)
-            "<=" -> query!!.le(path, value)
-            ">=" -> query!!.ge(path, value)
+            "=" -> EQ(path ,value)
+            "<>" -> NE(path ,value)
+            "<" -> LT(path ,value)
+            ">" -> GT(path ,value)
+            "<=" -> LE(path ,value)
+            ">=" -> GE(path ,value)
             else -> {
                 throw Error("unsupported operator ${operator}")
             }
         }
-    }
-
-    protected fun rememberSchema(descriptor: String, name: String) : From {
-        val from = queryManager.from(queryManager.objectManager.get(descriptor))
-
-        variables[name] = from
-
-        return from
-    }
-
-    fun fetchSchema(name: String) : From {
-        return variables[name]!!
-    }
-
-    protected fun select(query: Query<DataObject>, select: List<SelectPath>) {
-        query.select(*select.map { s -> s.resolve(this) }.toTypedArray())
-    }
-
-    protected fun from(from: String) {
-        this.from = queryManager.from(queryManager.objectManager.get(from))
     }
 }

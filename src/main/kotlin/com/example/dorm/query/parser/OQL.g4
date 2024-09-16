@@ -29,8 +29,8 @@ statement
     //| delete_statement
     ;
 
-select_statement @init {this.setQuery(queryManager.create());}
-    : select_clause from_clause { getQuery().from($from_clause.from); select( getQuery(), $select_clause.select); } (where_clause)?  // (groupby_clause)? (having_clause)? (orderby_clause)?
+select_statement @init {select = new SELECT();}
+    : select_clause {select.select = $select_clause.select; } from_clause { select.from = $from_clause.from; } (where_clause {select.where = $where_clause.condition; })?  // (groupby_clause)? (having_clause)? (orderby_clause)?
     ;
 
 update_statement
@@ -41,19 +41,19 @@ delete_statement
     : delete_clause (where_clause)?
     ;
 
-from_clause returns[From from]
+from_clause returns[FROM_ALIAS from]
     : 'FROM' identification_variable_declaration { $from = $identification_variable_declaration.from; }
     //(
     //    ',' (identification_variable_declaration | collection_member_declaration)
     //)*
     ;
 
-identification_variable_declaration returns[From from]
+identification_variable_declaration returns[FROM_ALIAS from]
     : range_variable_declaration  { $from = $range_variable_declaration.from; }// (join | fetch_join)*
     ;
 
-range_variable_declaration returns[From from]
-    : abstract_schema_name ('AS')? IDENTIFICATION_VARIABLE { $from = rememberSchema($abstract_schema_name.name, $IDENTIFICATION_VARIABLE.text); }
+range_variable_declaration returns[FROM_ALIAS from]
+    : abstract_schema_name ('AS')? IDENTIFICATION_VARIABLE { $from = new FROM_ALIAS($abstract_schema_name.name, $IDENTIFICATION_VARIABLE.text); }
     ;
 
 join
@@ -130,12 +130,12 @@ delete_clause
     : 'DELETE' 'FROM' abstract_schema_name (('AS')? IDENTIFICATION_VARIABLE)?
     ;
 
-select_clause returns[List<SelectPath> select] @init{ $select = new ArrayList<SelectPath>();  }
+select_clause returns[List<PATH> select] @init{ $select = new ArrayList<PATH>();  }
     : 'SELECT' ('DISTINCT')? select_expression { $select.add($select_expression.select); } (',' select_expression {$select.add($select_expression.select);} )*
     ;
 
-select_expression  returns[SelectPath select] @init{ $select = new SelectPath();  }
-    : IDENTIFICATION_VARIABLE  { $select.add($IDENTIFICATION_VARIABLE.text); }  ('.' IDENTIFICATION_VARIABLE { $select.add($IDENTIFICATION_VARIABLE.text); } )*
+select_expression  returns[PATH select]
+    : IDENTIFICATION_VARIABLE  { $select = new PATH_ROOT($IDENTIFICATION_VARIABLE.text); }  ('.' IDENTIFICATION_VARIABLE { $select = $select.property($IDENTIFICATION_VARIABLE.text); } )*
     //: single_valued_path_expression
     //| aggregate_expression
     //| 'OBJECT' '(' IDENTIFICATION_VARIABLE ')'
@@ -160,8 +160,8 @@ aggregate_expression
     ) ')'
     ;
 
-where_clause
-    : 'WHERE' conditional_expression { getQuery().where($conditional_expression.expression); }
+where_clause returns[BOOLEAN_EXPR condition]
+    : 'WHERE' conditional_expression { $condition = $conditional_expression.expression; }
     ;
 
 groupby_clause
@@ -216,27 +216,27 @@ simple_select_expression
     | IDENTIFICATION_VARIABLE
     ;
 
-conditional_expression returns[ObjectExpression expression]
-    //: (conditional_term) ('OR' conditional_term)*
-    : conditional_term {$expression = $conditional_term.expression; }
+conditional_expression returns[BOOLEAN_EXPR expression]
+    : (conditional_term {$expression = $conditional_term.expression; }) ('OR' conditional_term {$expression = new OR($expression, $conditional_term.expression); })*
+    | conditional_term {$expression = $conditional_term.expression; }
     ;
 
-conditional_term  returns[ObjectExpression expression]
-    //: (conditional_factor) ('AND' conditional_factor)*
-    : conditional_factor  {$expression = $conditional_factor.expression; }
+conditional_term  returns[BOOLEAN_EXPR expression]
+    : (conditional_factor {$expression = $conditional_factor.expression; }) ('AND' conditional_factor {$expression = new AND($expression, $conditional_factor.expression); })*
+    | conditional_factor  {$expression = $conditional_factor.expression; }
     ;
 
-conditional_factor  returns[ObjectExpression expression]
+conditional_factor  returns[BOOLEAN_EXPR expression]
     //: ('NOT')? conditional_primary
     : conditional_primary  {$expression = $conditional_primary.expression; }
     ;
 
-conditional_primary  returns[ObjectExpression expression]
+conditional_primary  returns[BOOLEAN_EXPR expression]
     : simple_cond_expression {$expression = $simple_cond_expression.expression; }
     //| '(' conditional_expression ')'
     ;
 
-simple_cond_expression returns[ObjectExpression expression]
+simple_cond_expression returns[BOOLEAN_EXPR expression]
     : comparison_expression {$expression = $comparison_expression.expression; }
     //| like_expression
     //| in_expression
@@ -285,19 +285,14 @@ all_or_any_expression
     : ('ALL' | 'ANY' | 'SOME') '(' subquery ')'
     ;
 
-comparison_expression returns[ObjectExpression expression] // was path_expression
-    : select_expression comparison_operator arithmetic_expression   {$expression = condition($select_expression.select, $comparison_operator.text, $arithmetic_expression.value); }
+comparison_expression returns[BOOLEAN_EXPR expression] // was path_expression
+    : select_expression comparison_operator arithmetic_expression   {$expression = comparison($select_expression.select, $comparison_operator.text, $arithmetic_expression.value); }
     //: string_expression comparison_operator (string_expression | all_or_any_expression) { this.query.eq(); }
     //| boolean_expression ('=' | '<>') (boolean_expression | all_or_any_expression)
     //| enum_expression ('=' | '<>') (enum_expression | all_or_any_expression)
     //| datetime_expression comparison_operator (datetime_expression | all_or_any_expression)
     //| entity_expression ('=' | '<>') (entity_expression | all_or_any_expression)
     //| arithmetic_expression comparison_operator (arithmetic_expression | all_or_any_expression)
-    ;
-
-//select_expression
-path_expression  returns[ObjectPath path]
-    : leg {$path = this.getFrom().get($leg.value); }
     ;
 
 comparison_operator returns[String op]
@@ -309,26 +304,26 @@ comparison_operator returns[String op]
     | '<>' {$op = "<>";}
     ;
 
-arithmetic_expression returns[Value value]
+arithmetic_expression returns[VALUE value]
     : simple_arithmetic_expression {$value = $simple_arithmetic_expression.value; }
     //| '(' subquery ')'
     ;
 
-simple_arithmetic_expression returns[Value value]
+simple_arithmetic_expression returns[VALUE value]
     : (arithmetic_term) {$value = $arithmetic_term.value; } // (('+' | '-') arithmetic_term)*
     ;
 
-arithmetic_term returns[Value value]
+arithmetic_term returns[VALUE value]
     : (arithmetic_factor) {$value = $arithmetic_factor.value; }// (('*' | '/') arithmetic_factor)*
     ;
 
-arithmetic_factor returns[Value value]
+arithmetic_factor returns[VALUE value]
     //: ('+' | '-')? arithmetic_primary
     : arithmetic_primary {$value = $arithmetic_primary.value; }
     ;
 
-arithmetic_primary returns[Value value]
-    : numeric_literal {$value = new Constant($numeric_literal.value);}
+arithmetic_primary returns[VALUE value]
+    : numeric_literal {$value = new CONSTANT($numeric_literal.value);}
     //| state_field_path_expression
     //| '(' simple_arithmetic_expression ')'
     | input_parameter {$value = $input_parameter.value;}
@@ -430,9 +425,9 @@ pattern_value
     :
     ;
 
-input_parameter returns[Parameter value]
+input_parameter returns[PARAMETER value]
     //: '?' INT_NUMERAL
-    : ':' IDENTIFICATION_VARIABLE {$value = getQuery().parameter($IDENTIFICATION_VARIABLE.text, Object.class);}
+    : ':' IDENTIFICATION_VARIABLE {$value = new PARAMETER($IDENTIFICATION_VARIABLE.text);}
     ;
 
 literal

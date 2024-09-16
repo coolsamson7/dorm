@@ -140,7 +140,7 @@ class ObjectManager() {
         try {
             parser.file()
 
-            return parser.query as Query<T>!!
+            return parser.select!!.transform<T>(parser.queryManager)
         }
         catch (e: RecognitionException) {
             throw IllegalArgumentException(e.message)
