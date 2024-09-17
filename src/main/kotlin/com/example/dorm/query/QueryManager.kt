@@ -58,12 +58,12 @@ class QueryManager(val objectManager: ObjectManager, private val entityManager: 
             if ( objectQuery.where != null)
                 criteriaQuery.where(
                     objectQuery.where!!.createWhere(executor as QueryExecutor<Any>, builder, criteriaQuery as CriteriaQuery<Any>, attributeEntity as Root<Any>),
-                    builder.or(*objectQuery.projection!!.map { objectPath: ObjectPath -> builder.equal(attributeEntity.get<String>("attribute"), (objectPath as PropertyPath).property.name) }.toTypedArray()) // TODO FOO
+                    builder.or(*objectQuery.projection!!.map { objectPath: ObjectPath -> builder.equal(attributeEntity.get<String>("attribute"), objectPath.attributeName()) }.toTypedArray())
                 )
 
             else
                 criteriaQuery.where(
-                    builder.or(*objectQuery.projection!!.map { objectPath: ObjectPath -> builder.equal(attributeEntity.get<String>("attribute"), (objectPath as PropertyPath).property.name) }.toTypedArray()) // TODO FOO
+                    builder.or(*objectQuery.projection!!.map { objectPath: ObjectPath -> builder.equal(attributeEntity.get<String>("attribute"), objectPath.attributeName()) }.toTypedArray())
                 )
 
             criteriaQuery.orderBy(builder.asc(attributeEntity.get<Int>("entity")))
@@ -139,7 +139,7 @@ class QueryManager(val objectManager: ObjectManager, private val entityManager: 
         for ( pro in projection)
             name2Index[(pro as PropertyPath).property.name] = i++
 
-        val reader = projection.map { p -> ObjectReader.valueReader( (p as PropertyPath).property.type.baseType) }.toTypedArray() // TODO FOO
+        val reader = projection.map { p -> ObjectReader.valueReader( p.type()) }.toTypedArray()
 
         // local function
 

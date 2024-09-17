@@ -164,9 +164,6 @@ internal class DORMBenchmark : AbstractTest() {
 
                 person1["name"] = "Andi"
                 person1["age"] = 58
-                person1["v1"] = "v1"
-                person1["v2"] = "v2"
-                person1["v3"] = "v3"
             }
         }
 

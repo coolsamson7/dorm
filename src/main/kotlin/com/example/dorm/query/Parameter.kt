@@ -5,23 +5,25 @@ package com.example.dorm.query
  * All rights reserved
  */
 
-abstract class Value<T:Any>(protected val type: Class<T>) {
-    abstract fun resolve(executor: QueryExecutor<Any>) : T
-}
+abstract class Value() {
+    abstract fun <T> resolve(executor: QueryExecutor<Any>, type: Class<T>) : T
 
-class Parameter<T:Any>(val name: String, type: Class<T>) : Value<T>(type) {
-    override fun resolve(executor: QueryExecutor<Any>) : T {
-        return executor.resolveParameter(name) as T
-    }
-
-    fun checkType(value: T) {
-        if (!type.isAssignableFrom(value::class.java))
-            throw Error("expected parameter ${name} to be a ${type.name}")
+    fun <T> checkType(type: Class<T>, value: Any, valueMessage: String) : T {
+        if (type.isAssignableFrom(value.javaClass))
+            return value as T
+        else
+            throw Error("expected ${valueMessage} to a ${type.name}")
     }
 }
 
-class Constant<T:Any>(private val value: T) : Value<T>(value.javaClass) {
-    override fun resolve(executor: QueryExecutor<Any>) : T {
-        return value as T // TODO: type safeness?
+class Parameter(val name: String) : Value() {
+    override fun <T> resolve(executor: QueryExecutor<Any>, type: Class<T>) : T {
+        return checkType(type, executor.resolveParameter(name), "parameter ${name}")
+    }
+}
+
+class Constant(private val value: Any) : Value() {
+    override fun <T> resolve(executor: QueryExecutor<Any>, type: Class<T>) : T {
+        return checkType(type, value, "constant ")
     }
 }

@@ -1,5 +1,6 @@
 package com.example.dorm.query
 
+import com.example.dorm.model.ObjectDescriptor
 import com.example.dorm.model.PropertyDescriptor
 import com.example.dorm.persistence.entity.AttributeEntity
 import jakarta.persistence.criteria.Path
@@ -18,11 +19,15 @@ class PropertyPath(parent: ObjectPath, val property: PropertyDescriptor<Any>) : 
         return property.name
     }
 
-    override fun <T> expression(root: Root<AttributeEntity>): Path<T> {
-        if ( property.name == "id")
-            return  root.get<String>("entity") as Path<T>
+    override fun type() : Class<Any> {
+        return property.type.baseType
+    }
 
-        else return when ( property.type.baseType ) {
+    override fun <T> expression(root: Root<AttributeEntity>): Path<T> {
+        return if ( property.name == "id")
+            root.get<String>("entity") as Path<T>
+
+        else when ( property.type.baseType ) {
             String::class.java -> root.get<String>("stringValue") as Path<T>
             Short::class.java -> root.get<Int>("intValue") as Path<T>
             Integer::class.java -> root.get<Int>("intValue") as Path<T>
@@ -35,5 +40,4 @@ class PropertyPath(parent: ObjectPath, val property: PropertyDescriptor<Any>) : 
             }
         }
     }
-
 }

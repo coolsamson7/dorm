@@ -17,6 +17,10 @@ class From(val objectDescriptor: ObjectDescriptor) : ObjectPath(null) {
     override fun <T> expression(root: Root<AttributeEntity>): Path<T> {
         return root as Path<T>
     }
+
+    override fun type() : Class<Any> {
+        return ObjectDescriptor::class as Class<Any>
+    }
 }
 
 abstract class BooleanExpression :  ObjectExpression()
@@ -71,51 +75,51 @@ class Or(vararg expr: BooleanExpression) : BooleanExpression() {
     }
 }
 
-class Eq(path: ObjectPath, val value: Value<out Any>) : ComparisonExpression(path) {
+class Eq(path: ObjectPath, val value: Value) : ComparisonExpression(path) {
     // override
 
     override fun where(executor: QueryExecutor<Any>, builder: CriteriaBuilder, attribute: Root<AttributeEntity>) : Predicate {
-        return builder.equal(path.expression<Any>(attribute), value.resolve(executor))
+        return builder.equal(path.expression<Any>(attribute), value.resolve(executor, Any::class.java))
     }
 }
 
-class Neq(path: ObjectPath, val value: Value<out Any>) : ComparisonExpression(path) {
+class Neq(path: ObjectPath, val value: Value) : ComparisonExpression(path) {
     // override
 
     override fun where(executor: QueryExecutor<Any>, builder: CriteriaBuilder, attribute: Root<AttributeEntity>) : Predicate {
-        return builder.notEqual(path.expression<Any>(attribute), value.resolve(executor))
+        return builder.notEqual(path.expression<Any>(attribute), value.resolve(executor, Any::class.java))
     }
 }
 
-class Lt(path: ObjectPath, val value: Value<out Any>) : ComparisonExpression(path) {
+class Lt(path: ObjectPath, val value: Value) : ComparisonExpression(path) {
     // override
 
     override fun where(executor: QueryExecutor<Any>, builder: CriteriaBuilder, attribute: Root<AttributeEntity>) : Predicate {
-        return builder.lt(path.expression(attribute), value.resolve(executor) as Number)
+        return builder.lt(path.expression(attribute), value.resolve(executor, Number::class.java))
     }
 }
 
-class Le(path: ObjectPath, val value: Value<out Any>) : ComparisonExpression(path) {
+class Le(path: ObjectPath, val value: Value) : ComparisonExpression(path) {
     // override
 
     override fun where(executor: QueryExecutor<Any>, builder: CriteriaBuilder, attribute: Root<AttributeEntity>) : Predicate {
-        return builder.le(path.expression(attribute), value.resolve(executor) as Number)
+        return builder.le(path.expression(attribute), value.resolve(executor, Number::class.java))
     }
 }
 
-class Gt(path: ObjectPath, val value: Value<out Any>) : ComparisonExpression(path) {
+class Gt(path: ObjectPath, val value: Value) : ComparisonExpression(path) {
     // override
 
     override fun where(executor: QueryExecutor<Any>, builder: CriteriaBuilder, attribute: Root<AttributeEntity>) : Predicate {
-        return builder.gt(path.expression(attribute), value.resolve(executor) as Number) // TODO
+        return builder.gt(path.expression(attribute), value.resolve(executor, Number::class.java))
     }
 }
 
-class Ge(path: ObjectPath, val value: Value<out Any>) : ComparisonExpression(path) {
+class Ge(path: ObjectPath, val value: Value) : ComparisonExpression(path) {
     // override
 
     override fun where(executor: QueryExecutor<Any>, builder: CriteriaBuilder, attribute: Root<AttributeEntity>) : Predicate {
-        return builder.ge(path.expression(attribute), value.resolve(executor) as Number)
+        return builder.ge(path.expression(attribute), value.resolve(executor, Number::class.java))
     }
 }
 
@@ -129,8 +133,6 @@ class QueryExecutor<T : Any>(val query: Query<T>, val queryManager: QueryManager
     fun set(name: String, value: Any) : QueryExecutor<T> {
         val parameter = query.parameter.find { param-> param.name == name }
         if ( parameter != null) {
-            parameter.checkType(value)
-
             parameters[name] = value
         }
         else throw Error("unknown parameter ${name}")
@@ -161,7 +163,7 @@ class Query<T : Any>(val resultType: Class<T>, val queryManager: QueryManager, v
     var root: From? = null
     var where : ObjectExpression? = null
     var projection : Array<out ObjectPath>? = null
-    val parameter : MutableList<Parameter<Any>> = ArrayList()
+    val parameter : MutableList<Parameter> = ArrayList()
 
     // fluent
 
@@ -188,8 +190,8 @@ class Query<T : Any>(val resultType: Class<T>, val queryManager: QueryManager, v
 
     // parameter
 
-    fun parameter(name: String) : Parameter<Any> {
-        val param = Parameter(name, Any::class.java)
+    fun parameter(name: String) : Parameter {
+        val param = Parameter(name)
 
         this.parameter.add(param)
 
@@ -209,27 +211,27 @@ class Query<T : Any>(val resultType: Class<T>, val queryManager: QueryManager, v
     // arithmetic expressions
 
     fun eq(path: ObjectPath, value: Any) : BooleanExpression {
-        return Eq(path, if ( value is Value<*>) value else Constant(value))
+        return Eq(path, if ( value is Value) value else Constant(value))
     }
 
     fun neq(path: ObjectPath, value: Any) : ObjectExpression {
-        return Neq(path, if ( value is Value<*>) value else Constant(value))
+        return Neq(path, if ( value is Value) value else Constant(value))
     }
 
     fun lt(path: ObjectPath, value: Any) : ObjectExpression {
-        return Lt(path, if ( value is Value<*>) value else Constant(value))
+        return Lt(path, if ( value is Value) value else Constant(value))
     }
 
     fun le(path: ObjectPath, value: Any) : ObjectExpression {
-        return Le(path, if ( value is Value<*>) value else Constant(value))
+        return Le(path, if ( value is Value) value else Constant(value))
     }
 
     fun gt(path: ObjectPath, value: Any) : ObjectExpression {
-        return Gt(path, if ( value is Value<*>) value else Constant(value))
+        return Gt(path, if ( value is Value) value else Constant(value))
     }
 
     fun ge(path: ObjectPath, value: Any) : ObjectExpression {
-        return Ge(path, if ( value is Value<*>) value else Constant(value))
+        return Ge(path, if ( value is Value) value else Constant(value))
     }
 
     // main execute

@@ -21,19 +21,19 @@ abstract class EXPR {
 
 
 abstract class VALUE(val value: Any) : EXPR() {
-    abstract fun <T: Any> resolve(query: Query<T>) : Value<Any>
+    abstract fun <T: Any> resolve(query: Query<T>) : Value
 }
 
 class PARAMETER(private val name: String) : VALUE("null") { // TODO
     // override
 
-    override fun <T: Any> resolve(query: Query<T>) : Value<Any> {
+    override fun <T: Any> resolve(query: Query<T>) : Value {
         return query.parameter(name)
     }
 }
 
 class CONSTANT(value: Any) : VALUE(value) {
-    override fun <T: Any> resolve(query: Query<T>) : Value<Any> {
+    override fun <T: Any> resolve(query: Query<T>) : Value {
         return Constant(value)
     }
 }
