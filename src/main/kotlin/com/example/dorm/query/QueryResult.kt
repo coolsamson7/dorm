@@ -1,5 +1,9 @@
 package com.example.dorm.query
-
+/*
+ * @COPYRIGHT (C) 2023 Andreas Ernst
+ *
+ * All rights reserved
+ */
 class QueryResult<T : Any>(val query: Query<T>, val result : List<T>) {
     // public
 

@@ -1,4 +1,9 @@
 package com.example.dorm.transaction
+/*
+ * @COPYRIGHT (C) 2023 Andreas Ernst
+ *
+ * All rights reserved
+ */
 
 import com.example.dorm.ObjectManager
 import org.springframework.transaction.PlatformTransactionManager

@@ -1,5 +1,4 @@
 package com.example.dorm.type
-
 /*
  * @COPYRIGHT (C) 2023 Andreas Ernst
  *

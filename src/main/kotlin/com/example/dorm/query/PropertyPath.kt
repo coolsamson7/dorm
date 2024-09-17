@@ -1,6 +1,10 @@
 package com.example.dorm.query
+/*
+ * @COPYRIGHT (C) 2023 Andreas Ernst
+ *
+ * All rights reserved
+ */
 
-import com.example.dorm.model.ObjectDescriptor
 import com.example.dorm.model.PropertyDescriptor
 import com.example.dorm.persistence.entity.AttributeEntity
 import jakarta.persistence.criteria.Path

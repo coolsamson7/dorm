@@ -1,4 +1,9 @@
 package com.example.dorm.persistence.entity
+/*
+ * @COPYRIGHT (C) 2023 Andreas Ernst
+ *
+ * All rights reserved
+ */
 
 import jakarta.persistence.*
 import java.io.Serializable

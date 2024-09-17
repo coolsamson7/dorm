@@ -1,5 +1,9 @@
 package com.example.dorm
-
+/*
+ * @COPYRIGHT (C) 2023 Andreas Ernst
+ *
+ * All rights reserved
+ */
 import com.example.dorm.model.ObjectDescriptor
 import com.example.dorm.model.PropertyDescriptor
 import com.example.dorm.transaction.ObjectState
