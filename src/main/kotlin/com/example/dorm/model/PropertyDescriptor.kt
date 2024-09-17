@@ -2,7 +2,7 @@ package com.example.dorm.model
 
 import com.example.dorm.type.Type
 
-class PropertyDescriptor<T:Any>(val name: String, val type: Type<T>) {
+class PropertyDescriptor<T:Any>(val name: String, val type: Type<T>, val isPrimaryKey : Boolean = false) {
     var index = 0
 
     fun defaultValue() : Any {

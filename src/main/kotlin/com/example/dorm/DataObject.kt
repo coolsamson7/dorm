@@ -4,11 +4,19 @@ import com.example.dorm.model.ObjectDescriptor
 import com.example.dorm.model.PropertyDescriptor
 import com.example.dorm.transaction.ObjectState
 
-class DataObject(val type: ObjectDescriptor, var id: Int, var state : ObjectState?, val values: Array<Any?>) {
+class DataObject(val type: ObjectDescriptor, var state : ObjectState?, val values: Array<Any?>) {
     // public
 
-    public fun property(property: String) : PropertyDescriptor<Any> {
+    fun property(property: String) : PropertyDescriptor<Any> {
         return type.property(property)
+    }
+
+    fun getId() : Int {
+        return values[0] as Int
+    }
+
+    fun setId(id: Int) : Unit {
+        values[0] = id
     }
 
     // public operators

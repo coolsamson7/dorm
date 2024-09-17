@@ -27,12 +27,14 @@ class ObjectReader(descriptor: ObjectDescriptor) {
     // instance data
 
     private val reader: Array<PropertyReader> =
-        descriptor.properties.map { property -> reader4(property.type.baseType) }.toTypedArray()
+        descriptor.properties
+            .filter { property -> !property.isPrimaryKey }
+            .map { property -> reader4(property.type.baseType) }.toTypedArray()
 
     // public
 
     fun read(obj: DataObject, property: Int, attribute: AttributeEntity) {
-        reader[property](obj, property, attribute)
+        reader[property-1](obj, property, attribute)
     }
 
     // companion
@@ -98,18 +100,21 @@ class ObjectReader(descriptor: ObjectDescriptor) {
 class ObjectWriter(private val descriptor: ObjectDescriptor) {
     // instance data
 
-    private val writer: Array<PropertyWriter> = descriptor.properties.map { property -> writer4(property.type.baseType)}.toTypedArray()
+    private val writer: Array<PropertyWriter> = descriptor.properties
+        .filter { property -> !property.isPrimaryKey }
+        .map { property -> writer4(property.type.baseType)}.toTypedArray()
 
     // public
 
     fun update(obj: DataObject, property: Int, attribute: AttributeEntity) {
-        writer[property](obj, property, attribute)
+        writer[property-1](obj, property, attribute)
     }
 
     fun write(obj: DataObject, entityManager: EntityManager) {
-        var i = 0
+        var i = 1
+        val id = obj.getId()
         for ( writer in writer) {
-            val attribute = AttributeEntity(obj.id, descriptor.properties[i].name, descriptor.name, "", 0, 0.0)
+            val attribute = AttributeEntity(id, descriptor.properties[i].name, descriptor.name, "", 0, 0.0)
 
             writer(obj, i++, attribute)
 
@@ -182,7 +187,7 @@ class DataObjectMapper() {
 
         criteriaQuery
             .select(attributeEntity)
-            .where(builder.equal(attributeEntity.get<Int>("entity"), obj.id))
+            .where(builder.equal(attributeEntity.get<Int>("entity"), obj.getId()))
 
         val query = entityManager.createQuery(criteriaQuery)
         val attributes = query.resultList
@@ -206,13 +211,13 @@ class DataObjectMapper() {
 
         entityCriteriaQuery
             .set("json", json)
-            .where(builder.equal(entityFrom.get<Int>("id"), obj.id))
+            .where(builder.equal(entityFrom.get<Int>("id"), obj.getId()))
 
         entityManager.createQuery(entityCriteriaQuery).executeUpdate()
     }
 
     fun delete(obj: DataObject) {
-        if ( obj.id < 0)
+        if ( obj.getId() < 0)
             return
 
         val builder = entityManager.criteriaBuilder
@@ -222,7 +227,7 @@ class DataObjectMapper() {
         val criteriaQuery = builder.createCriteriaDelete(AttributeEntity::class.java)
         val from = criteriaQuery.from(AttributeEntity::class.java)
 
-        criteriaQuery.where(builder.equal(from.get<Int>("entity"), obj.id))
+        criteriaQuery.where(builder.equal(from.get<Int>("entity"), obj.getId()))
 
         entityManager.createQuery(criteriaQuery).executeUpdate()
 
@@ -231,7 +236,7 @@ class DataObjectMapper() {
         val criteriaQueryEntity = builder.createCriteriaDelete(EntityEntity::class.java)
         val fromEntity = criteriaQueryEntity.from(EntityEntity::class.java)
 
-        criteriaQueryEntity.where(builder.equal(fromEntity.get<Int>("id"), obj.id))
+        criteriaQueryEntity.where(builder.equal(fromEntity.get<Int>("id"), obj.getId()))
 
         entityManager.createQuery(criteriaQueryEntity).executeUpdate()
     }
@@ -243,7 +248,8 @@ class DataObjectMapper() {
 
         entityManager.persist(entity)
 
-        obj.id = entity.id
+        obj.setId(entity.id)
+
         writer4(descriptor).write(obj, entityManager)
     }
 
@@ -255,7 +261,7 @@ class DataObjectMapper() {
 
         val obj = jsonReader4(objectDescriptor).read(node)
 
-        obj.id = entity.id
+        //TODO IDobj.id = entity.id
 
         // set state
 
@@ -268,7 +274,9 @@ class DataObjectMapper() {
 
     fun read(state: TransactionState, objectDescriptor: ObjectDescriptor, attributes: List<AttributeEntity>, start: Int, end: Int) : DataObject {
         val values = arrayOfNulls<Any>(objectDescriptor.properties.size)
-        val obj = DataObject(objectDescriptor, attributes[start].entity, null, values)
+
+        values[0] = attributes[start].entity // id
+        val obj = DataObject(objectDescriptor, null, values)
 
         val reader = reader4(objectDescriptor)
 

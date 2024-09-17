@@ -25,6 +25,26 @@ class CreateUpdateDeleteTests: AbstractTest() {
     }
 
     @Test
+    fun testFind() {
+        createPerson("Andi", 58)
+
+        // update
+
+        withTransaction {
+            val persons = readPersons()
+
+            assertEquals(1, persons.size)
+
+            val person = persons[0]
+            val queryPerson = objectManager.findById(personDescriptor!!, person.getId())!!
+
+            assertEquals(person.getId(), queryPerson.getId())
+
+            // TODO: it should be the same persons!!!!!!
+        }
+    }
+
+    @Test
     fun testUpdate() {
         createPerson("Andi", 58)
 

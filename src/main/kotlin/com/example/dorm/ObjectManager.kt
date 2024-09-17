@@ -11,6 +11,7 @@ import com.example.dorm.transaction.ObjectState
 import com.example.dorm.transaction.Status
 import com.example.dorm.transaction.TransactionState
 import com.example.dorm.type.Type
+import com.example.dorm.type.base.int
 import com.fasterxml.jackson.databind.ObjectMapper
 import jakarta.persistence.EntityManager
 import jakarta.persistence.PersistenceContext
@@ -27,10 +28,14 @@ class ObjectDescriptorBuilder(val manager: ObjectManager, val name: String) {
 
     private val attributes = ArrayList<PropertyDescriptor<Any>>()
 
+    init {
+        attribute("id", int(), true)
+    }
+
     // fluent
 
-    fun <T: Any> attribute(name: String, type: Type<T>) : ObjectDescriptorBuilder {
-        attributes.add(PropertyDescriptor(name, type as Type<Any>))
+    fun <T: Any> attribute(name: String, type: Type<T>, isPrimaryKey: Boolean = false) : ObjectDescriptorBuilder {
+        attributes.add(PropertyDescriptor(name, type as Type<Any>, isPrimaryKey))
 
         return this
     }
@@ -76,6 +81,10 @@ class ObjectManager() {
         descriptors.put(objectDescriptor.name, objectDescriptor)
 
         return this
+    }
+
+    fun find(name: String) : ObjectDescriptor? {
+        return descriptors.get(name)
     }
 
     fun get(name: String) : ObjectDescriptor {
@@ -145,6 +154,16 @@ class ObjectManager() {
         catch (e: RecognitionException) {
             throw IllegalArgumentException(e.message)
         }
+    }
+
+    fun findById(descriptor: ObjectDescriptor, id: Int) : DataObject? {
+        val queryManager=  queryManager()
+        val obj = queryManager.from(descriptor)
+        val query =  queryManager.create().select(obj)
+
+        query.where(query.eq(obj.get("id"), id))
+
+        return query.execute().getSingleResult()
     }
 
     // private

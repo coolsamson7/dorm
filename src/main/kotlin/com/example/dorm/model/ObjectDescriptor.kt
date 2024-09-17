@@ -16,7 +16,7 @@ class ObjectDescriptor(val name: String, val properties: Array<PropertyDescripto
     fun create() : DataObject {
         val values : Array<Any?> = properties.map { property -> property.defaultValue() }.toTypedArray()
 
-        return DataObject(this, -1, null, values)
+        return DataObject(this, null, values)
     }
 
     fun property(property: String) : PropertyDescriptor<Any> {

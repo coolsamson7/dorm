@@ -32,6 +32,47 @@ class CriteriaQueryTests : AbstractTest() {
     }
 
     @Test
+    fun testReadId() {
+        createPerson("Andi", 58)
+
+        withTransaction { ->
+            val queryManager = objectManager.queryManager()
+            val person = queryManager.from(personDescriptor!!)
+
+            // no where
+
+            val query = queryManager
+                .create()
+                .select(person)
+                .from(person)
+
+            val result = query.execute().getResultList()
+
+            assertEquals(1, result.size)
+
+            val p = result[0]
+
+            // query by id
+
+            // no where
+
+            val idQuery = queryManager
+                .create()
+                .select(person)
+                .from(person)
+
+            idQuery.where(idQuery.gt(person.get("id"), 0))
+
+            val list = idQuery.execute().getResultList()
+
+            assertEquals(1, list.size)
+
+
+        }
+
+    }
+
+    @Test
     fun testProjection() {
         createPerson("Andi", 58)
 

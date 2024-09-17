@@ -28,22 +28,30 @@ abstract class ComparisonExpression(val path: ObjectPath) : BooleanExpression() 
         val subQuery = query.subquery(Int::class.java)
         val attribute = subQuery.from(AttributeEntity::class.java) // type: string, entity: Int
 
-        subQuery
-            .select(attribute.get("entity"))
-            .distinct(true)
-            .where(
-                // object type
+        val attributeName = path.attributeName()
 
-                builder.equal(attribute.get<String>("type"), executor.query.root!!.objectDescriptor.name),
+        if ( attributeName == "id")
+            subQuery
+                .select(attribute.get("entity"))
+                .distinct(true)
+                .where(this.where(executor, builder, attribute)) //7 TODO ID
+        else
+            subQuery
+                .select(attribute.get("entity"))
+                .distinct(true)
+                .where(
+                    // object type
 
-                // the attribute
+                    builder.equal(attribute.get<String>("type"), executor.query.root!!.objectDescriptor.name),
 
-                builder.equal(attribute.get<String>("attribute"), path.attributeName()),
+                    // the attribute
 
-                // where
+                    builder.equal(attribute.get<String>("attribute"), attributeName),
 
-                this.where(executor, builder, attribute)
-            )
+                    // where
+
+                    this.where(executor, builder, attribute)
+                )
 
         return builder.`in`(from.get<Int>("entity")).value(subQuery)
     }
@@ -200,7 +208,7 @@ class Query<T : Any>(val resultType: Class<T>, val queryManager: QueryManager, v
 
     // arithmetic expressions
 
-    fun eq(path: ObjectPath, value: Any) : ObjectExpression {
+    fun eq(path: ObjectPath, value: Any) : BooleanExpression {
         return Eq(path, if ( value is Value<*>) value else Constant(value))
     }
 
