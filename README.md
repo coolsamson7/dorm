@@ -1,3 +1,5 @@
+[![Java CI with Maven](https://github.com/coolsamson7/dorm/actions/workflows/maven.yml/badge.svg)](https://github.com/coolsamson7/dorm/actions/workflows/maven.yml)
+
 # dORM
 
 _dOrm_ is a complete dynamic orm ( Object Relational Mapper ), that doesn't require to setup custom table structures per entity but is able to map
