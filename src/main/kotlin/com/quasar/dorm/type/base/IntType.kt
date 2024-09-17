@@ -12,9 +12,6 @@ class IntType : Type<Integer>(Integer::class.java) {
     fun min(min: Int) : IntType {
         test<Integer>(
             "min",
-            //params: { // TODO -> Keywords!!!!
-            //    type: type,
-            //},
             {  obj -> obj >= min }
         )
 
@@ -24,10 +21,43 @@ class IntType : Type<Integer>(Integer::class.java) {
     fun max(max: Int) : IntType {
         test<Integer>(
             "max",
-            //params: {
-            //    type: type,
-            //},
             {  obj -> obj <= max }
+        )
+
+        return this
+    }
+
+    fun lessThan(value: Int) : IntType {
+        test<Integer>(
+            "lessThan",
+            {  obj -> obj < value }
+        )
+
+        return this
+    }
+
+    fun lessEqual(value: Int) : IntType {
+        test<Integer>(
+            "lessEqual",
+            {  obj -> obj <= value }
+        )
+
+        return this
+    }
+
+    fun greaterThan(value: Int) : IntType {
+        test<Integer>(
+            "greaterThan",
+            {  obj -> obj > value }
+        )
+
+        return this
+    }
+
+    fun greaterEqual(value: Int) : IntType {
+        test<Integer>(
+            "greaterEqual",
+            {  obj -> obj >= value }
         )
 
         return this
