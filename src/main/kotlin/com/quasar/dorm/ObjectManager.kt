@@ -18,6 +18,7 @@ import com.quasar.dorm.type.base.int
 import jakarta.persistence.EntityManager
 import jakarta.persistence.PersistenceContext
 import org.antlr.v4.runtime.ANTLRInputStream
+import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.RecognitionException
 import org.springframework.beans.factory.annotation.Autowired
@@ -143,7 +144,7 @@ class ObjectManager() {
     }
 
     fun <T: Any> query(query: String, resultType: Class<T> = DataObject::class.java as Class<T>) : Query<T> {
-        val tokenStream = CommonTokenStream(OQLLexer(ANTLRInputStream(query)))
+        val tokenStream = CommonTokenStream(OQLLexer(CharStreams.fromString(query)))
 
         val parser = OQLParser(tokenStream)
 

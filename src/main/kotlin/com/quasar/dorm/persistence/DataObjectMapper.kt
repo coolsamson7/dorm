@@ -16,7 +16,9 @@ import com.quasar.dorm.transaction.TransactionState
 import com.fasterxml.jackson.databind.ObjectMapper
 import jakarta.persistence.EntityManager
 import jakarta.persistence.PersistenceContext
+import jakarta.persistence.Query
 import jakarta.persistence.criteria.CriteriaBuilder
+import jakarta.persistence.criteria.ParameterExpression
 import jakarta.persistence.criteria.Root
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -163,6 +165,93 @@ class ObjectWriter(private val descriptor: ObjectDescriptor) {
     }
 }
 
+class AttributeUpdater<T>(attribute: String, type: Class<T>, entityManager: EntityManager) {
+    // instance data
+
+    val entityId : ParameterExpression<Int>
+    val attributeId : ParameterExpression<String>
+    val value : ParameterExpression<T>
+    val updateAttribute : Query
+
+    // init
+
+    init {
+        val builder = entityManager.criteriaBuilder
+
+        // delete attributes
+
+        entityId    = builder.parameter(Int::class.java)
+        attributeId = builder.parameter(String::class.java)
+        value       = builder.parameter(type)
+
+        val updateAttributeQuery = builder.createCriteriaUpdate(AttributeEntity::class.java)
+        val from = updateAttributeQuery.from(AttributeEntity::class.java)
+
+        updateAttributeQuery.set(attribute, value);
+
+        updateAttributeQuery.where(builder.and(
+            builder.equal(from.get<Int>("entity"), entityId),
+            builder.equal(from.get<Int>("attribute"), attributeId)
+        ))
+
+        updateAttribute = entityManager.createQuery(updateAttributeQuery)
+    }
+
+    // public
+
+    fun update(entity: Int, attribute: String, value: T) {
+        updateAttribute
+            .setParameter(entityId, entity)
+            .setParameter(attributeId, attribute)
+            .setParameter(this.value, value)
+            .executeUpdate()
+    }
+}
+
+class ObjectDeleter(entityManager: EntityManager) {
+    // instance data
+
+    val attributeId : ParameterExpression<Int>
+    val entityId : ParameterExpression<Int>
+    val deleteAttribute : Query
+    val deleteEntity : Query
+
+    // init
+
+    init {
+        val builder = entityManager.criteriaBuilder
+
+        // delete attributes
+
+        attributeId = builder.parameter<Int>(Int::class.java)
+
+        val deleteAttributeQuery = builder.createCriteriaDelete(AttributeEntity::class.java)
+        val from = deleteAttributeQuery.from(AttributeEntity::class.java)
+
+        deleteAttributeQuery.where(builder.equal(from.get<Int>("entity"), attributeId))
+
+        deleteAttribute = entityManager.createQuery(deleteAttributeQuery)
+
+        // delete entity
+
+        entityId = builder.parameter<Int>(Int::class.java)
+
+        val criteriaQueryEntity = builder.createCriteriaDelete(EntityEntity::class.java)
+        val fromEntity = criteriaQueryEntity.from(EntityEntity::class.java)
+        criteriaQueryEntity.where(builder.equal(fromEntity.get<Int>("id"), entityId))
+
+        deleteEntity = entityManager.createQuery(criteriaQueryEntity)
+    }
+
+    // public
+
+    fun delete(obj: DataObject) {
+        deleteAttribute.setParameter(attributeId, obj.getId()).executeUpdate()
+        deleteEntity.setParameter(entityId, obj.getId()).executeUpdate()
+    }
+}
+
+
 @Component
 class DataObjectMapper() {
     // instance data
@@ -176,13 +265,34 @@ class DataObjectMapper() {
     private val reader = ConcurrentHashMap<String, ObjectReader>()
     private val jsonReader = ConcurrentHashMap<String, JSONReader>()
     private val writer = ConcurrentHashMap<String, ObjectWriter>()
+    private val updater = ConcurrentHashMap<String, AttributeUpdater<Any>>()
+    private val deleter = ConcurrentHashMap<String, ObjectDeleter>()
 
     // public
 
     fun update(obj: DataObject) {
         val builder: CriteriaBuilder = entityManager.criteriaBuilder
 
-        // update attributes
+        // new
+
+        val properties = obj.type.properties
+        for ( index in 1..obj.values.size - 1) {
+            if ( obj.values[index] != obj.state!!.snapshot!![index]) {
+                val property = properties[index]
+
+                when ( property.type.baseType) {
+                    String::class.java -> updater4("stringValue",  String::class.java).update(obj.getId(), property.name, obj.values[index] as String)
+                    Integer::class.java -> updater4("intValue",  Integer::class.java).update(obj.getId(), property.name, obj.values[index] as Integer)
+                    Int::class.java -> updater4("intValue",  Integer::class.java).update(obj.getId(), property.name, obj.values[index] as Integer)
+
+                    else -> {
+                            throw Error("ouch")
+                    }
+                }
+            }
+        } // for
+
+        /* update attributes
 
         val criteriaQuery = builder.createQuery(AttributeEntity::class.java)
         val attributeEntity = criteriaQuery.from(AttributeEntity::class.java)
@@ -203,6 +313,7 @@ class DataObjectMapper() {
             if ( obj.values[index] != obj.state!!.snapshot!![index])
                 writer.update(obj, index, attribute)
         } // for
+        */
 
         // update entity
 
@@ -219,28 +330,8 @@ class DataObjectMapper() {
     }
 
     fun delete(obj: DataObject) {
-        if ( obj.getId() < 0)
-            return
-
-        val builder = entityManager.criteriaBuilder
-
-        // delete attributes
-
-        val criteriaQuery = builder.createCriteriaDelete(AttributeEntity::class.java)
-        val from = criteriaQuery.from(AttributeEntity::class.java)
-
-        criteriaQuery.where(builder.equal(from.get<Int>("entity"), obj.getId()))
-
-        entityManager.createQuery(criteriaQuery).executeUpdate()
-
-        // delete entity
-
-        val criteriaQueryEntity = builder.createCriteriaDelete(EntityEntity::class.java)
-        val fromEntity = criteriaQueryEntity.from(EntityEntity::class.java)
-
-        criteriaQueryEntity.where(builder.equal(fromEntity.get<Int>("id"), obj.getId()))
-
-        entityManager.createQuery(criteriaQueryEntity).executeUpdate()
+        if ( obj.getId() >= 0)
+            deleter4(obj.type).delete(obj)
     }
 
     fun create(obj: DataObject) {
@@ -264,6 +355,7 @@ class DataObjectMapper() {
         val obj = jsonReader4(objectDescriptor).read(node)
 
         obj.setId(entity.id) // TODO ?
+
         // set state
 
         state.register(ObjectState(obj, Status.MANAGED))
@@ -308,5 +400,13 @@ class DataObjectMapper() {
 
     private fun writer4(objectDescriptor: ObjectDescriptor) : ObjectWriter {
         return writer.getOrPut(objectDescriptor.name) { -> ObjectWriter(objectDescriptor) }
+    }
+
+    private fun <T> updater4(attribute: String, type: Class<T>) : AttributeUpdater<T> {
+        return AttributeUpdater(attribute, type, entityManager)//TODO updater.getOrPut(objectDescriptor.name) { -> ObjectUpdater(objectDescriptor) }
+    }
+
+    private fun deleter4(objectDescriptor: ObjectDescriptor) : ObjectDeleter {
+        return ObjectDeleter(entityManager)//TODO deleter.getOrPut(objectDescriptor.name) { -> ObjectDeleter(entityManager) }
     }
 }

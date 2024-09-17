@@ -18,12 +18,11 @@ abstract class EXPR {
     }
 }
 
-
 abstract class VALUE(val value: Any) : EXPR() {
     abstract fun <T: Any> resolve(query: Query<T>) : Value
 }
 
-class PARAMETER(private val name: String) : VALUE("null") { // TODO
+class PARAMETER(private val name: String) : VALUE(name) {
     // override
 
     override fun <T: Any> resolve(query: Query<T>) : Value {
@@ -69,10 +68,10 @@ class SELECT() {
 
         val query = queryManager
             .create() // object query
-            .select(*select.map({path -> path.buildPath(alias)}).toTypedArray())
+            .select(*select.map { path -> path.buildPath(alias) }.toTypedArray())
             .from(from!!)
 
-        if ( where != null)
+        if ( where !== null)
             query.where(where!!.build(this, query))
 
         return query as Query<T>
