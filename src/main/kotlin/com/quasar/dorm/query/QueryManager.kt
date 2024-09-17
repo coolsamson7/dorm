@@ -54,12 +54,12 @@ class QueryManager(val objectManager: ObjectManager, private val entityManager: 
 
         // object query
 
-        val criteriaQuery : CriteriaQuery<AttributeEntity> = builder.createQuery(AttributeEntity::class.java)
-        val attributeEntity = criteriaQuery.from(AttributeEntity::class.java)
-
-        criteriaQuery.select(attributeEntity)
-
         if (objectQuery.projection != null) {
+            val criteriaQuery = builder.createQuery(AttributeEntity::class.java)
+            val attributeEntity = criteriaQuery.from(AttributeEntity::class.java)
+
+            criteriaQuery.select(attributeEntity)
+
             if ( objectQuery.where != null)
                 criteriaQuery.where(
                     objectQuery.where!!.createWhere(executor as QueryExecutor<Any>, builder, criteriaQuery as CriteriaQuery<Any>, attributeEntity as Root<Any>),
@@ -76,33 +76,31 @@ class QueryManager(val objectManager: ObjectManager, private val entityManager: 
             return computeProjectionResultFromAttributes(objectQuery.projection!!, entityManager.createQuery(criteriaQuery).resultList as List<AttributeEntity>) as List<T>
         }
         else {
-            if ( objectQuery.where != null)
+            val criteriaQuery = builder.createQuery(EntityEntity::class.java)
+            val attributeEntity = criteriaQuery.from(EntityEntity::class.java)
+
+            criteriaQuery.select(attributeEntity)
+
+            if ( objectQuery.where !== null)
                 criteriaQuery.where(
                     objectQuery.where!!.createWhere(executor as QueryExecutor<Any>, builder, criteriaQuery as CriteriaQuery<Any>, attributeEntity as Root<Any>),
                 )
 
-            criteriaQuery.orderBy(builder.asc(attributeEntity.get<Int>("entity")))
+            //return computeObjectResultFromJSON(objectQuery.root!!.objectDescriptor, objectManager.transactionState(), criteriaQuery)
 
-            return computeObjectResultFromAttributes(objectQuery.root!!.objectDescriptor, objectManager.transactionState(), entityManager.createQuery(criteriaQuery).resultList  as List<AttributeEntity>) as List<T>
+            val entities = entityManager.createQuery(criteriaQuery).resultList
+
+            // compute result
+
+            val state = objectManager.transactionState()
+            val objectDescriptor = objectQuery.root!!.objectDescriptor
+
+            return entities.map { entity -> mapper.readFromEntity(state, objectDescriptor, entity) } as List<T>
+
+            //TODOcriteriaQuery.orderBy(builder.asc(attributeEntity.get<Int>("entity")))
+
+            //TODOreturn computeObjectResultFromAttributes(objectQuery.root!!.objectDescriptor, objectManager.transactionState(), entityManager.createQuery(criteriaQuery).resultList  as List<AttributeEntity>) as List<T>
         }
-    }
-
-    private fun computeObjectResultFromJSON(objectDescriptor: ObjectDescriptor, state: TransactionState, criteriaQuery: CriteriaQuery<EntityEntity>, subQuery: Subquery<Int>) : List<DataObject> {
-        val entityEntity = criteriaQuery.from(EntityEntity::class.java)
-
-        // object query
-
-        criteriaQuery
-            .select(entityEntity)
-            .where(builder.`in`(entityEntity.get<Int>("id")).value(subQuery))
-
-        // execute
-
-        val entities = entityManager.createQuery(criteriaQuery).resultList
-
-        // compute result
-
-        return entities.map { entity -> mapper.readFromEntity(state, objectDescriptor, entity) }
     }
 
     private fun computeObjectResultFromAttributes(objectDescriptor: ObjectDescriptor, state: TransactionState, attributes: List<AttributeEntity>) : List<DataObject>  {

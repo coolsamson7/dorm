@@ -8,6 +8,7 @@ package com.quasar.dorm.query
 import com.quasar.dorm.model.ObjectDescriptor
 import com.quasar.dorm.ObjectManager
 import com.quasar.dorm.persistence.entity.AttributeEntity
+import com.quasar.dorm.persistence.entity.EntityEntity
 import jakarta.persistence.criteria.*
 
 class From(val objectDescriptor: ObjectDescriptor) : ObjectPath(null) {
@@ -62,7 +63,9 @@ abstract class ComparisonExpression(val path: ObjectPath) : BooleanExpression() 
                     this.where(executor, builder, attribute)
                 )
 
-        return builder.`in`(from.get<Int>("entity")).value(subQuery)
+        val attr = if ( from.javaType == EntityEntity::class.java ) "id" else "entity"
+
+        return builder.`in`(from.get<Int>(attr)).value(subQuery)
     }
 }
 

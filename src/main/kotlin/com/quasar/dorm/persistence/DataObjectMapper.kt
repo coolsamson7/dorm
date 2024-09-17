@@ -263,6 +263,7 @@ class DataObjectMapper() {
 
         val obj = jsonReader4(objectDescriptor).read(node)
 
+        obj.setId(entity.id) // TODO ?
         // set state
 
         state.register(ObjectState(obj, Status.MANAGED))
