@@ -1,0 +1,47 @@
+package com.quasar.dorm.query
+/*
+ * @COPYRIGHT (C) 2023 Andreas Ernst
+ *
+ * All rights reserved
+ */
+
+import com.quasar.dorm.model.PropertyDescriptor
+import com.quasar.dorm.persistence.entity.AttributeEntity
+import jakarta.persistence.criteria.Path
+import jakarta.persistence.criteria.Root
+
+class PropertyPath(parent: ObjectPath, val property: PropertyDescriptor<Any>) : ObjectPath(parent) {
+    override fun get(property: String) : ObjectPath {
+        throw Error("ouch")
+    }
+
+    override fun path(root: Root<AttributeEntity>) : Path<Any> {
+        return parent!!.path(root).get(property.name)
+    }
+
+    override fun attributeName() : String {
+        return property.name
+    }
+
+    override fun type() : Class<Any> {
+        return property.type.baseType
+    }
+
+    override fun <T> expression(root: Root<AttributeEntity>): Path<T> {
+        return if ( property.name == "id")
+            root.get<String>("entity") as Path<T>
+
+        else when ( property.type.baseType ) {
+            String::class.java -> root.get<String>("stringValue") as Path<T>
+            Short::class.java -> root.get<Int>("intValue") as Path<T>
+            Integer::class.java -> root.get<Int>("intValue") as Path<T>
+            Long::class.java -> root.get<Int>("intValue") as Path<T>
+            Float::class.java -> root.get<Int>("doubleValue") as Path<T>
+            Double::class.java -> root.get<Int>("doubleValue") as Path<T>
+
+            else -> {
+                throw Error("unsupported type")
+            }
+        }
+    }
+}

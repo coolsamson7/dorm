@@ -1,0 +1,13 @@
+package com.quasar.dorm.type.base
+/*
+ * @COPYRIGHT (C) 2023 Andreas Ernst
+ *
+ * All rights reserved
+ */
+import com.quasar.dorm.type.Type
+
+class ShortType : Type<Short>(Short::class.java) {
+  // TODO
+}
+
+fun short() : ShortType {return ShortType()}
