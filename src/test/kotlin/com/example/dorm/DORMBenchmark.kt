@@ -5,9 +5,39 @@ package com.example.dorm
  * All rights reserved
  */
 
+import jakarta.persistence.*
+import jakarta.persistence.criteria.CriteriaBuilder
 import org.junit.jupiter.api.Test
 
+@Entity
+@Table(name="PERSON")
+data class PersonEntity(
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    var id : Int,
+
+    @Column(name = "NAME")
+    var name : String,
+
+    @Column(name = "AGE")
+    var age : Int,
+
+    @Column(name = "V1")
+    var v1 : String,
+
+    @Column(name = "V2")
+    var v2 : String,
+
+    @Column(name = "V3")
+    var v3 : String
+)
+
 internal class DORMBenchmark : AbstractTest() {
+    // instance data
+
+    @PersistenceContext
+    private lateinit var entityManager: EntityManager
+
     // local
 
     protected fun measure(test: String, n: Int, doIt: () -> Unit) {
@@ -30,6 +60,92 @@ internal class DORMBenchmark : AbstractTest() {
     // test
 
     @Test
+    fun testJPA() {
+        // warm up
+
+        withTransaction {
+            entityManager.persist(PersonEntity(0,"Andi", 58, "v1", "v2", "v3"))
+
+            val builder: CriteriaBuilder = entityManager.criteriaBuilder
+
+            // update attributes
+
+            val criteriaQuery = builder.createQuery(PersonEntity::class.java)
+            val personEntity = criteriaQuery.from(PersonEntity::class.java)
+
+            criteriaQuery
+                .select(personEntity)
+                //.where(builder.equal(attributeEntity.get<Int>("entity"), obj.id))
+
+            val result = entityManager.createQuery(criteriaQuery).resultList
+        }
+
+        // let's go
+
+        // create some objects
+
+        val objects = 1000
+
+        // create
+
+        measure("create ${objects} objects ", objects) {
+            for (i in 1..objects) {
+                entityManager.persist(PersonEntity(0,"Andi", 58, "v1", "v2", "v3"))
+            }
+        }
+
+        // read
+
+        measure("read ${objects} objects ", objects) {
+            val builder: CriteriaBuilder = entityManager.criteriaBuilder
+
+            // update attributes
+
+            val criteriaQuery = builder.createQuery(PersonEntity::class.java)
+            val personEntity = criteriaQuery.from(PersonEntity::class.java)
+
+            criteriaQuery
+                .select(personEntity)
+            //.where(builder.equal(attributeEntity.get<Int>("entity"), obj.id))
+
+            val result = entityManager.createQuery(criteriaQuery).resultList
+        }
+
+        measure("filter ${objects} objects ", objects) {
+            val builder: CriteriaBuilder = entityManager.criteriaBuilder
+
+            // update attributes
+
+            val criteriaQuery = builder.createQuery(PersonEntity::class.java)
+            val personEntity = criteriaQuery.from(PersonEntity::class.java)
+
+            criteriaQuery
+                .select(personEntity)
+                .where(builder.equal(personEntity.get<Int>("name"), "Andi"))
+
+            val result = entityManager.createQuery(criteriaQuery).resultList
+        }
+
+        // update
+
+        measure("update ${objects} objects ", objects) {
+            val builder: CriteriaBuilder = entityManager.criteriaBuilder
+
+            // update attributes
+
+            val criteriaQuery = builder.createQuery(PersonEntity::class.java)
+            val personEntity = criteriaQuery.from(PersonEntity::class.java)
+
+            criteriaQuery
+                .select(personEntity)
+            //.where(builder.equal(attributeEntity.get<Int>("entity"), obj.id))
+
+            for (person in entityManager.createQuery(criteriaQuery).resultList)
+                person.name = "Changed"
+        }
+    }
+
+    @Test
     fun test() {
         // warm up
 
@@ -42,7 +158,7 @@ internal class DORMBenchmark : AbstractTest() {
 
         // create
 
-        measure("create objects ", objects) {
+        measure("create ${objects} objects ", objects) {
             for (i in 1..objects) {
                 val person1 = objectManager.create(personDescriptor!!)
 
@@ -56,7 +172,7 @@ internal class DORMBenchmark : AbstractTest() {
 
         // read
 
-        measure("read objects ", objects) {
+        measure("read ${objects} objects ", objects) {
             val queryManager = objectManager.queryManager()
             val person = queryManager.from(personDescriptor!!)
 
@@ -72,7 +188,7 @@ internal class DORMBenchmark : AbstractTest() {
 
         // filter
 
-        measure("read objects ", objects) {
+        measure("filter ${objects} objects ", objects) {
             val queryManager = objectManager.queryManager()
             val person = queryManager.from(personDescriptor!!)
 
@@ -88,7 +204,7 @@ internal class DORMBenchmark : AbstractTest() {
             query.execute().getResultList()
         }
 
-        measure("update objects ", objects) {
+        measure("update ${objects} objects ", objects) {
             val queryManager = objectManager.queryManager()
             val person = queryManager.from(personDescriptor!!)
 
@@ -98,8 +214,6 @@ internal class DORMBenchmark : AbstractTest() {
                 .create()
                 .select(person)
                 .from(person)
-
-            query.where(query.eq(person.get("name"), "Andi"))
 
             for (person in query.execute().getResultList())
                 person["name"] = "Changed"
