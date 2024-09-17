@@ -66,7 +66,7 @@ class SELECT() {
 
         // create query
 
-        val from = alias.get(from!!.alias) // TODO
+        val from = alias.get(from!!.alias)
 
         val query = queryManager
             .create() // object query

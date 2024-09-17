@@ -6,8 +6,7 @@ package com.example.dorm
  */
 
 import com.example.dorm.model.ObjectDescriptor
-import com.example.dorm.type.base.int
-import com.example.dorm.type.base.string
+import com.example.dorm.type.base.*
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
@@ -42,9 +41,14 @@ class AbstractTest {
             personDescriptor = objectManager.type("person")
                 .attribute("name", stringType)
                 .attribute("age", intType)
-                .attribute("v1", stringType)
-                .attribute("v2", stringType)
-                .attribute("v3", stringType)
+
+                .attribute("boolean", boolean())
+                .attribute("string", string())
+                .attribute("short", short())
+                .attribute("int", int())
+                .attribute("long", long())
+                .attribute("float", float())
+                .attribute("double", double())
                 .register()
         }
         else personDescriptor = objectManager.get("person")
@@ -103,9 +107,6 @@ class AbstractTest {
 
             person1["name"] = name
             person1["age"] = age
-            person1["v1"] = "v1"
-            person1["v2"] = "v2"
-            person1["v3"] = "v3"
         }
         finally {
             objectManager.commit()

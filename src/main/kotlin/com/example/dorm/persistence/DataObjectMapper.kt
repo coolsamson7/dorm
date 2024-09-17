@@ -136,7 +136,7 @@ class ObjectWriter(private val descriptor: ObjectDescriptor) {
                 }
 
                 Short::class.java ->   { obj: DataObject, property: Int, attribute: AttributeEntity ->
-                    attribute.intValue = (obj.values[property] as Short).toInt()
+                    attribute.intValue = (obj.values[property] as Number).toInt()
                 }
 
                 Integer::class.java ->   { obj: DataObject, property: Int, attribute: AttributeEntity ->
@@ -144,11 +144,11 @@ class ObjectWriter(private val descriptor: ObjectDescriptor) {
                 }
 
                 Long::class.java ->   { obj: DataObject, property: Int, attribute: AttributeEntity ->
-                    attribute.intValue = (obj.values[property] as Long).toInt()
+                    attribute.intValue = (obj.values[property] as Number).toInt()
                 }
 
                 Float::class.java ->   { obj: DataObject, property: Int, attribute: AttributeEntity ->
-                    attribute.doubleValue = (obj.values[property] as Float).toDouble()
+                    attribute.doubleValue = (obj.values[property] as Number).toDouble()
                 }
 
                 Double::class.java ->   { obj: DataObject, property: Int, attribute: AttributeEntity ->
@@ -260,8 +260,6 @@ class DataObjectMapper() {
         val node = mapper.readTree(entity.json)
 
         val obj = jsonReader4(objectDescriptor).read(node)
-
-        //TODO IDobj.id = entity.id
 
         // set state
 

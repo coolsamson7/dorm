@@ -12,8 +12,6 @@ abstract class ObjectPath( val parent : ObjectPath? = null) {
 
     abstract fun <T>expression(root: Root<AttributeEntity>): Path<T>
 
-    // TODO
-
     open fun attributeName() : String {
         throw Error("abstract")
     }

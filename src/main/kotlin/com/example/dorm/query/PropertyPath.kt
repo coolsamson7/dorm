@@ -22,7 +22,7 @@ class PropertyPath(parent: ObjectPath, val property: PropertyDescriptor<Any>) : 
         if ( property.name == "id")
             return  root.get<String>("entity") as Path<T>
 
-        else return when ( property.type.baseType ) { // TODO: wrong place, right?
+        else return when ( property.type.baseType ) {
             String::class.java -> root.get<String>("stringValue") as Path<T>
             Short::class.java -> root.get<Int>("intValue") as Path<T>
             Integer::class.java -> root.get<Int>("intValue") as Path<T>

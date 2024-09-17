@@ -139,27 +139,27 @@ class JSONWriter(private val objectDescriptor: ObjectDescriptor) {
                 }
 
                 Short::class.java -> {jsonGenerator, obj ->
-                    jsonGenerator.writeNumberField(property.name, obj.values[property.index] as Short)
+                    jsonGenerator.writeNumberField(property.name, (obj.values[property.index] as Number).toShort())
                 }
 
                 Int::class.java -> {jsonGenerator, obj ->
-                    jsonGenerator.writeNumberField(property.name, obj.values[property.index] as Int)
+                    jsonGenerator.writeNumberField(property.name, (obj.values[property.index] as Number).toInt())
                 }
 
                 Integer::class.java -> {jsonGenerator, obj ->
-                    jsonGenerator.writeNumberField(property.name, obj.values[property.index] as Int)
+                    jsonGenerator.writeNumberField(property.name, (obj.values[property.index] as Number).toInt())
                 }
 
                 Long::class.java -> {jsonGenerator, obj ->
-                    jsonGenerator.writeNumberField(property.name, obj.values[property.index] as Long)
+                    jsonGenerator.writeNumberField(property.name, (obj.values[property.index] as Number).toLong())
                 }
 
                 Float::class.java -> {jsonGenerator, obj ->
-                    jsonGenerator.writeNumberField(property.name, obj.values[property.index] as Float)
+                    jsonGenerator.writeNumberField(property.name, (obj.values[property.index] as Number).toFloat())
                 }
 
                 Double::class.java -> {jsonGenerator, obj ->
-                    jsonGenerator.writeNumberField(property.name, obj.values[property.index] as Double)
+                    jsonGenerator.writeNumberField(property.name, (obj.values[property.index] as Number).toDouble())
                 }
 
                 else -> {

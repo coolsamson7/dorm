@@ -34,7 +34,7 @@ abstract class ComparisonExpression(val path: ObjectPath) : BooleanExpression() 
             subQuery
                 .select(attribute.get("entity"))
                 .distinct(true)
-                .where(this.where(executor, builder, attribute)) //7 TODO ID
+                .where(this.where(executor, builder, attribute))
         else
             subQuery
                 .select(attribute.get("entity"))
