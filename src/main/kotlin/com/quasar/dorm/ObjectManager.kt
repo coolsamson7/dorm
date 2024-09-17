@@ -7,8 +7,7 @@ package com.quasar.dorm
 import com.quasar.dorm.model.ObjectDescriptor
 import com.quasar.dorm.model.PropertyDescriptor
 import com.quasar.dorm.persistence.DataObjectMapper
-import com.quasar.dorm.query.Query
-import com.quasar.dorm.query.QueryManager
+import com.quasar.dorm.query.*
 import com.quasar.dorm.query.parser.OQLLexer
 import com.quasar.dorm.query.parser.OQLParser
 import com.quasar.dorm.transaction.ObjectState
@@ -162,9 +161,10 @@ class ObjectManager() {
     fun findById(descriptor: ObjectDescriptor, id: Int) : DataObject? {
         val queryManager=  queryManager()
         val obj = queryManager.from(descriptor)
-        val query =  queryManager.create().select(obj)
-
-        query.where(query.eq(obj.get("id"), id))
+        val query =  queryManager
+            .create()
+            .select(obj)
+            .where(eq(obj.get("id"), id))
 
         return query.execute().getSingleResult()
     }

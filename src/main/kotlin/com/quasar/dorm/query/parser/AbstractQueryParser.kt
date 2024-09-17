@@ -111,37 +111,37 @@ abstract class BOOLEAN_EXPR : EXPR() {}
 
 class LT(val expression: PATH, val value: VALUE) : BOOLEAN_EXPR() {
     override fun <T:Any> build(select: SELECT, query: Query<T>) : ObjectExpression {
-        return query.lt(expression.buildPath(select.alias), value.resolve(query))
+        return lt(expression.buildPath(select.alias), value.resolve(query))
     }
 }
 
 class LE(val expression: PATH, val value: VALUE) : BOOLEAN_EXPR() {
     override fun <T:Any> build(select: SELECT, query: Query<T>) : ObjectExpression {
-        return query.le(expression.buildPath(select.alias), value.resolve(query))
+        return le(expression.buildPath(select.alias), value.resolve(query))
     }
 }
 
 class GT(val expression: PATH, val value: VALUE) : BOOLEAN_EXPR() {
     override fun <T:Any> build(select: SELECT, query: Query<T>) : ObjectExpression {
-        return query.gt(expression.buildPath(select.alias), value.resolve(query))
+        return gt(expression.buildPath(select.alias), value.resolve(query))
     }
 }
 
 class GE(val expression: PATH, val value: VALUE) : BOOLEAN_EXPR() {
     override fun <T:Any> build(select: SELECT, query: Query<T>) : ObjectExpression {
-        return query.ge(expression.buildPath(select.alias), value.resolve(query))
+        return ge(expression.buildPath(select.alias), value.resolve(query))
     }
 }
 
 class EQ(val expression: PATH, val value: VALUE) : BOOLEAN_EXPR() {
     override fun <T:Any> build(select: SELECT, query: Query<T>) : ObjectExpression {
-        return query.eq(expression.buildPath(select.alias), value.resolve(query))
+        return eq(expression.buildPath(select.alias), value.resolve(query))
     }
 }
 
 class NE(val expression: PATH, val value: VALUE) : BOOLEAN_EXPR() {
     override fun <T:Any> build(select: SELECT, query: Query<T>) : ObjectExpression {
-        return query.neq(expression.buildPath(select.alias), value.resolve(query))
+        return ne(expression.buildPath(select.alias), value.resolve(query))
     }
 }
 
@@ -151,7 +151,7 @@ class AND(vararg expr: BOOLEAN_EXPR) : BOOLEAN_EXPR() {
     val expressions = expr
 
     override fun <T:Any> build(select: SELECT, query: Query<T>) : ObjectExpression {
-        return query.and(*expressions.map({expr -> expr.build(select, query) as BooleanExpression}).toTypedArray())
+        return and(*expressions.map({expr -> expr.build(select, query) as BooleanExpression}).toTypedArray())
     }
 }
 
@@ -159,7 +159,7 @@ class OR(vararg expr: BOOLEAN_EXPR) : BOOLEAN_EXPR() {
     val expressions = expr
 
     override fun <T:Any> build(select: SELECT, query: Query<T>) : ObjectExpression {
-        return query.or(*expressions.map({expr -> expr.build(select, query) as BooleanExpression}).toTypedArray())
+        return or(*expressions.map({expr -> expr.build(select, query) as BooleanExpression}).toTypedArray())
     }
 }
 
@@ -191,6 +191,7 @@ abstract class AbstractQueryParser(input: TokenStream) : Parser(input) {
             ">" -> GT(path ,value)
             "<=" -> LE(path ,value)
             ">=" -> GE(path ,value)
+
             else -> {
                 throw Error("unsupported operator ${operator}")
             }

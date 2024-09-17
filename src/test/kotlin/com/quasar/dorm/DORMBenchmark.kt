@@ -5,6 +5,7 @@ package com.quasar.dorm
  * All rights reserved
  */
 
+import com.quasar.dorm.query.eq
 import jakarta.persistence.*
 import jakarta.persistence.criteria.CriteriaBuilder
 import org.junit.jupiter.api.Test
@@ -106,7 +107,7 @@ internal class DORMBenchmark : AbstractTest() {
 
             criteriaQuery
                 .select(personEntity)
-            //.where(builder.equal(attributeEntity.get<Int>("entity"), obj.id))
+                //.where(eq(attributeEntity.get<Int>("entity"), obj.id))
 
             val result = entityManager.createQuery(criteriaQuery).resultList
         }
@@ -195,8 +196,7 @@ internal class DORMBenchmark : AbstractTest() {
                 .create()
                 .select(person)
                 .from(person)
-
-            query.where(query.eq(person.get("name"), "Andi"))
+                .where(eq(person.get("name"), "Andi"))
 
             query.execute().getResultList()
         }

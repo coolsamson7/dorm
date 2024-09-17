@@ -5,6 +5,7 @@ package com.quasar.dorm
  * All rights reserved
  */
 
+import com.quasar.dorm.query.*
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
@@ -61,7 +62,7 @@ class CriteriaQueryTests : AbstractTest() {
                 .select(person)
                 .from(person)
 
-            idQuery.where(idQuery.gt(person.get("id"), 0))
+            idQuery.where(gt(person.get("id"), 0))
 
             val list = idQuery.execute().getResultList()
 
@@ -109,7 +110,7 @@ class CriteriaQueryTests : AbstractTest() {
                 .select(person)
                 .from(person)
 
-            query.where(query.eq(person.get("age"), 58))
+            query.where(eq(person.get("age"), 58))
 
             val result = query.execute().getResultList()
 
@@ -133,7 +134,7 @@ class CriteriaQueryTests : AbstractTest() {
                 .select(person)
                 .from(person)
 
-            query.where(query.eq(person.get("age"), query.parameter("age")))
+            query.where(eq(person.get("age"), query.parameter("age")))
 
             val result = query.executor()
                 .set("age", 58)
@@ -160,9 +161,9 @@ class CriteriaQueryTests : AbstractTest() {
                 .select(person)
                 .from(person)
 
-            query.where(query.and(
-                query.eq(person.get("name"), "Andi"),
-                query.eq(person.get("age"), 58)
+            query.where(and(
+                eq(person.get("name"), "Andi"),
+                eq(person.get("age"), 58)
             ))
 
             val result = query.executor()

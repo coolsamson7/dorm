@@ -21,11 +21,9 @@ class TestConfiguration {
 }
 
 
-//@ActiveProfiles("local")
+//@ActiveProfilesTOD("local")
 //@RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes =[TestConfiguration::class])
-//@TestPropertySource(properties = {"spring.config.location=classpath:application"})
-//@ContextConfiguration(initializers = ConfigFileApplicationContextInitializer.class)
 class AbstractTest {
     @Autowired
     lateinit var objectManager : ObjectManager

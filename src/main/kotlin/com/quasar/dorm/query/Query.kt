@@ -203,42 +203,6 @@ class Query<T : Any>(val resultType: Class<T>, val queryManager: QueryManager, v
         return param
     }
 
-    // boolean expressions
-
-    fun and(vararg expressions: BooleanExpression) : ObjectExpression {
-        return And(*expressions)
-    }
-
-    fun or(vararg expressions: BooleanExpression) : ObjectExpression {
-        return Or(*expressions)
-    }
-
-    // arithmetic expressions
-
-    fun eq(path: ObjectPath, value: Any) : BooleanExpression {
-        return Eq(path, if ( value is Value) value else Constant(value))
-    }
-
-    fun neq(path: ObjectPath, value: Any) : ObjectExpression {
-        return Neq(path, if ( value is Value) value else Constant(value))
-    }
-
-    fun lt(path: ObjectPath, value: Any) : ObjectExpression {
-        return Lt(path, if ( value is Value) value else Constant(value))
-    }
-
-    fun le(path: ObjectPath, value: Any) : ObjectExpression {
-        return Le(path, if ( value is Value) value else Constant(value))
-    }
-
-    fun gt(path: ObjectPath, value: Any) : ObjectExpression {
-        return Gt(path, if ( value is Value) value else Constant(value))
-    }
-
-    fun ge(path: ObjectPath, value: Any) : ObjectExpression {
-        return Ge(path, if ( value is Value) value else Constant(value))
-    }
-
     // main execute
 
     fun executor() : QueryExecutor<T> {
@@ -248,4 +212,42 @@ class Query<T : Any>(val resultType: Class<T>, val queryManager: QueryManager, v
     fun execute() : QueryResult<T> {
         return QueryExecutor(this, queryManager).execute()
     }
+}
+
+// global functions
+
+// boolean expressions
+
+fun and(vararg expressions: BooleanExpression) : ObjectExpression {
+    return And(*expressions)
+}
+
+fun or(vararg expressions: BooleanExpression) : ObjectExpression {
+    return Or(*expressions)
+}
+
+// arithmetic expressions
+
+fun eq(path: ObjectPath, value: Any) : BooleanExpression {
+    return Eq(path, if ( value is Value) value else Constant(value))
+}
+
+fun ne(path: ObjectPath, value: Any) : ObjectExpression {
+    return Neq(path, if ( value is Value) value else Constant(value))
+}
+
+fun lt(path: ObjectPath, value: Any) : ObjectExpression {
+    return Lt(path, if ( value is Value) value else Constant(value))
+}
+
+fun le(path: ObjectPath, value: Any) : ObjectExpression {
+    return Le(path, if ( value is Value) value else Constant(value))
+}
+
+fun gt(path: ObjectPath, value: Any) : ObjectExpression {
+    return Gt(path, if ( value is Value) value else Constant(value))
+}
+
+fun ge(path: ObjectPath, value: Any) : ObjectExpression {
+    return Ge(path, if ( value is Value) value else Constant(value))
 }
