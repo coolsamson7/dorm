@@ -119,7 +119,7 @@
 		<plugins>
             <!--  antlr -->
 
-            <!--plugin>
+            <plugin>
                 <groupId>org.antlr</groupId>
                 <artifactId>antlr4-maven-plugin</artifactId>
                 <version>4.13.1</version>
@@ -134,9 +134,9 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin-->
+            </plugin>
 
-            <!--plugin>
+            <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
                 <version>3.5.0</version>
@@ -153,7 +153,7 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin-->
+            </plugin>
 
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
