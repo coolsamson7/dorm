@@ -48,6 +48,10 @@ class QueryManager(val objectManager: ObjectManager, private val entityManager: 
     }
 
     private fun <T : Any> computeQueryResult(objectQuery: Query<T>, executor: QueryExecutor<T>) : List<T> {
+        // flush managed objects that could influence query results
+
+        executor.queryManager.objectManager.transactionState().flush(objectQuery.root!!.objectDescriptor)
+
         // create main query
 
         val readJSON = preferJSON(objectQuery) // TODO

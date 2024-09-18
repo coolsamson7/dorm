@@ -7,7 +7,6 @@ package com.quasar.dorm
 import com.quasar.dorm.model.ObjectDescriptor
 import com.quasar.dorm.model.ObjectDescriptorStorage
 import com.quasar.dorm.model.PropertyDescriptor
-import com.quasar.dorm.model.persistence.PersistentObjectDescriptorStorage
 import com.quasar.dorm.persistence.DataObjectMapper
 import com.quasar.dorm.query.*
 import com.quasar.dorm.query.parser.OQLLexer
@@ -19,7 +18,6 @@ import com.quasar.dorm.type.Type
 import com.quasar.dorm.type.base.int
 import jakarta.persistence.EntityManager
 import jakarta.persistence.PersistenceContext
-import org.antlr.v4.runtime.ANTLRInputStream
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.RecognitionException
@@ -68,7 +66,7 @@ class ObjectManager() {
     @Autowired
     private lateinit var transactionManager: PlatformTransactionManager
     @Autowired
-    private lateinit var mapper: DataObjectMapper
+    lateinit var mapper: DataObjectMapper
 
     @Autowired
     private lateinit var objectDescriptorStorage: ObjectDescriptorStorage
@@ -94,7 +92,7 @@ class ObjectManager() {
         return this
     }
 
-    fun find(name: String) : ObjectDescriptor? {
+    fun findDescriptor(name: String) : ObjectDescriptor? {
         var descriptor = descriptors.get(name)
 
         if ( descriptor == null) {
@@ -107,8 +105,8 @@ class ObjectManager() {
         return descriptor
     }
 
-    fun get(name: String) : ObjectDescriptor {
-        val descriptor = find(name)
+    fun getDescriptor(name: String) : ObjectDescriptor {
+        val descriptor = findDescriptor(name)
 
         if ( descriptor != null)
             return descriptor
@@ -193,7 +191,7 @@ class ObjectManager() {
     // private
 
     private fun rollbackTransaction(transactionState: TransactionState) {
-        for (state in transactionState.states) {
+        for (state in transactionState.states.values) {
             when ( state.status) {
                 Status.MANAGED -> if ( state.isDirty()) state.rollback()
 
@@ -207,7 +205,7 @@ class ObjectManager() {
     private fun commitTransaction(transactionState: TransactionState) {
         // new objects
 
-        for (state in transactionState.states) {
+        for (state in transactionState.states.values) {
             when ( state.status) {
                 Status.CREATED ->  mapper.create(state.obj)
                 Status.DELETED -> mapper.delete(state.obj)

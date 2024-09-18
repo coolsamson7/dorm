@@ -59,7 +59,7 @@ class SELECT() {
         // remember aliases
 
         if ( from != null) {
-            alias[from!!.alias] = From(queryManager.objectManager.get(from!!.schema))
+            alias[from!!.alias] = From(queryManager.objectManager.getDescriptor(from!!.schema))
         }
 
         // create query

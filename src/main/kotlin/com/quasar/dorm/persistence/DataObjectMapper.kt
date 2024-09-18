@@ -325,44 +325,40 @@ class DataObjectMapper() {
 
 
     fun readFromEntity(state: TransactionState, objectDescriptor: ObjectDescriptor, entity: EntityEntity) : DataObject {
-        // read json
+        return state.retrieve(entity.id) {
+            // read json
 
-        val node = mapper.readTree(entity.json)
+            val node = mapper.readTree(entity.json)
 
-        val obj = jsonReader4(objectDescriptor).read(node)
+            val obj = jsonReader4(objectDescriptor).read(node)
 
-        obj.setId(entity.id) // TODO ?
+            obj.setId(entity.id) // TODO ?
 
-        // set state
+            // done
 
-        state.register(ObjectState(obj, Status.MANAGED))
-
-        // done
-
-        return obj
+            return@retrieve obj
+        }
     }
 
     fun read(state: TransactionState, objectDescriptor: ObjectDescriptor, attributes: List<AttributeEntity>, start: Int, end: Int) : DataObject {
-        val values = arrayOfNulls<Any>(objectDescriptor.properties.size)
+        return state.retrieve(attributes[start].entity) {
+            val values = arrayOfNulls<Any>(objectDescriptor.properties.size)
 
-        values[0] = attributes[start].entity // id
-        val obj = DataObject(objectDescriptor, null, values)
+            values[0] = attributes[start].entity // id
+            val obj = DataObject(objectDescriptor, null, values)
 
-        val reader = reader4(objectDescriptor)
+            val reader = reader4(objectDescriptor)
 
-        for ( i in start..end) {
-            val attribute = attributes[i]
+            for ( i in start..end) {
+                val attribute = attributes[i]
 
-            reader.read(obj, objectDescriptor.property(attribute.attribute).index, attribute)
+                reader.read(obj, objectDescriptor.property(attribute.attribute).index, attribute)
+            }
+
+            // done
+
+            return@retrieve obj
         }
-
-        // set state
-
-        state.register(ObjectState(obj, Status.MANAGED))
-
-        // done
-
-        return obj
     }
 
     // private

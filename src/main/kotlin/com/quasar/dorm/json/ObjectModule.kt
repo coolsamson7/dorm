@@ -100,7 +100,7 @@ open class ObjectDeserializer() : StdDeserializer<DataObject>(DataObject::class.
 
         val type = node.get("@type").asText()
 
-        return reader4(ObjectManager.instance.get(type)).read(node)
+        return reader4(ObjectManager.instance.getDescriptor(type)).read(node)
     }
 }
 
