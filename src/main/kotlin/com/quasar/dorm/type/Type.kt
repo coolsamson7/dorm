@@ -14,15 +14,15 @@ open class Type<T:Any>(val baseType: Class<T>) {
 
     val tests = ArrayList<Test<Any>>()
 
-    val defaultValue : DefaultValue<T> = computeDefaultValue()
+    val defaultValue : DefaultValue<T> = computeDefaultValue(baseType)
 
-    fun <T:Any> computeDefaultValue() : DefaultValue<T> {
-        return when (baseType) {
+    fun <T> computeDefaultValue(type: Class<T>) : DefaultValue<T> {
+        return when (type) {
             String::class.java -> { -> "" as T }
-            Short::class.java -> { -> 0 as  T }
+            Short::class.java -> { -> 0.toShort() as  T }
             Integer::class.java -> { -> 0 as T }
             Long::class.java -> { -> 0L as T }
-            Float::class.java -> { -> 0.0 as T }
+            Float::class.java -> { -> 0.0f as T }
             Double::class.java -> { -> 0.0 as T }
             Boolean::class.java -> { -> false as T }
             else -> {
