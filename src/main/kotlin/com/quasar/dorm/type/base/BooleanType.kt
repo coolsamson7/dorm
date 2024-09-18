@@ -10,7 +10,8 @@ import com.quasar.dorm.type.Type
 class BooleanType : Type<Boolean>(Boolean::class.java) {
     fun isTrue() : BooleanType {
         test<Boolean>(
-            "is-true",
+            "isTrue",
+            null,
             {  obj -> obj }
         )
 
@@ -19,7 +20,8 @@ class BooleanType : Type<Boolean>(Boolean::class.java) {
 
     fun isFalse() : BooleanType {
         test<Boolean>(
-            "is-false",
+            "isFalse",
+            null,
             {  obj -> !obj }
         )
 

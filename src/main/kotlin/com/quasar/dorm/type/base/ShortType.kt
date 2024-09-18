@@ -10,6 +10,7 @@ class ShortType : Type<Short>(Short::class.java) {
     fun min(min: Short) : ShortType {
         test<Short>(
             "min",
+            min,
             {  obj -> obj >= min }
         )
 
@@ -19,6 +20,7 @@ class ShortType : Type<Short>(Short::class.java) {
     fun max(max: Short) : ShortType {
         test<Short>(
             "max",
+            max,
             {  obj -> obj <= max }
         )
 
@@ -28,6 +30,7 @@ class ShortType : Type<Short>(Short::class.java) {
     fun lessThan(value: Short) : ShortType {
         test<Short>(
             "lessThan",
+            value,
             {  obj -> obj < value }
         )
 
@@ -37,6 +40,7 @@ class ShortType : Type<Short>(Short::class.java) {
     fun lessEqual(value: Short) : ShortType {
         test<Short>(
             "lessEqual",
+            value,
             {  obj -> obj <= value }
         )
 
@@ -46,6 +50,7 @@ class ShortType : Type<Short>(Short::class.java) {
     fun greaterThan(value: Short) : ShortType {
         test<Short>(
             "greaterThan",
+            value,
             {  obj -> obj > value }
         )
 
@@ -55,6 +60,7 @@ class ShortType : Type<Short>(Short::class.java) {
     fun greaterEqual(value: Short) : ShortType {
         test<Short>(
             "greaterEqual",
+            value,
             {  obj -> obj >= value }
         )
 

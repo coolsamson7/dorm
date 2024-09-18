@@ -10,6 +10,7 @@ class FloatType : Type<Float>(Float::class.java) {
     fun min(min: Float) : FloatType {
         test<Float>(
             "min",
+            min,
             {  obj -> obj >= min }
         )
 
@@ -19,6 +20,7 @@ class FloatType : Type<Float>(Float::class.java) {
     fun max(max: Float) : FloatType {
         test<Float>(
             "max",
+            max,
             {  obj -> obj <= max }
         )
 
@@ -28,6 +30,7 @@ class FloatType : Type<Float>(Float::class.java) {
     fun lessThan(value: Float) : FloatType {
         test<Float>(
             "lessThan",
+            value,
             {  obj -> obj < value }
         )
 
@@ -37,6 +40,7 @@ class FloatType : Type<Float>(Float::class.java) {
     fun lessEqual(value: Float) : FloatType {
         test<Float>(
             "lessEqual",
+            value,
             {  obj -> obj <= value }
         )
 
@@ -46,6 +50,7 @@ class FloatType : Type<Float>(Float::class.java) {
     fun greaterThan(value: Float) : FloatType {
         test<Float>(
             "greaterThan",
+            value,
             {  obj -> obj > value }
         )
 
@@ -55,6 +60,7 @@ class FloatType : Type<Float>(Float::class.java) {
     fun greaterEqual(value: Float) : FloatType {
         test<Float>(
             "greaterEqual",
+            value,
             {  obj -> obj >= value }
         )
 

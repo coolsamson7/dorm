@@ -12,7 +12,7 @@ typealias DefaultValue<T> = () -> T
 open class Type<T:Any>(val baseType: Class<T>) {
     // instance data
 
-    protected val tests = ArrayList<Test<Any>>()
+    val tests = ArrayList<Test<Any>>()
 
     val defaultValue : DefaultValue<T> = computeDefaultValue()
 
@@ -36,9 +36,7 @@ open class Type<T:Any>(val baseType: Class<T>) {
     init {
         test<Any>(
             "type",
-            //params: {
-            //    type: type,
-            //},
+            baseType.simpleName,
             {  obj -> obj::class.java == baseType },
             true,
             false
@@ -108,8 +106,8 @@ open class Type<T:Any>(val baseType: Class<T>) {
 
     // protected
 
-    protected fun <O> test(name: String, check: Check<O>, stop: Boolean = false, ignore: Boolean = false): Type<T> {
-        tests.add(Test(baseType, name, check as Check<Any>, stop, ignore) as Test<Any>)
+    protected fun <O> test(name: String, parameter: Any?, check: Check<O>, stop: Boolean = false, ignore: Boolean = false): Type<T> {
+        tests.add(Test(baseType, name, parameter, check as Check<Any>, stop, ignore) as Test<Any>)
 
         return this
     }

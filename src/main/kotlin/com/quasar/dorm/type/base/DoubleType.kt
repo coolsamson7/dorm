@@ -10,6 +10,7 @@ class DoubleType : Type<Double>(Double::class.java) {
     fun min(min: Double) : DoubleType {
         test<Double>(
             "min",
+            min,
             {  obj -> obj >= min }
         )
 
@@ -19,6 +20,7 @@ class DoubleType : Type<Double>(Double::class.java) {
     fun max(max: Double) : DoubleType {
         test<Double>(
             "max",
+            max,
             {  obj -> obj <= max }
         )
 
@@ -28,6 +30,7 @@ class DoubleType : Type<Double>(Double::class.java) {
     fun lessThan(value: Double) : DoubleType {
         test<Double>(
             "lessThan",
+            value,
             {  obj -> obj < value }
         )
 
@@ -37,6 +40,7 @@ class DoubleType : Type<Double>(Double::class.java) {
     fun lessEqual(value: Double) : DoubleType {
         test<Double>(
             "lessEqual",
+            value,
             {  obj -> obj <= value }
         )
 
@@ -46,6 +50,7 @@ class DoubleType : Type<Double>(Double::class.java) {
     fun greaterThan(value: Double) : DoubleType {
         test<Double>(
             "greaterThan",
+            value,
             {  obj -> obj > value }
         )
 
@@ -55,6 +60,7 @@ class DoubleType : Type<Double>(Double::class.java) {
     fun greaterEqual(value: Double) : DoubleType {
         test<Double>(
             "greaterEqual",
+            value,
             {  obj -> obj >= value }
         )
 

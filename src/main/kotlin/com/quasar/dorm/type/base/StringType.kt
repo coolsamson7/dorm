@@ -12,6 +12,7 @@ class StringType : Type<String>(String::class.java) {
     fun length(length: Int/*, info?: ConstraintInfo*/) : StringType {
         this.test<String>(
             "length",
+            length,
             { obj -> obj.length <= length }
         )
 

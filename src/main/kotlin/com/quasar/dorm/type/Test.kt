@@ -13,11 +13,11 @@ class Test<T>(
     /**
      * any parameters that specify the test arguments
      */
-    //params: any
+    val parameter: Any?,
     /**
      * optional message that will be used on a violation
      */
-    //message?: string
+    //val message?: string
     /**
      * the test implementation
      * @param object the to be validated object

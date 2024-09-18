@@ -10,6 +10,7 @@ class LongType : Type<Long>(Long::class.java) {
     fun min(min: Long) : LongType {
         test<Long>(
             "min",
+            min,
             {  obj -> obj >= min }
         )
 
@@ -19,6 +20,7 @@ class LongType : Type<Long>(Long::class.java) {
     fun max(max: Long) : LongType {
         test<Long>(
             "max",
+            max,
             {  obj -> obj <= max }
         )
 
@@ -28,6 +30,7 @@ class LongType : Type<Long>(Long::class.java) {
     fun lessThan(value: Long) : LongType {
         test<Long>(
             "lessThan",
+            value,
             {  obj -> obj < value }
         )
 
@@ -37,6 +40,7 @@ class LongType : Type<Long>(Long::class.java) {
     fun lessEqual(value: Long) : LongType {
         test<Long>(
             "lessEqual",
+            value,
             {  obj -> obj <= value }
         )
 
@@ -46,6 +50,7 @@ class LongType : Type<Long>(Long::class.java) {
     fun greaterThan(value: Long) : LongType {
         test<Long>(
             "greaterThan",
+            value,
             {  obj -> obj > value }
         )
 
@@ -55,6 +60,7 @@ class LongType : Type<Long>(Long::class.java) {
     fun greaterEqual(value: Long) : LongType {
         test<Long>(
             "greaterEqual",
+            value,
             {  obj -> obj >= value }
         )
 
