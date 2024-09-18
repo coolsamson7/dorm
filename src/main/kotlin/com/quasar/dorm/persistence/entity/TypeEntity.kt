@@ -13,6 +13,6 @@ class TypeEntity(
     @Id
     var name : String,
 
-    @Column(name = "JSON")
+    @Column(name = "JSON", length = 1024)
     var json : String
 )

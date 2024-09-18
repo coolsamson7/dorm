@@ -5,7 +5,9 @@ package com.quasar.dorm
  * All rights reserved
  */
 import com.quasar.dorm.model.ObjectDescriptor
+import com.quasar.dorm.model.ObjectDescriptorStorage
 import com.quasar.dorm.model.PropertyDescriptor
+import com.quasar.dorm.model.persistence.PersistentObjectDescriptorStorage
 import com.quasar.dorm.persistence.DataObjectMapper
 import com.quasar.dorm.query.*
 import com.quasar.dorm.query.parser.OQLLexer
@@ -24,6 +26,7 @@ import org.antlr.v4.runtime.RecognitionException
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import org.springframework.transaction.PlatformTransactionManager
+import java.util.concurrent.ConcurrentHashMap
 
 
 class ObjectDescriptorBuilder(val manager: ObjectManager, val name: String) {
@@ -58,7 +61,7 @@ class ObjectDescriptorBuilder(val manager: ObjectManager, val name: String) {
 class ObjectManager() {
     // instance data
 
-    val descriptors = HashMap<String, ObjectDescriptor>()
+    val descriptors = ConcurrentHashMap<String, ObjectDescriptor>()
 
     @PersistenceContext
     private lateinit var entityManager: EntityManager
@@ -66,6 +69,9 @@ class ObjectManager() {
     private lateinit var transactionManager: PlatformTransactionManager
     @Autowired
     private lateinit var mapper: DataObjectMapper
+
+    @Autowired
+    private lateinit var objectDescriptorStorage: ObjectDescriptorStorage
 
     init {
         instance = this
@@ -81,17 +87,29 @@ class ObjectManager() {
         if ( descriptors.containsKey(objectDescriptor.name))
             throw ObjectManagerError("already registered type ${objectDescriptor.name}")
 
+        objectDescriptorStorage.store(objectDescriptor)
+
         descriptors.put(objectDescriptor.name, objectDescriptor)
 
         return this
     }
 
     fun find(name: String) : ObjectDescriptor? {
-        return descriptors.get(name)
+        var descriptor = descriptors.get(name)
+
+        if ( descriptor == null) {
+            descriptor = objectDescriptorStorage.findByName(name)
+            if ( descriptor != null) {
+                descriptors.put(name, descriptor)
+            }
+        }
+
+        return descriptor
     }
 
     fun get(name: String) : ObjectDescriptor {
-        val descriptor = descriptors.get(name)
+        val descriptor = find(name)
+
         if ( descriptor != null)
             return descriptor
         else

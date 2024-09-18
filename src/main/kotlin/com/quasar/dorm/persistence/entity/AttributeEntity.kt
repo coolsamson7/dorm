@@ -11,7 +11,13 @@ import java.io.Serializable
 data class AttributeId(private val entity: Int = 0, private val attribute: String = "") : Serializable
 
 @Entity
-@Table(name="ATTRIBUTE")
+@Table(name="ATTRIBUTE",
+    indexes = arrayOf(
+        Index(columnList = "TYPE"),
+        Index(columnList = "INT_VALUE"),
+        Index(columnList = "DOUBLE_VALUE"),
+        Index(columnList = "STRING_VALUE")
+    ))
 @IdClass(AttributeId::class)
 data class AttributeEntity(
     @Column(name = "ENTITY")
