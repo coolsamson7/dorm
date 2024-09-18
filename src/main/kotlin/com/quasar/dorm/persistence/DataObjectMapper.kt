@@ -273,10 +273,10 @@ class DataObjectMapper() {
     fun update(obj: DataObject) {
         val builder: CriteriaBuilder = entityManager.criteriaBuilder
 
-        // new
+        // update attributes
 
         val properties = obj.type.properties
-        for ( index in 1..obj.values.size - 1) {
+        for ( index in 1..<obj.values.size) {
             if ( obj.values[index] != obj.state!!.snapshot!![index]) {
                 val property = properties[index]
 
@@ -284,36 +284,13 @@ class DataObjectMapper() {
                     String::class.java -> updater4("stringValue",  String::class.java).update(obj.getId(), property.name, obj.values[index] as String)
                     Integer::class.java -> updater4("intValue",  Integer::class.java).update(obj.getId(), property.name, obj.values[index] as Integer)
                     Int::class.java -> updater4("intValue",  Integer::class.java).update(obj.getId(), property.name, obj.values[index] as Integer)
-
+                    // TODO REST
                     else -> {
                             throw Error("ouch")
                     }
                 }
             }
         } // for
-
-        /* update attributes
-
-        val criteriaQuery = builder.createQuery(AttributeEntity::class.java)
-        val attributeEntity = criteriaQuery.from(AttributeEntity::class.java)
-
-        criteriaQuery
-            .select(attributeEntity)
-            .where(builder.equal(attributeEntity.get<Int>("entity"), obj.getId()))
-
-        val query = entityManager.createQuery(criteriaQuery)
-        val attributes = query.resultList
-
-        val writer = writer4(obj.type)
-
-        for ( attribute in attributes) {
-            val property = obj.property(attribute.attribute)
-            val index = property.index
-
-            if ( obj.values[index] != obj.state!!.snapshot!![index])
-                writer.update(obj, index, attribute)
-        } // for
-        */
 
         // update entity
 
