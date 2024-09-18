@@ -140,6 +140,7 @@ class ObjectManager() {
             commitTransaction(transactionState())
         }
         finally {
+            mapper.clear()
             transactionState.remove()
         }
     }
@@ -149,6 +150,7 @@ class ObjectManager() {
             rollbackTransaction(transactionState())
         }
         finally {
+            mapper.clear()
             transactionState.remove()
         }
     }

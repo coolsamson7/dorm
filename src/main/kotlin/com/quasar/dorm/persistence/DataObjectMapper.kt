@@ -380,10 +380,15 @@ class DataObjectMapper() {
     }
 
     private fun <T> updater4(attribute: String, type: Class<T>) : AttributeUpdater<T> {
-        return AttributeUpdater(attribute, type, entityManager)//TODO updater.getOrPut(objectDescriptor.name) { -> ObjectUpdater(objectDescriptor) }
+        return updater.getOrPut(attribute) { AttributeUpdater(attribute, type as Class<Any>, entityManager) } as AttributeUpdater<T>
     }
 
     private fun deleter4(objectDescriptor: ObjectDescriptor) : ObjectDeleter {
-        return ObjectDeleter(entityManager)//TODO deleter.getOrPut(objectDescriptor.name) { -> ObjectDeleter(entityManager) }
+        return deleter.getOrPut(objectDescriptor.name) { ObjectDeleter(entityManager) }
+    }
+
+    fun clear() {
+        updater.clear()
+        deleter.clear()
     }
 }
