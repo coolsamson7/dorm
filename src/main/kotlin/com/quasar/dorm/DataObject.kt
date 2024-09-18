@@ -15,13 +15,9 @@ class DataObject(val type: ObjectDescriptor, var state : ObjectState?, val value
         return type.property(property)
     }
 
-    fun getId() : Int {
-        return values[0] as Int
-    }
-
-    fun setId(id: Int) : Unit {
-        values[0] = id
-    }
+    var id: Int
+        get() = values[0] as Int
+        set(value) { values[0] = value }
 
     // public operators
 

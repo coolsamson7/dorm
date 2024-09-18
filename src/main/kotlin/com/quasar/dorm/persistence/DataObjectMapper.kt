@@ -116,7 +116,7 @@ class ObjectWriter(private val descriptor: ObjectDescriptor) {
 
     fun write(obj: DataObject, entityManager: EntityManager) {
         var i = 1
-        val id = obj.getId()
+        val id = obj.id
         for ( writer in writer) {
             val attribute = AttributeEntity(id, descriptor.properties[i].name, descriptor.name, "", 0, 0.0)
 
@@ -246,8 +246,8 @@ class ObjectDeleter(entityManager: EntityManager) {
     // public
 
     fun delete(obj: DataObject) {
-        deleteAttribute.setParameter(attributeId, obj.getId()).executeUpdate()
-        deleteEntity.setParameter(entityId, obj.getId()).executeUpdate()
+        deleteAttribute.setParameter(attributeId, obj.id).executeUpdate()
+        deleteEntity.setParameter(entityId, obj.id).executeUpdate()
     }
 }
 
@@ -281,9 +281,9 @@ class DataObjectMapper() {
                 val property = properties[index]
 
                 when ( property.type.baseType) {
-                    String::class.java -> updater4("stringValue",  String::class.java).update(obj.getId(), property.name, obj.values[index] as String)
-                    Integer::class.java -> updater4("intValue",  Integer::class.java).update(obj.getId(), property.name, obj.values[index] as Integer)
-                    Int::class.java -> updater4("intValue",  Integer::class.java).update(obj.getId(), property.name, obj.values[index] as Integer)
+                    String::class.java -> updater4("stringValue",  String::class.java).update(obj.id, property.name, obj.values[index] as String)
+                    Integer::class.java -> updater4("intValue",  Integer::class.java).update(obj.id, property.name, obj.values[index] as Integer)
+                    Int::class.java -> updater4("intValue",  Integer::class.java).update(obj.id, property.name, obj.values[index] as Integer)
                     // TODO REST
                     else -> {
                             throw Error("ouch")
@@ -301,13 +301,13 @@ class DataObjectMapper() {
 
         entityCriteriaQuery
             .set("json", json)
-            .where(builder.equal(entityFrom.get<Int>("id"), obj.getId()))
+            .where(builder.equal(entityFrom.get<Int>("id"), obj.id))
 
         entityManager.createQuery(entityCriteriaQuery).executeUpdate()
     }
 
     fun delete(obj: DataObject) {
-        if ( obj.getId() >= 0)
+        if ( obj.id >= 0)
             deleter4(obj.type).delete(obj)
     }
 
@@ -318,7 +318,7 @@ class DataObjectMapper() {
 
         entityManager.persist(entity)
 
-        obj.setId(entity.id)
+        obj.id = entity.id
 
         writer4(descriptor).write(obj, entityManager)
     }
@@ -332,7 +332,7 @@ class DataObjectMapper() {
 
             val obj = jsonReader4(objectDescriptor).read(node)
 
-            obj.setId(entity.id) // TODO ?
+            obj.id = entity.id // TODO ?
 
             // done
 

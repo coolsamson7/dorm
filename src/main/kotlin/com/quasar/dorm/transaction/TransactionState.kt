@@ -45,7 +45,7 @@ class TransactionState(val objectManager: ObjectManager, val transactionManager:
     }
 
     fun register(state: ObjectState) {
-        states.put(state.obj.getId(), state)
+        states.put(state.obj.id, state)
     }
 
     fun flush(objectDescriptor: ObjectDescriptor) {

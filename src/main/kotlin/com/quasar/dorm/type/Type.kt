@@ -16,7 +16,7 @@ open class Type<T:Any>(val baseType: Class<T>) {
 
     val defaultValue : DefaultValue<T> = computeDefaultValue(baseType)
 
-    fun <T> computeDefaultValue(type: Class<T>) : DefaultValue<T> {
+    private fun <T> computeDefaultValue(type: Class<T>) : DefaultValue<T> {
         return when (type) {
             String::class.java -> { -> "" as T }
             Short::class.java -> { -> 0.toShort() as  T }
@@ -92,7 +92,7 @@ open class Type<T:Any>(val baseType: Class<T>) {
                         TypeViolation(
                             test.type,
                             test.name,
-                            //params: test.params,
+                            test.parameter,
                             obj,
                             context.path,
                             //message: test.message,

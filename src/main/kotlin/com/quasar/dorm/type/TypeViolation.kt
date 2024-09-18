@@ -16,7 +16,7 @@ class TypeViolation(
     /**
      * any parameters of the constraint
      */
-    //params: any
+    parameter: Any?,
     /**
      * the value
      */

@@ -36,9 +36,9 @@ class CreateUpdateDeleteTests: AbstractTest() {
             assertEquals(1, persons.size)
 
             val person = persons[0]
-            val queryPerson = objectManager.findById(personDescriptor!!, person.getId())!!
+            val queryPerson = objectManager.findById(personDescriptor!!, person.id)!!
 
-            assertEquals(person.getId(), queryPerson.getId())
+            assertEquals(person.id, queryPerson.id)
 
             assert(person === queryPerson)
         }
