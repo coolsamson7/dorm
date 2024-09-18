@@ -40,7 +40,7 @@ class CreateUpdateDeleteTests: AbstractTest() {
 
             assertEquals(person.getId(), queryPerson.getId())
 
-            // TODO: it should be the same persons!!!!!!
+            assert(person === queryPerson)
         }
     }
 

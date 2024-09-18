@@ -32,24 +32,26 @@ class AbstractTest {
 
     @BeforeEach
     fun setupSchema() {
-        if ( objectManager.find("person") == null) {
-            val stringType = string().length(100)
-            val intType = int()
+        withTransaction {
+            if ( objectManager.findDescriptor("person") == null) {
+                val stringType = string().length(100)
+                val intType = int()
 
-            personDescriptor = objectManager.type("person")
-                .attribute("name", stringType)
-                .attribute("age", intType)
+                personDescriptor = objectManager.type("person")
+                    .attribute("name", stringType)
+                    .attribute("age", intType)
 
-                .attribute("boolean", boolean())
-                .attribute("string", string())
-                .attribute("short", short())
-                .attribute("int", int())
-                .attribute("long", long())
-                .attribute("float", float())
-                .attribute("double", double())
-                .register()
+                    .attribute("boolean", boolean())
+                    .attribute("string", string())
+                    .attribute("short", short())
+                    .attribute("int", int())
+                    .attribute("long", long())
+                    .attribute("float", float())
+                    .attribute("double", double())
+                    .register()
+            }
+            else personDescriptor = objectManager.getDescriptor("person")
         }
-        else personDescriptor = objectManager.get("person")
     }
 
     // delete

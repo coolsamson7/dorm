@@ -120,6 +120,46 @@ class CriteriaQueryTests : AbstractTest() {
     }
 
     @Test
+    fun testFlush() {
+        createPerson("Andi", 58)
+
+        withTransaction {
+            val queryManager = objectManager.queryManager()
+
+            val person = queryManager.from(personDescriptor!!)
+
+            // no where
+
+            val query = queryManager
+                .create()
+                .select(person)
+                .from(person)
+
+            query.where(eq(person.get("age"), query.parameter("age")))
+
+            var result = query.executor()
+                .set("age", 58)
+                .execute()
+                .getResultList()
+
+            assertEquals(1, result.size)
+
+            val andi = result[0]
+
+            // now change
+
+            andi["age"] = 59 // ouch!!!!
+
+            result = query.executor()
+                .set("age", 58)
+                .execute()
+                .getResultList()
+
+            assertEquals(0, result.size)
+        }
+    }
+
+    @Test
     fun testParameter() {
         createPerson("Andi", 58)
 

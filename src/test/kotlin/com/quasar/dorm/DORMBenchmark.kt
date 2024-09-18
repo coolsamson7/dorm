@@ -11,6 +11,20 @@ import jakarta.persistence.criteria.CriteriaBuilder
 import org.junit.jupiter.api.Test
 
 @Entity
+@Table(name="HOBBY")
+data class HobbyEntity(
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    var id : Int,
+
+    @Column(name = "NAME")
+    var name : String,
+
+    //@ManyToMany(mappedBy = "hobbies")
+    //val persons : Set<PersonEntity>
+)
+
+@Entity
 @Table(name="PERSON")
 data class PersonEntity(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,7 +44,14 @@ data class PersonEntity(
     var v2 : String,
 
     @Column(name = "V3")
-    var v3 : String
+    var v3 : String,
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "person_hobby",
+        joinColumns = arrayOf(JoinColumn(name = "person_id")),
+        inverseJoinColumns = arrayOf(JoinColumn(name = "hobby_id")))
+    val hobbies : Set<HobbyEntity>
 )
 
 internal class DORMBenchmark : AbstractTest() {
@@ -61,11 +82,36 @@ internal class DORMBenchmark : AbstractTest() {
     // test
 
     @Test
+    fun testRelation() {
+        var id = 0
+        withTransaction {
+            val hobby = HobbyEntity(0, "angeln")
+
+            entityManager.persist(hobby)
+
+            val person = PersonEntity(0, "Andi", 58, "v1", "v2", "v3", setOf(hobby))
+
+            entityManager.persist(person)
+
+            id = person.id
+
+        }
+
+        withTransaction {
+            val person = entityManager.find(PersonEntity::class.java, id)
+
+            val hobbies = person.hobbies
+
+            println()
+        }
+    }
+
+    @Test
     fun testJPA() {
         // warm up
 
         withTransaction {
-            entityManager.persist(PersonEntity(0,"Andi", 58, "v1", "v2", "v3"))
+            entityManager.persist(PersonEntity(0,"Andi", 58, "v1", "v2", "v3", setOf()))
 
             val builder: CriteriaBuilder = entityManager.criteriaBuilder
 
@@ -91,7 +137,7 @@ internal class DORMBenchmark : AbstractTest() {
 
         measure("create ${objects} objects ", objects) {
             for (i in 1..objects) {
-                entityManager.persist(PersonEntity(0,"Andi", 58, "v1", "v2", "v3"))
+                entityManager.persist(PersonEntity(0,"Andi", 58, "v1", "v2", "v3", setOf()))
             }
         }
 
@@ -122,6 +168,21 @@ internal class DORMBenchmark : AbstractTest() {
 
             criteriaQuery
                 .select(personEntity)
+                .where(builder.equal(personEntity.get<Int>("name"), "Andi"))
+
+            val result = entityManager.createQuery(criteriaQuery).resultList
+        }
+
+        measure("filter & project ${objects} objects ", objects) {
+            val builder: CriteriaBuilder = entityManager.criteriaBuilder
+
+            // update attributes
+
+            val criteriaQuery = builder.createQuery(PersonEntity::class.java)
+            val personEntity = criteriaQuery.from(PersonEntity::class.java)
+
+            criteriaQuery
+                .select(personEntity.get("name"))//, personEntity.get("age"))
                 .where(builder.equal(personEntity.get<Int>("name"), "Andi"))
 
             val result = entityManager.createQuery(criteriaQuery).resultList
@@ -195,6 +256,23 @@ internal class DORMBenchmark : AbstractTest() {
             val query = queryManager
                 .create()
                 .select(person)
+                .from(person)
+                .where(eq(person.get("name"), "Andi"))
+
+            query.execute().getResultList()
+        }
+
+        // filter & projection
+
+        measure("filter & project ${objects} objects ", objects) {
+            val queryManager = objectManager.queryManager()
+            val person = queryManager.from(personDescriptor!!)
+
+            // no where
+
+            val query = queryManager
+                .create()
+                .select(person.get("name"), person.get("age"))
                 .from(person)
                 .where(eq(person.get("name"), "Andi"))
 
