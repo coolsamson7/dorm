@@ -61,8 +61,7 @@ class CriteriaQueryTests : AbstractTest() {
                 .create()
                 .select(person)
                 .from(person)
-
-            idQuery.where(gt(person.get("id"), 0))
+                .where(gt(person.get("id"), 0))
 
             val list = idQuery.execute().getResultList()
 
@@ -109,8 +108,7 @@ class CriteriaQueryTests : AbstractTest() {
                 .create()
                 .select(person)
                 .from(person)
-
-            query.where(eq(person.get("age"), 58))
+                .where(eq(person.get("age"), 58))
 
             val result = query.execute().getResultList()
 
@@ -200,11 +198,10 @@ class CriteriaQueryTests : AbstractTest() {
                 .create()
                 .select(person)
                 .from(person)
-
-            query.where(and(
-                eq(person.get("name"), "Andi"),
-                eq(person.get("age"), 58)
-            ))
+                .where(and(
+                    eq(person.get("name"), "Andi"),
+                    eq(person.get("age"), 58)
+                ))
 
             val result = query.executor()
                 .execute()
