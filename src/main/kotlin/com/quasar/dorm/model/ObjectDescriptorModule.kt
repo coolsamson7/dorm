@@ -5,8 +5,6 @@ package com.quasar.dorm.json
  * All rights reserved
  */
 
-import com.quasar.dorm.model.ObjectDescriptor
-import com.quasar.dorm.model.PropertyDescriptor
 import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.DeserializationContext
@@ -17,6 +15,7 @@ import com.fasterxml.jackson.databind.module.SimpleDeserializers
 import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.databind.module.SimpleSerializers
 import com.fasterxml.jackson.databind.ser.std.StdSerializer
+import com.quasar.dorm.model.*
 import com.quasar.dorm.type.Type
 import com.quasar.dorm.type.base.*
 import java.io.IOException
@@ -35,9 +34,17 @@ open class ObjectDescriptorDeserializer() : StdDeserializer<ObjectDescriptor>(Ob
         for ( propertyName in propertyNode.fieldNames()) {
             val property = propertyNode.get(propertyName)
 
-            val type = jsonParser.getCodec().treeToValue(property.get("type"), Type::class.java)
+            // either attribute or relation
 
-            properties.add(PropertyDescriptor(propertyName, type as Type<Any>))
+            if ( property["type"] !== null) {
+                val type = jsonParser.getCodec().treeToValue(property.get("type"), Type::class.java)
+
+                properties.add(AttributeDescriptor(propertyName, type as Type<Any>, propertyName == "id"))
+            }
+            else {
+                val multiplicity = Multiplicity.valueOf( property["target"].asText())
+                properties.add(RelationDescriptor(propertyName, property["target"].asText(), multiplicity))
+            }
         }
 
         // done
@@ -47,10 +54,6 @@ open class ObjectDescriptorDeserializer() : StdDeserializer<ObjectDescriptor>(Ob
 }
 
 open class ObjectDescriptorSerializer : StdSerializer<ObjectDescriptor>(ObjectDescriptor::class.java) {
-    // instance data
-
-    // private
-
     // override
 
     @Throws(IOException::class)
@@ -62,7 +65,19 @@ open class ObjectDescriptorSerializer : StdSerializer<ObjectDescriptor>(ObjectDe
 
         for ( property in obj.properties) {
             jsonGenerator.writeObjectFieldStart(property.name)
-            jsonGenerator.writeObjectField("type", property.type)
+
+            // either attribute or relation
+
+            if ( property.isAttribute()) {
+                jsonGenerator.writeObjectField("type", property.asAttribute().type)
+            }
+            else {
+                jsonGenerator.writeStringField("target", property.asRelation().target)
+                jsonGenerator.writeObjectField("multiplicity", property.asRelation().multiplicity.name)
+
+                property.asRelation()
+            }
+
             jsonGenerator.writeEndObject()
         }
 

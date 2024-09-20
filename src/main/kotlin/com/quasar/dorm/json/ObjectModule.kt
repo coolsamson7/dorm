@@ -41,42 +41,48 @@ class JSONReader(private val objectDescriptor: ObjectDescriptor) {
 
     companion object {
         fun reader4(property: PropertyDescriptor<Any>): JSONPropertyReader {
-            return when (property.type.baseType) {
-                Boolean::class.java -> { node: JsonNode, obj: DataObject ->
-                    obj[property.name] = node.get(property.name).asBoolean()
-                }
+            if ( property.isAttribute())
+                return when (property.asAttribute().type.baseType) {
+                    Boolean::class.javaObjectType -> { node: JsonNode, obj: DataObject ->
+                        obj[property.name] = node.get(property.name).asBoolean()
+                    }
 
-                String::class.java -> { node: JsonNode, obj: DataObject ->
-                    obj[property.name] = node.get(property.name).asText()
-                }
+                    String::class.javaObjectType -> { node: JsonNode, obj: DataObject ->
+                        obj[property.name] = node.get(property.name).asText()
+                    }
 
-                Short::class.java -> { node: JsonNode, obj: DataObject ->
-                    obj[property.name] = node.get(property.name).asInt().toShort()
-                }
+                    Short::class.javaObjectType -> { node: JsonNode, obj: DataObject ->
+                        obj[property.name] = node.get(property.name).asInt().toShort()
+                    }
 
-                Int::class.java -> { node: JsonNode, obj: DataObject ->
-                    obj[property.name] = node.get(property.name).asInt()
-                }
+                    Int::class.javaObjectType -> { node: JsonNode, obj: DataObject ->
+                        obj[property.name] = node.get(property.name).asInt()
+                    }
 
-                Integer::class.java -> { node: JsonNode, obj: DataObject ->
-                    obj[property.name] = node.get(property.name).asInt()
-                }
+                    Integer::class.javaObjectType -> { node: JsonNode, obj: DataObject ->
+                        obj[property.name] = node.get(property.name).asInt()
+                    }
 
-                Long::class.java -> { node: JsonNode, obj: DataObject ->
-                    obj[property.name] = node.get(property.name).asInt().toLong()
-                }
+                    Long::class.javaObjectType -> { node: JsonNode, obj: DataObject ->
+                        obj[property.name] = node.get(property.name).asInt().toLong()
+                    }
 
-                Float::class.java -> { node: JsonNode, obj: DataObject ->
-                    obj[property.name] = node.get(property.name).asDouble().toFloat()
-                }
+                    Float::class.javaObjectType -> { node: JsonNode, obj: DataObject ->
+                        obj[property.name] = node.get(property.name).asDouble().toFloat()
+                    }
 
-                Double::class.java -> { node: JsonNode, obj: DataObject ->
-                    obj[property.name] = node.get(property.name).asDouble()
-                }
+                    Double::class.javaObjectType -> { node: JsonNode, obj: DataObject ->
+                        obj[property.name] = node.get(property.name).asDouble()
+                    }
 
-                else -> {
-                    throw Error("unsupported type")
+                    else -> {
+                        throw Error("unsupported type")
+                    }
                 }
+            else return { node: JsonNode, obj: DataObject -> // TODO: relation
+                //TODO val id = node.get(property.name).asInt()
+
+                //obj[property.name] = node.get(property.name).asDouble()
             }
         }
     }
@@ -85,7 +91,7 @@ class JSONReader(private val objectDescriptor: ObjectDescriptor) {
 open class ObjectDeserializer() : StdDeserializer<DataObject>(DataObject::class.java) {
     // instance data
 
-    val readers = ConcurrentHashMap<String, JSONReader>()
+    private val readers = ConcurrentHashMap<String, JSONReader>()
 
     // private
 
@@ -130,41 +136,56 @@ class JSONWriter(private val objectDescriptor: ObjectDescriptor) {
 
     companion object {
         fun writer4(property: PropertyDescriptor<Any>): JSONPropertyWriter {
-            return when (property.type.baseType) {
-                Boolean::class.java -> {jsonGenerator, obj -> jsonGenerator.writeBooleanField(property.name, obj.values[property.index] as Boolean) }
+            if ( property.isAttribute())
+                return when (property.asAttribute().type.baseType) {
+                    Boolean::class.javaObjectType -> {jsonGenerator, obj -> jsonGenerator.writeBooleanField(property.name, obj.value<Boolean>(property.index)) }
 
-                String::class.java -> {jsonGenerator, obj ->
-                    jsonGenerator.writeStringField(property.name, obj.value(property.index, String::class.java)) // do we like that function?
-                }
+                    String::class.javaObjectType -> {jsonGenerator, obj ->
+                        jsonGenerator.writeStringField(property.name, obj.value<String>(property.index))
+                    }
 
-                Short::class.java -> {jsonGenerator, obj ->
-                    jsonGenerator.writeNumberField(property.name, (obj.values[property.index] as Number).toShort())
-                }
+                    Short::class.javaObjectType -> {jsonGenerator, obj ->
+                        jsonGenerator.writeNumberField(property.name, obj.value<Short>(property.index))
+                    }
 
-                Int::class.java -> {jsonGenerator, obj ->
-                    jsonGenerator.writeNumberField(property.name, (obj.values[property.index] as Number).toInt())
-                }
+                    Int::class.javaObjectType -> {jsonGenerator, obj ->
+                        jsonGenerator.writeNumberField(property.name, obj.value<Int>(property.index))
+                    }
 
-                Integer::class.java -> {jsonGenerator, obj ->
-                    jsonGenerator.writeNumberField(property.name, (obj.values[property.index] as Number).toInt())
-                }
+                    Integer::class.javaObjectType -> {jsonGenerator, obj ->
+                        jsonGenerator.writeNumberField(property.name, obj.value<Integer>(property.index).toInt())
+                    }
 
-                Long::class.java -> {jsonGenerator, obj ->
-                    jsonGenerator.writeNumberField(property.name, (obj.values[property.index] as Number).toLong())
-                }
+                    Long::class.javaObjectType -> {jsonGenerator, obj ->
+                        jsonGenerator.writeNumberField(property.name, obj.value<Long>(property.index))
+                    }
 
-                Float::class.java -> {jsonGenerator, obj ->
-                    jsonGenerator.writeNumberField(property.name, (obj.values[property.index] as Number).toFloat())
-                }
+                    Float::class.javaObjectType -> {jsonGenerator, obj ->
+                        jsonGenerator.writeNumberField(property.name, obj.value<Float>(property.index))
+                    }
 
-                Double::class.java -> {jsonGenerator, obj ->
-                    jsonGenerator.writeNumberField(property.name, (obj.values[property.index] as Number).toDouble())
-                }
+                    Double::class.javaObjectType -> {jsonGenerator, obj ->
+                        jsonGenerator.writeNumberField(property.name, obj.value<Double>(property.index))
+                    }
 
-                else -> {
-                    throw Error("unsupported type")
+                    else -> {
+                        throw Error("unsupported type")
+                    }
                 }
-            }
+                else {
+                    if ( property.asRelation().multiplicity.mutliValued) {
+                        return { jsonGenerator, obj ->
+                            // TODO
+                        }
+                    }
+                    else // single valued
+                        return { jsonGenerator, obj -> // TODO RELATION
+                            //if (obj.value<DataObject>(property.index) !== null)
+                            //    jsonGenerator.writeNullField(property.name)//jsonGenerator.writeNumberField(property.name, (obj.values[property.index] as DataObject).id)
+                            //else
+                                jsonGenerator.writeNullField(property.name)
+                        }
+                }
         }
     }
 }

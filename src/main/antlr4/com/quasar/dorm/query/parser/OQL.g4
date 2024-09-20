@@ -12,6 +12,15 @@ options {
  */
 }
 
+K_SELECT : S E L E C T;
+K_DISTINCT : D I S T I N C T;
+K_FROM : F R O M;
+K_WHERE : W H E R E;
+K_AS : A S;
+K_AND : A S;
+K_OR : O R;
+K_NOT : N O T;
+
 file
     : statement EOF
     ;
@@ -35,7 +44,7 @@ delete_statement
     ;
 
 from_clause returns[FROM_ALIAS from]
-    : 'FROM' identification_variable_declaration { $from = $identification_variable_declaration.from; }
+    : K_FROM identification_variable_declaration { $from = $identification_variable_declaration.from; }
     //(
     //    ',' (identification_variable_declaration | collection_member_declaration)
     //)*
@@ -46,11 +55,11 @@ identification_variable_declaration returns[FROM_ALIAS from]
     ;
 
 range_variable_declaration returns[FROM_ALIAS from]
-    : abstract_schema_name ('AS')? IDENTIFICATION_VARIABLE { $from = new FROM_ALIAS($abstract_schema_name.name, $IDENTIFICATION_VARIABLE.text); }
+    : abstract_schema_name (K_AS)? IDENTIFICATION_VARIABLE { $from = new FROM_ALIAS($abstract_schema_name.name, $IDENTIFICATION_VARIABLE.text); }
     ;
 
 join
-    : join_spec join_association_path_expression ('AS')? IDENTIFICATION_VARIABLE
+    : join_spec join_association_path_expression (K_AS)? IDENTIFICATION_VARIABLE
     ;
 
 fetch_join
@@ -75,7 +84,7 @@ join_single_valued_association_path_expression
     ;
 
 collection_member_declaration
-    : 'IN' '(' collection_valued_path_expression ')' ('AS')? IDENTIFICATION_VARIABLE
+    : 'IN' '(' collection_valued_path_expression ')' (K_AS)? IDENTIFICATION_VARIABLE
     ;
 
 single_valued_path_expression
@@ -100,7 +109,7 @@ state_field
     ;
 
 update_clause
-    : 'UPDATE' abstract_schema_name (('AS')? IDENTIFICATION_VARIABLE)? 'SET' update_item (
+    : 'UPDATE' abstract_schema_name ((K_AS)? IDENTIFICATION_VARIABLE)? 'SET' update_item (
         ',' update_item
     )*
     ;
@@ -124,7 +133,7 @@ delete_clause
     ;
 
 select_clause returns[List<PATH> select] @init{ $select = new ArrayList<PATH>();  }
-    : 'SELECT' ('DISTINCT')? select_expression { $select.add($select_expression.select); } (',' select_expression {$select.add($select_expression.select);} )*
+    : K_SELECT ('DISTINCT')? select_expression { $select.add($select_expression.select); } (',' select_expression {$select.add($select_expression.select);} )*
     ;
 
 select_expression  returns[PATH select]
@@ -154,7 +163,7 @@ aggregate_expression
     ;
 
 where_clause returns[BOOLEAN_EXPR condition]
-    : 'WHERE' conditional_expression { $condition = $conditional_expression.expression; }
+    : K_WHERE conditional_expression { $condition = $conditional_expression.expression; }
     ;
 
 groupby_clause
@@ -190,7 +199,7 @@ subquery_from_clause
 
 subselect_identification_variable_declaration
     : identification_variable_declaration
-    | association_path_expression ('AS')? IDENTIFICATION_VARIABLE
+    | association_path_expression (K_AS)? IDENTIFICATION_VARIABLE
     | collection_member_declaration
     ;
 
@@ -200,7 +209,7 @@ association_path_expression
     ;
 
 simple_select_clause
-    : 'SELECT' ('DISTINCT')? simple_select_expression
+    : K_SELECT (K_DISTINCT)? simple_select_expression
     ;
 
 simple_select_expression
@@ -210,17 +219,17 @@ simple_select_expression
     ;
 
 conditional_expression returns[BOOLEAN_EXPR expression]
-    : (conditional_term {$expression = $conditional_term.expression; }) ('OR' conditional_term {$expression = new OR($expression, $conditional_term.expression); })*
+    : (conditional_term {$expression = $conditional_term.expression; }) (K_OR conditional_term {$expression = new OR($expression, $conditional_term.expression); })*
     | conditional_term {$expression = $conditional_term.expression; }
     ;
 
 conditional_term  returns[BOOLEAN_EXPR expression]
-    : (conditional_factor {$expression = $conditional_factor.expression; }) ('AND' conditional_factor {$expression = new AND($expression, $conditional_factor.expression); })*
+    : (conditional_factor {$expression = $conditional_factor.expression; }) (K_AND conditional_factor {$expression = new AND($expression, $conditional_factor.expression); })*
     | conditional_factor  {$expression = $conditional_factor.expression; }
     ;
 
 conditional_factor  returns[BOOLEAN_EXPR expression]
-    //: ('NOT')? conditional_primary
+    //: (K_NOT)? conditional_primary
     : conditional_primary  {$expression = $conditional_primary.expression; }
     ;
 
@@ -485,3 +494,30 @@ ESCAPE_CHARACTER
 WS
     : [ \t\r\n] -> skip
     ;
+
+fragment A : [aA]; // match either an 'a' or 'A'
+fragment B : [bB];
+fragment C : [cC];
+fragment D : [dD];
+fragment E : [eE];
+fragment F : [fF];
+fragment G : [gG];
+fragment H : [hH];
+fragment I : [iI];
+fragment J : [jJ];
+fragment K : [kK];
+fragment L : [lL];
+fragment M : [mM];
+fragment N : [nN];
+fragment O : [oO];
+fragment P : [pP];
+fragment Q : [qQ];
+fragment R : [rR];
+fragment S : [sS];
+fragment T : [tT];
+fragment U : [uU];
+fragment V : [vV];
+fragment W : [wW];
+fragment X : [xX];
+fragment Y : [yY];
+fragment Z : [zZ];

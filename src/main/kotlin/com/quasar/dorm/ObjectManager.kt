@@ -4,9 +4,7 @@ package com.quasar.dorm
  *
  * All rights reserved
  */
-import com.quasar.dorm.model.ObjectDescriptor
-import com.quasar.dorm.model.ObjectDescriptorStorage
-import com.quasar.dorm.model.PropertyDescriptor
+import com.quasar.dorm.model.*
 import com.quasar.dorm.persistence.DataObjectMapper
 import com.quasar.dorm.query.*
 import com.quasar.dorm.query.parser.OQLLexer
@@ -30,7 +28,7 @@ import java.util.concurrent.ConcurrentHashMap
 class ObjectDescriptorBuilder(val manager: ObjectManager, val name: String) {
     // instance data
 
-    private val attributes = ArrayList<PropertyDescriptor<Any>>()
+    private val properties = ArrayList<PropertyDescriptor<Any>>()
 
     init {
         attribute("id", int(), true)
@@ -39,7 +37,13 @@ class ObjectDescriptorBuilder(val manager: ObjectManager, val name: String) {
     // fluent
 
     fun <T: Any> attribute(name: String, type: Type<T>, isPrimaryKey: Boolean = false) : ObjectDescriptorBuilder {
-        attributes.add(PropertyDescriptor(name, type as Type<Any>, isPrimaryKey))
+        properties.add(AttributeDescriptor(name, type as Type<Any>, isPrimaryKey))
+
+        return this
+    }
+
+    fun relation(name: String, target: String, multiplicity: Multiplicity) : ObjectDescriptorBuilder {
+        properties.add(RelationDescriptor(name, target, multiplicity))
 
         return this
     }
@@ -47,9 +51,11 @@ class ObjectDescriptorBuilder(val manager: ObjectManager, val name: String) {
     // public
 
     fun register() : ObjectDescriptor {
-        val descriptor = ObjectDescriptor(name, attributes.toTypedArray())
+        val descriptor = ObjectDescriptor(name, properties.toTypedArray(), manager)
 
         manager.register(descriptor)
+
+        descriptor.resolve(manager)
 
         return descriptor
     }
@@ -87,18 +93,20 @@ class ObjectManager() {
 
         objectDescriptorStorage.store(objectDescriptor)
 
-        descriptors.put(objectDescriptor.name, objectDescriptor)
+        descriptors[objectDescriptor.name] = objectDescriptor
 
         return this
     }
 
     fun findDescriptor(name: String) : ObjectDescriptor? {
-        var descriptor = descriptors.get(name)
+        var descriptor = descriptors[name]
 
         if ( descriptor == null) {
             descriptor = objectDescriptorStorage.findByName(name)
             if ( descriptor != null) {
-                descriptors.put(name, descriptor)
+                descriptor.resolve(this)
+
+                descriptors[name] = descriptor
             }
         }
 
@@ -117,7 +125,7 @@ class ObjectManager() {
     fun create(objectDescriptor: ObjectDescriptor) : DataObject {
         val obj = objectDescriptor.create()
 
-        transactionState().register(ObjectState(obj, Status.CREATED))
+        transactionState().create(obj)
 
         return obj
     }
@@ -135,7 +143,7 @@ class ObjectManager() {
 
     fun commit() {
         try {
-            commitTransaction(transactionState())
+            transactionState().commit(mapper)
         }
         finally {
             mapper.clear()
@@ -145,7 +153,7 @@ class ObjectManager() {
 
     fun rollback() {
         try {
-            rollbackTransaction(transactionState())
+            transactionState().rollback(mapper)
         }
         finally {
             mapper.clear()
@@ -186,37 +194,6 @@ class ObjectManager() {
             .where(eq(obj.get("id"), id))
 
         return query.execute().getSingleResult()
-    }
-
-    // private
-
-    private fun rollbackTransaction(transactionState: TransactionState) {
-        for (state in transactionState.states.values) {
-            when ( state.status) {
-                Status.MANAGED -> if ( state.isDirty()) state.rollback()
-
-                else  -> {} ; // noop
-            }
-        }
-
-        transactionState.rollback()
-    }
-
-    private fun commitTransaction(transactionState: TransactionState) {
-        // new objects
-
-        for (state in transactionState.states.values) {
-            when ( state.status) {
-                Status.CREATED ->  mapper.create(state.obj)
-                Status.DELETED -> mapper.delete(state.obj)
-                Status.MANAGED -> {
-                    if ( state.isDirty())
-                        mapper.update(state.obj)
-                }
-            }
-        }
-
-        transactionState.commit()
     }
 
     // companion

@@ -55,14 +55,14 @@ open class TypeDeserializer() : StdDeserializer<Type<*>>(Type::class.java) {
                 val parameter = method.parameterTypes[0] // for now
 
                 val arg = when ( parameter ) {
-                    Short::class.java -> node.asInt().toShort()
-                    Integer::class.java -> node.asInt()
-                    Int::class.java -> node.asInt()
-                    Long::class.java -> node.asLong()
-                    Float::class.java -> node.asDouble().toFloat()
-                    Double::class.java -> node.asDouble()
-                    String::class.java -> node.asText()
-                    Boolean::class.java -> node.asBoolean()
+                    Short::class.javaObjectType -> node.asInt().toShort()
+                    Integer::class.javaObjectType -> node.asInt()
+                    Int::class.javaObjectType -> node.asInt()
+                    Long::class.javaObjectType -> node.asLong()
+                    Float::class.javaObjectType -> node.asDouble().toFloat()
+                    Double::class.javaObjectType -> node.asDouble()
+                    String::class.javaObjectType -> node.asText()
+                    Boolean::class.javaObjectType -> node.asBoolean()
 
                     else -> {
                         throw Error("unsupported type")

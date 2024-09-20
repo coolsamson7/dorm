@@ -11,7 +11,7 @@ import com.quasar.dorm.model.PropertyDescriptor
 class ObjectState(val obj: DataObject, var status: Status) {
     // instance data
 
-    var snapshot: Array<Any?>? = null
+    var snapshot: List<Any>? = null
 
     // init
 
@@ -22,8 +22,8 @@ class ObjectState(val obj: DataObject, var status: Status) {
     // public
 
     fun rollback() {
-        for ( i in 0..obj.values.size-1)
-            obj.values[i] = snapshot!![i]
+        //TODO RELATION for ( i in 0..obj.values.size-1)
+        //    obj.values[i] = snapshot!![i]
 
         snapshot = null
         status = Status.MANAGED
@@ -34,22 +34,16 @@ class ObjectState(val obj: DataObject, var status: Status) {
             return false
 
         if (snapshot !== null) {
-            for ( i in 0..snapshot!!.size)
-                if (obj.values[i] != snapshot!![i])
+            for ( i in 0..<snapshot!!.size)
+                if (obj.values[i].isDirty(snapshot!![i]))
                     return true
         }
 
         return false
     }
 
-    fun setValue(obj: DataObject, property: PropertyDescriptor<Any>, value: Any) {
-        // validate
-
-        property.validate(value)
-
-        // take snapshot
-
-        if ( status == Status.MANAGED && value !== obj.values[property.index] && snapshot == null)
-            snapshot = obj.values.clone()
+    fun takeSnapshot(obj: DataObject) {
+      if ( status == Status.MANAGED && snapshot == null)
+            snapshot = obj.snapshot()
     }
 }

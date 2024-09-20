@@ -5,40 +5,38 @@ package com.quasar.dorm.persistence
  * All rights reserved
  */
 
-import com.quasar.dorm.DataObject
 import com.quasar.dorm.json.JSONReader
 import com.quasar.dorm.model.ObjectDescriptor
 import com.quasar.dorm.persistence.entity.AttributeEntity
 import com.quasar.dorm.persistence.entity.EntityEntity
-import com.quasar.dorm.transaction.ObjectState
-import com.quasar.dorm.transaction.Status
 import com.quasar.dorm.transaction.TransactionState
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.quasar.dorm.*
+import com.quasar.dorm.model.PropertyDescriptor
+import com.quasar.dorm.transaction.Operation
 import jakarta.persistence.EntityManager
 import jakarta.persistence.PersistenceContext
 import jakarta.persistence.Query
-import jakarta.persistence.criteria.CriteriaBuilder
 import jakarta.persistence.criteria.ParameterExpression
-import jakarta.persistence.criteria.Root
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import java.util.concurrent.ConcurrentHashMap
 
-typealias PropertyReader = (obj: DataObject, property: Int, attribute: AttributeEntity) -> Unit
-typealias PropertyWriter = (obj: DataObject, property: Int, attribute: AttributeEntity) -> Unit
+typealias PropertyReader = (obj: DataObject, property: PropertyDescriptor<Any>, attribute: AttributeEntity) -> Unit
+typealias PropertyWriter = (state: TransactionState, obj: DataObject, property: Int, attribute: AttributeEntity) -> Unit
 
 class ObjectReader(descriptor: ObjectDescriptor) {
     // instance data
 
     private val reader: Array<PropertyReader> =
         descriptor.properties
-            .filter { property -> !property.isPrimaryKey }
-            .map { property -> reader4(property.type.baseType) }.toTypedArray()
+            .filter { property -> property.name !== "id" }
+            .map { property -> reader4(property) }.toTypedArray()
 
     // public
 
-    fun read(obj: DataObject, property: Int, attribute: AttributeEntity) {
-        reader[property-1](obj, property, attribute)
+    fun read(obj: DataObject, propertyDescriptor: PropertyDescriptor<Any>, attribute: AttributeEntity) {
+        reader[propertyDescriptor.index-1](obj, propertyDescriptor, attribute)
     }
 
     // companion
@@ -46,57 +44,74 @@ class ObjectReader(descriptor: ObjectDescriptor) {
     companion object {
         fun valueReader(clazz: Class<Any>) :  (attribute: AttributeEntity) -> Any {
             return when (clazz) {
-                Boolean::class.java -> { attribute: AttributeEntity -> attribute.intValue == 1 }
+                Boolean::class.javaObjectType -> { attribute: AttributeEntity -> attribute.intValue == 1 }
 
-                Short::class.java -> { attribute: AttributeEntity -> attribute.intValue.toShort() }
+                Short::class.javaObjectType -> { attribute: AttributeEntity -> attribute.intValue.toShort() }
 
-                Integer::class.java -> { attribute: AttributeEntity -> attribute.intValue }
+                Integer::class.javaObjectType -> { attribute: AttributeEntity -> attribute.intValue }
 
-                Long::class.java -> { attribute: AttributeEntity -> attribute.intValue.toLong() }
+                Long::class.javaObjectType -> { attribute: AttributeEntity -> attribute.intValue.toLong() }
 
-                Float::class.java -> { attribute: AttributeEntity -> attribute.doubleValue.toFloat() }
+                Float::class.javaObjectType -> { attribute: AttributeEntity -> attribute.doubleValue.toFloat() }
 
-                Double::class.java -> { attribute: AttributeEntity -> attribute.doubleValue }
+                Double::class.javaObjectType -> { attribute: AttributeEntity -> attribute.doubleValue }
 
-                String::class.java -> { attribute: AttributeEntity -> attribute.stringValue }
+                String::class.javaObjectType -> { attribute: AttributeEntity -> attribute.stringValue }
 
                 else -> throw Error("unsupported type")
             }
         }
 
-        fun reader4(clazz: Class<Any>): PropertyWriter {
-            return when (clazz) {
-                Boolean::class.java -> { obj: DataObject, property: Int, attribute: AttributeEntity ->
-                    obj.values[property] = attribute.intValue == 1
+        fun reader4(property: PropertyDescriptor<Any>): PropertyReader {
+            if ( !property.isAttribute()) {
+                return  { obj: DataObject, propertyDescriptor: PropertyDescriptor<Any>, attribute: AttributeEntity ->
+                    // just remember the entity
+                    obj.values[propertyDescriptor.index].property = attribute
+                    // noop....we do that lazy TODO RELATION obj.values[index].set(attribute.intValue == 1)
                 }
-
-                String::class.java -> { obj: DataObject, property: Int, attribute: AttributeEntity ->
-                    obj.values[property] = attribute.stringValue
-                }
-
-                Short::class.java -> { obj: DataObject, property: Int, attribute: AttributeEntity ->
-                    obj.values[property] = attribute.intValue.toShort()
-                }
-
-                Integer::class.java -> { obj: DataObject, property: Int, attribute: AttributeEntity ->
-                    obj.values[property] = attribute.intValue
-                }
-
-                Long::class.java -> { obj: DataObject, property: Int, attribute: AttributeEntity ->
-                    obj.values[property] = attribute.intValue.toLong()
-                }
-
-                Float::class.java -> { obj: DataObject, property: Int, attribute: AttributeEntity ->
-                    obj.values[property] = attribute.doubleValue.toFloat()
-                }
-
-                Double::class.java -> { obj: DataObject, property: Int, attribute: AttributeEntity ->
-                    obj.values[property] = attribute.doubleValue
-                }
-
-                else -> { _: DataObject, _: Int, _: AttributeEntity -> throw Error("unsupported type") }
-
             }
+            else
+                return when (property.asAttribute().type.baseType) { // TODO besser rausziehen...
+                    Boolean::class.javaObjectType -> { obj: DataObject, propertyDescriptor: PropertyDescriptor<Any>, attribute: AttributeEntity ->
+                        // TODO RELATION Hmmm...do we need that, is realtion not enough?
+                        obj.values[propertyDescriptor.index].property = attribute
+                        obj.values[propertyDescriptor.index].set(propertyDescriptor, attribute.intValue == 1)
+                    }
+
+                    String::class.javaObjectType -> { obj: DataObject, propertyDescriptor: PropertyDescriptor<Any>, attribute: AttributeEntity ->
+                        obj.values[propertyDescriptor.index].property = attribute
+                        obj.values[propertyDescriptor.index].set(propertyDescriptor, attribute.stringValue)
+                    }
+
+                    Short::class.javaObjectType -> { obj: DataObject, propertyDescriptor: PropertyDescriptor<Any>, attribute: AttributeEntity ->
+                        obj.values[propertyDescriptor.index].property = attribute
+                        obj.values[propertyDescriptor.index].set(propertyDescriptor, attribute.intValue.toShort())
+                    }
+
+                    Integer::class.javaObjectType -> { obj: DataObject, propertyDescriptor: PropertyDescriptor<Any>, attribute: AttributeEntity ->
+                        obj.values[propertyDescriptor.index].property = attribute
+                        obj.values[propertyDescriptor.index].set(propertyDescriptor, attribute.intValue)
+                    }
+
+                    Long::class.javaObjectType -> { obj: DataObject, propertyDescriptor: PropertyDescriptor<Any>, attribute: AttributeEntity ->
+                        obj.values[propertyDescriptor.index].property = attribute
+                        obj.values[propertyDescriptor.index].set(propertyDescriptor, attribute.intValue.toLong())
+                    }
+
+                    Float::class.javaObjectType -> { obj: DataObject, propertyDescriptor: PropertyDescriptor<Any>, attribute: AttributeEntity ->
+                        obj.values[propertyDescriptor.index].property = attribute
+                        obj.values[propertyDescriptor.index].set(propertyDescriptor, attribute.doubleValue.toFloat())
+                    }
+
+                    Double::class.javaObjectType -> { obj: DataObject, propertyDescriptor: PropertyDescriptor<Any>, attribute: AttributeEntity ->
+                        obj.values[propertyDescriptor.index].property = attribute
+                        obj.values[propertyDescriptor.index].set(propertyDescriptor, attribute.doubleValue)
+                    }
+
+                    else -> { _: DataObject,  _: PropertyDescriptor<Any>, _: AttributeEntity ->
+                        throw Error("unsupported type")
+                    }
+                }
         }
     }
 }
@@ -105,22 +120,25 @@ class ObjectWriter(private val descriptor: ObjectDescriptor) {
     // instance data
 
     private val writer: Array<PropertyWriter> = descriptor.properties
-        .filter { property -> !property.isPrimaryKey }
-        .map { property -> writer4(property.type.baseType)}.toTypedArray()
+        .filter { property -> property.name !== "id" }
+        .map { property -> writer4(property, descriptor.objectManager!!)}.toTypedArray()
 
     // public
 
-    fun update(obj: DataObject, property: Int, attribute: AttributeEntity) {
-        writer[property-1](obj, property, attribute)
+    fun update(state: TransactionState, obj: DataObject, property: Int, attribute: AttributeEntity) {
+        writer[property-1](state, obj, property, attribute)
     }
 
-    fun write(obj: DataObject, entityManager: EntityManager) {
+    fun write(state: TransactionState, obj: DataObject, entityManager: EntityManager) {
         var i = 1
-        val id = obj.id
         for ( writer in writer) {
-            val attribute = AttributeEntity(id, descriptor.properties[i].name, descriptor.name, "", 0, 0.0)
+            val attribute = AttributeEntity(obj.entity!!, descriptor.properties[i].name, descriptor.name, "", 0, 0.0)
 
-            writer(obj, i++, attribute)
+            // set entity, we may need it for flushing relations
+
+            (obj.values[i] as Property).property = attribute
+
+            writer(state, obj, i++, attribute)
 
             entityManager.persist(attribute)
         }
@@ -129,38 +147,46 @@ class ObjectWriter(private val descriptor: ObjectDescriptor) {
     // companion
 
     companion object {
-        fun writer4(clazz: Class<Any>) : PropertyWriter {
-            return when (clazz) {
-                Boolean::class.java -> { obj: DataObject, property: Int, attribute: AttributeEntity ->
-                    attribute.intValue = if ( obj.values[property] as Boolean) 1 else 0
+        fun writer4(property: PropertyDescriptor<Any>, objectManager: ObjectManager) : PropertyWriter {
+            if ( !property.isAttribute()) {
+                return { state: TransactionState, obj: DataObject, index: Int, attribute: AttributeEntity ->
+                    state.addOperation(AdjustRelation(obj.values[index] as Relation))
                 }
-
-                String::class.java -> { obj: DataObject, property: Int, attribute: AttributeEntity ->
-                    attribute.stringValue = obj.values[property] as String
-                }
-
-                Short::class.java ->   { obj: DataObject, property: Int, attribute: AttributeEntity ->
-                    attribute.intValue = (obj.values[property] as Number).toInt()
-                }
-
-                Integer::class.java ->   { obj: DataObject, property: Int, attribute: AttributeEntity ->
-                    attribute.intValue = obj.values[property] as Int
-                }
-
-                Long::class.java ->   { obj: DataObject, property: Int, attribute: AttributeEntity ->
-                    attribute.intValue = (obj.values[property] as Number).toInt()
-                }
-
-                Float::class.java ->   { obj: DataObject, property: Int, attribute: AttributeEntity ->
-                    attribute.doubleValue = (obj.values[property] as Number).toDouble()
-                }
-
-                Double::class.java ->   { obj: DataObject, property: Int, attribute: AttributeEntity ->
-                    attribute.doubleValue = obj.values[property] as Double
-                }
-
-                else -> { _: DataObject, _: Int, _: AttributeEntity -> throw Error("unsupported type")}
             }
+            else
+                return when (property.asAttribute().type.baseType) {
+                    Boolean::class.javaObjectType -> { state: TransactionState, obj: DataObject, index: Int, attribute: AttributeEntity ->
+                        attribute.intValue = if ( obj.values[index].get(objectManager) as Boolean) 1 else 0
+                    }
+
+                    String::class.javaObjectType -> { state: TransactionState, obj: DataObject, index: Int, attribute: AttributeEntity ->
+                        attribute.stringValue = obj.values[index].get(objectManager) as String
+                    }
+
+                    Short::class.javaObjectType ->   { state: TransactionState, obj: DataObject, index: Int, attribute: AttributeEntity ->
+                        attribute.intValue = (obj.values[index].get(objectManager) as Number).toInt()
+                    }
+
+                    Integer::class.javaObjectType ->   { state: TransactionState, obj: DataObject, index: Int, attribute: AttributeEntity ->
+                        attribute.intValue = obj.values[index].get(objectManager) as Int
+                    }
+
+                    Long::class.javaObjectType ->   { state: TransactionState, obj: DataObject, index: Int, attribute: AttributeEntity ->
+                        attribute.intValue = (obj.values[index].get(objectManager) as Number).toInt()
+                    }
+
+                    Float::class.javaObjectType ->   { state: TransactionState, obj: DataObject, index: Int, attribute: AttributeEntity ->
+                        attribute.doubleValue = (obj.values[index].get(objectManager) as Number).toDouble()
+                    }
+
+                    Double::class.javaObjectType ->   { state: TransactionState, obj: DataObject, index: Int, attribute: AttributeEntity ->
+                        attribute.doubleValue = obj.values[index].get(objectManager) as Double
+                    }
+
+                    else -> { _: TransactionState, _: DataObject, _: Int, _: AttributeEntity ->
+                        throw Error("unsupported type")
+                    }
+                }
         }
     }
 }
@@ -190,7 +216,7 @@ class AttributeUpdater<T>(attribute: String, type: Class<T>, entityManager: Enti
         updateAttributeQuery.set(attribute, value);
 
         updateAttributeQuery.where(builder.and(
-            builder.equal(from.get<Int>("entity"), entityId),
+            builder.equal(from.get<EntityEntity>("entity").get<Int>("id"), entityId),
             builder.equal(from.get<Int>("attribute"), attributeId)
         ))
 
@@ -234,7 +260,7 @@ class ObjectDeleter(entityManager: EntityManager) {
 
         // delete entity
 
-        entityId = builder.parameter<Int>(Int::class.java)
+        entityId = builder.parameter(Int::class.java)
 
         val criteriaQueryEntity = builder.createCriteriaDelete(EntityEntity::class.java)
         val fromEntity = criteriaQueryEntity.from(EntityEntity::class.java)
@@ -251,6 +277,11 @@ class ObjectDeleter(entityManager: EntityManager) {
     }
 }
 
+class AdjustRelation(val relation: Relation) : Operation() {
+    override fun execute() {
+        relation.flush()
+    }
+}
 
 @Component
 class DataObjectMapper() {
@@ -270,24 +301,36 @@ class DataObjectMapper() {
 
     // public
 
-    fun update(obj: DataObject) {
-        val builder: CriteriaBuilder = entityManager.criteriaBuilder
+    fun update(state: TransactionState, obj: DataObject) {
+        val builder = entityManager.criteriaBuilder
+
+        val objectManager = state.objectManager
 
         // update attributes
 
         val properties = obj.type.properties
         for ( index in 1..<obj.values.size) {
-            if ( obj.values[index] != obj.state!!.snapshot!![index]) {
+            if ( obj.values[index].isDirty(obj.state!!.snapshot!![index])) {
                 val property = properties[index]
 
-                when ( property.type.baseType) {
-                    String::class.java -> updater4("stringValue",  String::class.java).update(obj.id, property.name, obj.values[index] as String)
-                    Integer::class.java -> updater4("intValue",  Integer::class.java).update(obj.id, property.name, obj.values[index] as Integer)
-                    Int::class.java -> updater4("intValue",  Integer::class.java).update(obj.id, property.name, obj.values[index] as Integer)
-                    // TODO REST
-                    else -> {
-                            throw Error("ouch")
+                if ( property.isAttribute())
+                    when ( property.asAttribute().type.baseType) {
+                        String::class.java -> updater4<String>("stringValue",  String::class.java).update(obj.id, property.name, obj.values[index].get(objectManager) as String)
+                        Short::class.java -> updater4<Int>("intValue",  Short::class.java).update(obj.id, property.name, (obj.values[index].get(objectManager) as Short).toInt())
+                        Int::class.java -> updater4<Int>("intValue",  Int::class.java).update(obj.id, property.name, obj.values[index].get(objectManager) as Int)
+                        Integer::class.java -> updater4<Int>("intValue",  Integer::class.java).update(obj.id, property.name, obj.values[index].get(objectManager) as Int)
+                        Long::class.java -> updater4<Int>("intValue",  Long::class.java).update(obj.id, property.name, (obj.values[index].get(objectManager) as Long).toInt())
+                        Float::class.java -> updater4<Double>("doubleValue",  Float::class.java).update(obj.id, property.name, (obj.values[index].get(objectManager) as Float).toDouble())
+                        Double::class.java -> updater4<Double>("doubleValue",  Double::class.java).update(obj.id, property.name, obj.values[index].get(objectManager) as Double)
+                        Boolean::class.java -> updater4<Int>("intValue",  Integer::class.java).update(obj.id, property.name, if (obj.values[index].get(objectManager) as Boolean) 1 else 0)
+                        Boolean::class.javaObjectType -> updater4<Int>("intValue",  Integer::class.java).update(obj.id, property.name, if (obj.values[index].get(objectManager) as Boolean) 1 else 0)
+
+                        else -> {
+                                throw Error("ouch")
+                        }
                     }
+                else {
+                    obj.values[index].flush()
                 }
             }
         } // for
@@ -297,7 +340,7 @@ class DataObjectMapper() {
         val json = mapper.writeValueAsString(obj)
 
         val entityCriteriaQuery = builder.createCriteriaUpdate(EntityEntity::class.java)
-        val entityFrom : Root<EntityEntity> = entityCriteriaQuery.from(EntityEntity::class.java)
+        val entityFrom = entityCriteriaQuery.from(EntityEntity::class.java)
 
         entityCriteriaQuery
             .set("json", json)
@@ -306,21 +349,22 @@ class DataObjectMapper() {
         entityManager.createQuery(entityCriteriaQuery).executeUpdate()
     }
 
-    fun delete(obj: DataObject) {
-        if ( obj.id >= 0)
-            deleter4(obj.type).delete(obj)
+    fun delete(state: TransactionState, obj: DataObject) {
+        entityManager.remove(obj.entity!!)
     }
 
-    fun create(obj: DataObject) {
+    fun create(state: TransactionState, obj: DataObject) {
         val descriptor = obj.type
 
-        val entity = EntityEntity(0, descriptor.name, mapper.writeValueAsString(obj))
+        obj.entity = EntityEntity(0, descriptor.name, mapper.writeValueAsString(obj))
 
-        entityManager.persist(entity)
+        entityManager.persist(obj.entity) // we need the id...is that required, think of a lifeccle hook?
 
-        obj.id = entity.id
+        writer4(descriptor).write(state, obj, entityManager) // will create the attribute entities
 
-        writer4(descriptor).write(obj, entityManager)
+        // set as value as well
+
+        obj.id = obj.entity!!.id
     }
 
 
@@ -332,7 +376,7 @@ class DataObjectMapper() {
 
             val obj = jsonReader4(objectDescriptor).read(node)
 
-            obj.id = entity.id // TODO ?
+            obj.id = entity.id
 
             // done
 
@@ -341,18 +385,20 @@ class DataObjectMapper() {
     }
 
     fun read(state: TransactionState, objectDescriptor: ObjectDescriptor, attributes: List<AttributeEntity>, start: Int, end: Int) : DataObject {
-        return state.retrieve(attributes[start].entity) {
-            val values = arrayOfNulls<Any>(objectDescriptor.properties.size)
+        return state.retrieve(attributes[start].entity.id) {
+            val obj = objectDescriptor.create()
 
-            values[0] = attributes[start].entity // id
-            val obj = DataObject(objectDescriptor, null, values)
+            obj.entity = attributes[start].entity
+            val id =  obj.entity!!.id
+
+            obj.id = id
 
             val reader = reader4(objectDescriptor)
 
             for ( i in start..end) {
                 val attribute = attributes[i]
 
-                reader.read(obj, objectDescriptor.property(attribute.attribute).index, attribute)
+                reader.read(obj, objectDescriptor.property(attribute.attribute), attribute)
             }
 
             // done
@@ -375,7 +421,7 @@ class DataObjectMapper() {
         return writer.getOrPut(objectDescriptor.name) { -> ObjectWriter(objectDescriptor) }
     }
 
-    private fun <T> updater4(attribute: String, type: Class<T>) : AttributeUpdater<T> {
+    private fun <T> updater4(attribute: String, type: Class<*>) : AttributeUpdater<T> {
         return updater.getOrPut(attribute) { AttributeUpdater(attribute, type as Class<Any>, entityManager) } as AttributeUpdater<T>
     }
 

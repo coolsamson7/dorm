@@ -6,7 +6,7 @@ package com.quasar.dorm.type.base
  */
 import com.quasar.dorm.type.Type
 
-class DoubleType : Type<Double>(Double::class.java) {
+class DoubleType : Type<Double>(Double::class.javaObjectType) {
     fun min(min: Double) : DoubleType {
         test<Double>(
             "min",

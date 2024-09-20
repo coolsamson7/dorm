@@ -216,7 +216,7 @@ internal class DORMBenchmark : AbstractTest() {
 
         // create some objects
 
-        val objects = 1000
+        val objects = 200
 
         // create
 

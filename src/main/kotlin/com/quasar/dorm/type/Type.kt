@@ -18,15 +18,16 @@ open class Type<T:Any>(val baseType: Class<T>) {
 
     private fun <T> computeDefaultValue(type: Class<T>) : DefaultValue<T> {
         return when (type) {
-            String::class.java -> { -> "" as T }
-            Short::class.java -> { -> 0.toShort() as  T }
-            Integer::class.java -> { -> 0 as T }
-            Long::class.java -> { -> 0L as T }
-            Float::class.java -> { -> 0.0f as T }
-            Double::class.java -> { -> 0.0 as T }
-            Boolean::class.java -> { -> false as T }
+            String::class.javaObjectType -> { -> "" as T }
+            Short::class.javaObjectType -> { -> 0.toShort() as  T }
+            Integer::class.javaObjectType -> { -> 0 as T }
+            Int::class.javaObjectType -> { -> 0 as T }
+            Long::class.javaObjectType -> { -> 0L as T }
+            Float::class.javaObjectType -> { -> 0.0f as T }
+            Double::class.javaObjectType -> { -> 0.0  as T }
+            Boolean::class.javaObjectType -> { -> false as T }
             else -> {
-                throw Error("unsupported type")
+                throw Error("unsupported type ${type.simpleName}")
             }
         }
     }

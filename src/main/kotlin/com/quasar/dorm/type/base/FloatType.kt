@@ -6,7 +6,7 @@ package com.quasar.dorm.type.base
  */
 import com.quasar.dorm.type.Type
 
-class FloatType : Type<Float>(Float::class.java) {
+class FloatType : Type<Float>(Float::class.javaObjectType) {
     fun min(min: Float) : FloatType {
         test<Float>(
             "min",

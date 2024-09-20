@@ -40,14 +40,15 @@ abstract class ComparisonExpression(val path: ObjectPath) : BooleanExpression() 
 
         val attributeName = path.attributeName()
 
+        // id is the id of the entity...
         if ( attributeName == "id")
             subQuery
-                .select(attribute.get("entity"))
+                .select(attribute.get<EntityEntity>("entity").get<Int>("id"))
                 .distinct(true)
                 .where(this.where(executor, builder, attribute))
         else
             subQuery
-                .select(attribute.get("entity"))
+                .select(attribute.get<EntityEntity>("entity").get<Int>("id"))
                 .distinct(true)
                 .where(
                     // object type
@@ -65,7 +66,7 @@ abstract class ComparisonExpression(val path: ObjectPath) : BooleanExpression() 
 
         val attr = if ( from.javaType == EntityEntity::class.java ) "id" else "entity"
 
-        return builder.`in`(from.get<Int>(attr)).value(subQuery)
+        return builder.`in`(from.get<EntityEntity>("entity").get<Int>("id")).value(subQuery) // TODO RELATION
     }
 }
 

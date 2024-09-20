@@ -6,17 +6,22 @@ package com.quasar.dorm.persistence.entity
  */
 
 import jakarta.persistence.*
+import java.util.ArrayList
 
 @Entity
 @Table(name="ENTITY")
 data class EntityEntity(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
+    @Column(name = "ID")
     var id : Int,
 
     @Column(name = "TYPE")
     var type : String,
 
     @Column(name = "JSON")
-    var json : String
+    var json : String,
+
+    @OneToMany(mappedBy = "entity", cascade = [CascadeType.ALL], orphanRemoval = true)
+    var properties : MutableList<AttributeEntity> = ArrayList()
 )

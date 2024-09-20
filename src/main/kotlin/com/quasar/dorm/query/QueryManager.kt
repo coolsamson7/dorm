@@ -49,14 +49,11 @@ class QueryManager(val objectManager: ObjectManager, private val entityManager: 
 
     private fun <T : Any> computeQueryResult(objectQuery: Query<T>, executor: QueryExecutor<T>) : List<T> {
         // flush managed objects that could influence query results
+        // currently this is onle the roor, since we don't support joins yet
 
         executor.queryManager.objectManager.transactionState().flush(objectQuery.root!!.objectDescriptor)
 
         // create main query
-
-        val readJSON = preferJSON(objectQuery) // TODO
-
-        // object query
 
         if (objectQuery.projection != null) {
             val criteriaQuery = builder.createQuery(AttributeEntity::class.java)
@@ -80,8 +77,8 @@ class QueryManager(val objectManager: ObjectManager, private val entityManager: 
             return computeProjectionResultFromAttributes(objectQuery.projection!!, entityManager.createQuery(criteriaQuery).resultList as List<AttributeEntity>) as List<T>
         }
         else {
-            val criteriaQuery = builder.createQuery(EntityEntity::class.java)
-            val attributeEntity = criteriaQuery.from(EntityEntity::class.java)
+            val criteriaQuery = builder.createQuery(AttributeEntity::class.java)
+            val attributeEntity = criteriaQuery.from(AttributeEntity::class.java)
 
             criteriaQuery.select(attributeEntity)
 
@@ -90,8 +87,9 @@ class QueryManager(val objectManager: ObjectManager, private val entityManager: 
                     objectQuery.where!!.createWhere(executor as QueryExecutor<Any>, builder, criteriaQuery as CriteriaQuery<Any>, attributeEntity as Root<Any>),
                 )
 
-            //return computeObjectResultFromJSON(objectQuery.root!!.objectDescriptor, objectManager.transactionState(), criteriaQuery)
+            criteriaQuery.orderBy(builder.asc(attributeEntity.get<Int>("entity")))
 
+            /*
             val entities = entityManager.createQuery(criteriaQuery).resultList
 
             // compute result
@@ -100,10 +98,9 @@ class QueryManager(val objectManager: ObjectManager, private val entityManager: 
             val objectDescriptor = objectQuery.root!!.objectDescriptor
 
             return entities.map { entity -> mapper.readFromEntity(state, objectDescriptor, entity) } as List<T>
+            */
 
-            //TODOcriteriaQuery.orderBy(builder.asc(attributeEntity.get<Int>("entity")))
-
-            //TODOreturn computeObjectResultFromAttributes(objectQuery.root!!.objectDescriptor, objectManager.transactionState(), entityManager.createQuery(criteriaQuery).resultList  as List<AttributeEntity>) as List<T>
+            return computeObjectResultFromAttributes(objectQuery.root!!.objectDescriptor, objectManager.transactionState(), entityManager.createQuery(criteriaQuery).resultList  as List<AttributeEntity>) as List<T>
         }
     }
 
@@ -117,8 +114,8 @@ class QueryManager(val objectManager: ObjectManager, private val entityManager: 
         var index = 0
 
         for (attribute in attributes) {
-            if (attribute.entity != entity) {
-                entity = attribute.entity
+            if (attribute.entity.id != entity) {
+                entity = attribute.entity.id
 
                 if (start >= 0)
                     result.add(mapper.read(state, objectDescriptor, attributes, start, index - 1))
@@ -172,8 +169,8 @@ class QueryManager(val objectManager: ObjectManager, private val entityManager: 
         var start = -1
         var index = 0
         for (attribute in attributes) {
-            if (attribute.entity != entity) {
-                entity = attribute.entity
+            if (attribute.entity.id != entity) {
+                entity = attribute.entity.id
 
                 if (start >= 0)
                     result.add( create(start, index - 1))

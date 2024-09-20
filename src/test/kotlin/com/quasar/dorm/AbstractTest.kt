@@ -5,6 +5,7 @@ package com.quasar.dorm
  * All rights reserved
  */
 
+import com.quasar.dorm.model.Multiplicity
 import com.quasar.dorm.model.ObjectDescriptor
 import com.quasar.dorm.type.base.*
 import org.junit.jupiter.api.AfterEach
@@ -40,6 +41,11 @@ class AbstractTest {
                 personDescriptor = objectManager.type("person")
                     .attribute("name", stringType)
                     .attribute("age", intType)
+
+                    // relations
+
+                    .relation("father", "person", Multiplicity.ONE)
+                    //.relation("children", "person", Multiplicity.N)
 
                     .attribute("boolean", boolean())
                     .attribute("string", string())

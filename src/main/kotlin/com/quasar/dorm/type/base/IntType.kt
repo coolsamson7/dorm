@@ -6,7 +6,7 @@ package com.quasar.dorm.type.base
  */
 import com.quasar.dorm.type.Type
 
-class IntType : Type<Integer>(Integer::class.java) {
+class IntType : Type<Int>(Int::class.javaObjectType) {
     // fluent
 
     fun min(min: Int) : IntType {

@@ -24,20 +24,21 @@ class PropertyPath(parent: ObjectPath, val property: PropertyDescriptor<Any>) : 
     }
 
     override fun type() : Class<Any> {
-        return property.type.baseType
+        return property.asAttribute().type.baseType
     }
 
     override fun <T> expression(root: Root<AttributeEntity>): Path<T> {
         return if ( property.name == "id")
-            root.get<String>("entity") as Path<T>
+            root.get<String>("entity").get<Int>("id") as Path<T>
 
-        else when ( property.type.baseType ) {
-            String::class.java -> root.get<String>("stringValue") as Path<T>
-            Short::class.java -> root.get<Int>("intValue") as Path<T>
-            Integer::class.java -> root.get<Int>("intValue") as Path<T>
-            Long::class.java -> root.get<Int>("intValue") as Path<T>
-            Float::class.java -> root.get<Int>("doubleValue") as Path<T>
-            Double::class.java -> root.get<Int>("doubleValue") as Path<T>
+        else when ( property.asAttribute().type.baseType ) {
+            String::class.javaObjectType -> root.get<String>("stringValue") as Path<T>
+            Short::class.javaObjectType -> root.get<Int>("intValue") as Path<T>
+            Int::class.javaObjectType -> root.get<Int>("intValue") as Path<T>
+            Integer::class.javaObjectType -> root.get<Int>("intValue") as Path<T>
+            Long::class.javaObjectType -> root.get<Int>("intValue") as Path<T>
+            Float::class.javaObjectType -> root.get<Int>("doubleValue") as Path<T>
+            Double::class.javaObjectType -> root.get<Int>("doubleValue") as Path<T>
 
             else -> {
                 throw Error("unsupported type")

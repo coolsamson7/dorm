@@ -36,8 +36,11 @@ class PersistentObjectDescriptorStorage : ObjectDescriptorStorage {
     override fun findByName(name: String) : ObjectDescriptor? {
         val entity = entityManager.find(EntitySchemaEntity::class.java, name)
 
-        return if ( entity !== null)
-            objectMapper.readValue(entity.json, ObjectDescriptor::class.java)
+        return if ( entity !== null) {
+            val descriptor = objectMapper.readValue(entity.json, ObjectDescriptor::class.java)
+
+            return descriptor
+        }
         else
             null
     }

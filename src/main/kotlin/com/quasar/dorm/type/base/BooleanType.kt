@@ -7,7 +7,7 @@ package com.quasar.dorm.type.base
 
 import com.quasar.dorm.type.Type
 
-class BooleanType : Type<Boolean>(Boolean::class.java) {
+class BooleanType : Type<Boolean>(Boolean::class.javaObjectType) {
     fun isTrue() : BooleanType {
         test<Boolean>(
             "isTrue",

@@ -6,7 +6,7 @@ package com.quasar.dorm.type.base
  */
 import com.quasar.dorm.type.Type
 
-class LongType : Type<Long>(Long::class.java) {
+class LongType : Type<Long>(Long::class.javaObjectType) {
     fun min(min: Long) : LongType {
         test<Long>(
             "min",
