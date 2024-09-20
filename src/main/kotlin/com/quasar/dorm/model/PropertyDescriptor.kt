@@ -35,6 +35,12 @@ abstract class PropertyDescriptor<T:Any>(val name: String) {
 }
 
 class AttributeDescriptor<T:Any>(name: String, val type: Type<T>, val isPrimaryKey : Boolean = false) : PropertyDescriptor<T>(name) {
+    // public
+
+    fun baseType() : Class<*> {
+        return type.baseType
+    }
+
     // override
 
     override fun createProperty(entity: AttributeEntity?) : Property {

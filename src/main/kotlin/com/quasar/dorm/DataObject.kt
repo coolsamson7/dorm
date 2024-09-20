@@ -10,9 +10,12 @@ import com.quasar.dorm.persistence.entity.AttributeEntity
 import com.quasar.dorm.persistence.entity.EntityEntity
 import com.quasar.dorm.transaction.ObjectState
 
-abstract class Property(var property: AttributeEntity?) {
+abstract class Property() {
     abstract fun get(objectManager: ObjectManager) : Any?
     abstract fun set(propertyDescriptor: PropertyDescriptor<Any>, value: Any?) : Boolean
+    open fun init(propertyDescriptor: PropertyDescriptor<Any>, value: Any?) {
+        this.set(propertyDescriptor, value)
+    }
 
     // snapshot stuff
     abstract fun save(): Any;
@@ -26,7 +29,7 @@ abstract class Property(var property: AttributeEntity?) {
     open fun flush() {}
 }
 
-abstract class Relation(property: AttributeEntity?) : Property(property) {
+abstract class Relation(var property: AttributeEntity?) : Property() {
 }
 
 class SingleValuedRelation(property: AttributeEntity?, val targetDescriptor: ObjectDescriptor) : Relation(property) {
@@ -92,9 +95,13 @@ class MultiValuedRelation(property: AttributeEntity?, targetDescriptor: ObjectDe
     override fun restore(state: Any) {}
 }
 
-class Attribute(property: AttributeEntity?, var value: Any) : Property(property) {
+class Attribute(property: AttributeEntity?, var value: Any) : Property() {
     override fun get(objectManager: ObjectManager) : Any? {
         return value
+    }
+
+    override fun init(propertyDescriptor: PropertyDescriptor<Any>, value: Any?) {
+        this.value = value!!
     }
 
     override fun set(propertyDescriptor: PropertyDescriptor<Any>, value: Any?) : Boolean {

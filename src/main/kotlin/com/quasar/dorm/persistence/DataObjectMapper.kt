@@ -22,7 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import java.util.concurrent.ConcurrentHashMap
 
-typealias PropertyReader = (obj: DataObject, property: PropertyDescriptor<Any>, attribute: AttributeEntity) -> Unit
+typealias PropertyReader = (obj: DataObject, attribute: AttributeEntity) -> Unit
 typealias PropertyWriter = (state: TransactionState, obj: DataObject, property: Int, attribute: AttributeEntity) -> Unit
 
 class ObjectReader(descriptor: ObjectDescriptor) {
@@ -36,7 +36,7 @@ class ObjectReader(descriptor: ObjectDescriptor) {
     // public
 
     fun read(obj: DataObject, propertyDescriptor: PropertyDescriptor<Any>, attribute: AttributeEntity) {
-        reader[propertyDescriptor.index-1](obj, propertyDescriptor, attribute)
+        reader[propertyDescriptor.index-1](obj, attribute)
     }
 
     // companion
@@ -64,51 +64,41 @@ class ObjectReader(descriptor: ObjectDescriptor) {
 
         fun reader4(property: PropertyDescriptor<Any>): PropertyReader {
             if ( !property.isAttribute()) {
-                return  { obj: DataObject, propertyDescriptor: PropertyDescriptor<Any>, attribute: AttributeEntity ->
-                    // just remember the entity
-                    obj.values[propertyDescriptor.index].property = attribute
-                    // noop....we do that lazy TODO RELATION obj.values[index].set(attribute.intValue == 1)
+                return  { obj: DataObject, attribute: AttributeEntity ->
+                    (obj.values[property.index] as Relation).property = attribute
                 }
             }
             else
-                return when (property.asAttribute().type.baseType) { // TODO besser rausziehen...
-                    Boolean::class.javaObjectType -> { obj: DataObject, propertyDescriptor: PropertyDescriptor<Any>, attribute: AttributeEntity ->
-                        // TODO RELATION Hmmm...do we need that, is realtion not enough?
-                        obj.values[propertyDescriptor.index].property = attribute
-                        obj.values[propertyDescriptor.index].set(propertyDescriptor, attribute.intValue == 1)
+                return when (property.asAttribute().baseType()) {
+                    Boolean::class.javaObjectType -> { obj: DataObject, attribute: AttributeEntity ->
+                        obj.values[property.index].init(property, attribute.intValue == 1)
                     }
 
-                    String::class.javaObjectType -> { obj: DataObject, propertyDescriptor: PropertyDescriptor<Any>, attribute: AttributeEntity ->
-                        obj.values[propertyDescriptor.index].property = attribute
-                        obj.values[propertyDescriptor.index].set(propertyDescriptor, attribute.stringValue)
+                    String::class.javaObjectType -> { obj: DataObject, attribute: AttributeEntity ->
+                        obj.values[property.index].init(property, attribute.stringValue)
                     }
 
-                    Short::class.javaObjectType -> { obj: DataObject, propertyDescriptor: PropertyDescriptor<Any>, attribute: AttributeEntity ->
-                        obj.values[propertyDescriptor.index].property = attribute
-                        obj.values[propertyDescriptor.index].set(propertyDescriptor, attribute.intValue.toShort())
+                    Short::class.javaObjectType -> { obj: DataObject, attribute: AttributeEntity ->
+                        obj.values[property.index].init(property, attribute.intValue.toShort())
                     }
 
-                    Integer::class.javaObjectType -> { obj: DataObject, propertyDescriptor: PropertyDescriptor<Any>, attribute: AttributeEntity ->
-                        obj.values[propertyDescriptor.index].property = attribute
-                        obj.values[propertyDescriptor.index].set(propertyDescriptor, attribute.intValue)
+                    Integer::class.javaObjectType -> { obj: DataObject, attribute: AttributeEntity ->
+                        obj.values[property.index].init(property, attribute.intValue)
                     }
 
-                    Long::class.javaObjectType -> { obj: DataObject, propertyDescriptor: PropertyDescriptor<Any>, attribute: AttributeEntity ->
-                        obj.values[propertyDescriptor.index].property = attribute
-                        obj.values[propertyDescriptor.index].set(propertyDescriptor, attribute.intValue.toLong())
+                    Long::class.javaObjectType -> { obj: DataObject, attribute: AttributeEntity ->
+                        obj.values[property.index].init(property, attribute.intValue.toLong())
                     }
 
-                    Float::class.javaObjectType -> { obj: DataObject, propertyDescriptor: PropertyDescriptor<Any>, attribute: AttributeEntity ->
-                        obj.values[propertyDescriptor.index].property = attribute
-                        obj.values[propertyDescriptor.index].set(propertyDescriptor, attribute.doubleValue.toFloat())
+                    Float::class.javaObjectType -> { obj: DataObject, attribute: AttributeEntity ->
+                        obj.values[property.index].init(property, attribute.doubleValue.toFloat())
                     }
 
-                    Double::class.javaObjectType -> { obj: DataObject, propertyDescriptor: PropertyDescriptor<Any>, attribute: AttributeEntity ->
-                        obj.values[propertyDescriptor.index].property = attribute
-                        obj.values[propertyDescriptor.index].set(propertyDescriptor, attribute.doubleValue)
+                    Double::class.javaObjectType -> { obj: DataObject, attribute: AttributeEntity ->
+                        obj.values[property.index].init(property, attribute.doubleValue)
                     }
 
-                    else -> { _: DataObject,  _: PropertyDescriptor<Any>, _: AttributeEntity ->
+                    else -> { _: DataObject, _: AttributeEntity ->
                         throw Error("unsupported type")
                     }
                 }
@@ -132,11 +122,13 @@ class ObjectWriter(private val descriptor: ObjectDescriptor) {
     fun write(state: TransactionState, obj: DataObject, entityManager: EntityManager) {
         var i = 1
         for ( writer in writer) {
-            val attribute = AttributeEntity(obj.entity!!, descriptor.properties[i].name, descriptor.name, "", 0, 0.0)
+            val propertyDescriptor = descriptor.properties[i]
+            val attribute = AttributeEntity(obj.entity!!, propertyDescriptor.name, descriptor.name, "", 0, 0.0)
 
             // set entity, we may need it for flushing relations
 
-            (obj.values[i] as Property).property = attribute
+            if (!propertyDescriptor.isAttribute())
+                (obj.values[i] as Relation).property = attribute
 
             writer(state, obj, i++, attribute)
 
@@ -154,7 +146,7 @@ class ObjectWriter(private val descriptor: ObjectDescriptor) {
                 }
             }
             else
-                return when (property.asAttribute().type.baseType) {
+                return when (property.asAttribute().baseType()) {
                     Boolean::class.javaObjectType -> { state: TransactionState, obj: DataObject, index: Int, attribute: AttributeEntity ->
                         attribute.intValue = if ( obj.values[index].get(objectManager) as Boolean) 1 else 0
                     }

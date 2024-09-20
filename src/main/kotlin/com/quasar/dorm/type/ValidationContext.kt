@@ -5,6 +5,18 @@ package com.quasar.dorm.type
  * All rights reserved
  */
 class ValidationContext() {
-    val violations = ArrayList<TypeViolation>()
+    // instance data
+
+
+    var violations : MutableList<TypeViolation>? = null
     val path = ""
+
+    // public
+
+    fun addViolation(violation: TypeViolation) {
+        if ( violations == null)
+            violations = ArrayList()
+
+        violations!!.add(violation)
+    }
 }
