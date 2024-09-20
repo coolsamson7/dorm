@@ -10,6 +10,7 @@ import com.quasar.common.tracer.Tracer
 import com.quasar.common.tracer.trace.ConsoleTrace
 import com.quasar.dorm.model.Multiplicity
 import com.quasar.dorm.model.ObjectDescriptor
+import com.quasar.dorm.`object`.DataObject
 import com.quasar.dorm.type.base.*
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach

@@ -5,7 +5,7 @@ package com.quasar.dorm
  * All rights reserved
  */
 
-import com.quasar.dorm.query.and
+import com.quasar.dorm.`object`.DataObject
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 

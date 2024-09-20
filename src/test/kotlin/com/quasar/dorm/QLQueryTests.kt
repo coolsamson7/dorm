@@ -5,6 +5,7 @@ package com.quasar.dorm
  * All rights reserved
  */
 
+import com.quasar.dorm.`object`.DataObject
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
