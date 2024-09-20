@@ -12,6 +12,6 @@ class ConsoleTrace : Trace() {
     // override
 
     override fun trace(entry: TraceEntry) {
-        println(entry.message) // TODO
+        println(format(entry))
     }
 }

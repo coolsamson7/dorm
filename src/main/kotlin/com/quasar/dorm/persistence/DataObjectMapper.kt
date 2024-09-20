@@ -11,6 +11,9 @@ import com.quasar.dorm.persistence.entity.AttributeEntity
 import com.quasar.dorm.persistence.entity.EntityEntity
 import com.quasar.dorm.transaction.TransactionState
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.quasar.common.tracer.TraceLevel
+import com.quasar.common.tracer.Tracer
+import com.quasar.common.tracer.trace.ConsoleTrace
 import com.quasar.dorm.*
 import com.quasar.dorm.model.PropertyDescriptor
 import com.quasar.dorm.transaction.Operation
@@ -294,6 +297,9 @@ class DataObjectMapper() {
     // public
 
     fun update(state: TransactionState, obj: DataObject) {
+        if ( Tracer.ENABLED)
+            Tracer.trace("com.quasar.dorm", TraceLevel.HIGH, "update %s", obj.type.name)
+
         val builder = entityManager.criteriaBuilder
 
         val objectManager = state.objectManager
@@ -342,10 +348,17 @@ class DataObjectMapper() {
     }
 
     fun delete(state: TransactionState, obj: DataObject) {
+        if ( Tracer.ENABLED)
+            Tracer.trace("com.quasar.dorm", TraceLevel.HIGH, "read %s", obj.type.name)
+
+
         entityManager.remove(obj.entity!!)
     }
 
     fun create(state: TransactionState, obj: DataObject) {
+        if ( Tracer.ENABLED)
+            Tracer.trace("com.quasar.dorm", TraceLevel.HIGH, "create %s", obj.type.name)
+
         val descriptor = obj.type
 
         obj.entity = EntityEntity(0, descriptor.name, mapper.writeValueAsString(obj))
@@ -378,6 +391,9 @@ class DataObjectMapper() {
 
     fun read(state: TransactionState, objectDescriptor: ObjectDescriptor, attributes: List<AttributeEntity>, start: Int, end: Int) : DataObject {
         return state.retrieve(attributes[start].entity.id) {
+            if ( Tracer.ENABLED)
+                Tracer.trace("com.quasar.dorm", TraceLevel.HIGH, "read %s", objectDescriptor.name)
+
             val obj = objectDescriptor.create()
 
             obj.entity = attributes[start].entity

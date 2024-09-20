@@ -6,7 +6,6 @@ package com.quasar.common.tracer
  */
 
 import java.util.*
-import kotlin.collections.HashMap
 
 /**
  * A Tracer is used to emit trace messages for development purposes.
@@ -71,16 +70,15 @@ class Tracer(val trace: Trace) {
     }
     
     companion object {
-        val ENABLED = true
+        val ENABLED = System.getProperty("tracing.enabled", "true").toLowerCase().equals("true")
         
-        lateinit var instance : Tracer
+        private lateinit var instance : Tracer
 
         // public
 
         fun isTraced(path: String, level: TraceLevel): Boolean {
             return ENABLED && instance.isTraced(path, level)
         }
-
 
         fun trace(path: String, level: TraceLevel, message: String, vararg args: Any) {
             instance.trace(path, level, message, *args)

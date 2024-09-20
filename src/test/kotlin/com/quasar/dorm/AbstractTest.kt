@@ -5,6 +5,9 @@ package com.quasar.dorm
  * All rights reserved
  */
 
+import com.quasar.common.tracer.TraceLevel
+import com.quasar.common.tracer.Tracer
+import com.quasar.common.tracer.trace.ConsoleTrace
 import com.quasar.dorm.model.Multiplicity
 import com.quasar.dorm.model.ObjectDescriptor
 import com.quasar.dorm.type.base.*
@@ -30,6 +33,15 @@ class AbstractTest {
     lateinit var objectManager : ObjectManager
 
     protected var personDescriptor : ObjectDescriptor? = null
+
+    init {
+        val tracer = Tracer(ConsoleTrace())
+
+        tracer
+            .setTraceLevel("", TraceLevel.OFF)
+            .setTraceLevel("com", TraceLevel.LOW)
+            .setTraceLevel("com.quasar.dorm", TraceLevel.HIGH)
+    }
 
     @BeforeEach
     fun setupSchema() {
