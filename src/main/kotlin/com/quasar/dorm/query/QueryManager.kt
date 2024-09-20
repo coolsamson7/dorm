@@ -5,18 +5,16 @@ package com.quasar.dorm.query
  * All rights reserved
  */
 
-import com.quasar.dorm.DataObject
+import com.quasar.dorm.`object`.DataObject
 import com.quasar.dorm.model.ObjectDescriptor
 import com.quasar.dorm.ObjectManager
 import com.quasar.dorm.persistence.DataObjectMapper
 import com.quasar.dorm.persistence.ObjectReader
 import com.quasar.dorm.persistence.entity.AttributeEntity
-import com.quasar.dorm.persistence.entity.EntityEntity
 import com.quasar.dorm.transaction.TransactionState
 import jakarta.persistence.EntityManager
 import jakarta.persistence.criteria.CriteriaQuery
 import jakarta.persistence.criteria.Root
-import jakarta.persistence.criteria.Subquery
 
 class QueryManager(val objectManager: ObjectManager, private val entityManager: EntityManager, private val mapper: DataObjectMapper) {
     // instance data

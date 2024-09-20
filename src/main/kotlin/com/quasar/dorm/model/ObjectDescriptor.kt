@@ -5,9 +5,9 @@ package com.quasar.dorm.model
  * All rights reserved
  */
 
-import com.quasar.dorm.DataObject
+import com.quasar.dorm.`object`.DataObject
 import com.quasar.dorm.ObjectManager
-import com.quasar.dorm.Property
+import com.quasar.dorm.`object`.Property
 
 class ObjectDescriptor(val name: String, val properties: Array<PropertyDescriptor<Any>>, var objectManager: ObjectManager? = null) {
     // instance data

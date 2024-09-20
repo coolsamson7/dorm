@@ -5,8 +5,7 @@ package com.quasar.dorm.transaction
  * All rights reserved
  */
 
-import com.quasar.dorm.DataObject
-import com.quasar.dorm.model.PropertyDescriptor
+import com.quasar.dorm.`object`.DataObject
 
 class ObjectState(val obj: DataObject, var status: Status) {
     // instance data

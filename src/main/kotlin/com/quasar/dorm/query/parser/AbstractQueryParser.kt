@@ -5,7 +5,7 @@ package com.quasar.dorm.query.parser
  * All rights reserved
  */
 
-import com.quasar.dorm.DataObject
+import com.quasar.dorm.`object`.DataObject
 import com.quasar.dorm.query.*
 import org.antlr.v4.runtime.Parser
 import org.antlr.v4.runtime.TokenStream

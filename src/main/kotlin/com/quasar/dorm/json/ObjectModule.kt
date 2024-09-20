@@ -1,6 +1,6 @@
 package com.quasar.dorm.json
 
-import com.quasar.dorm.DataObject
+import com.quasar.dorm.`object`.DataObject
 import com.quasar.dorm.ObjectManager
 import com.quasar.dorm.model.ObjectDescriptor
 import com.quasar.dorm.model.PropertyDescriptor

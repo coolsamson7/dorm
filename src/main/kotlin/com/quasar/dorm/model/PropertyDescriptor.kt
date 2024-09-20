@@ -6,6 +6,10 @@ package com.quasar.dorm.model
  */
 
 import com.quasar.dorm.*
+import com.quasar.dorm.`object`.Attribute
+import com.quasar.dorm.`object`.MultiValuedRelation
+import com.quasar.dorm.`object`.Property
+import com.quasar.dorm.`object`.SingleValuedRelation
 import com.quasar.dorm.persistence.entity.AttributeEntity
 import com.quasar.dorm.type.Type
 

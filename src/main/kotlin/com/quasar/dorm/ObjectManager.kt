@@ -5,11 +5,11 @@ package com.quasar.dorm
  * All rights reserved
  */
 import com.quasar.dorm.model.*
+import com.quasar.dorm.`object`.DataObject
 import com.quasar.dorm.persistence.DataObjectMapper
 import com.quasar.dorm.query.*
 import com.quasar.dorm.query.parser.OQLLexer
 import com.quasar.dorm.query.parser.OQLParser
-import com.quasar.dorm.transaction.ObjectState
 import com.quasar.dorm.transaction.Status
 import com.quasar.dorm.transaction.TransactionState
 import com.quasar.dorm.type.Type

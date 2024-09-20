@@ -7,8 +7,8 @@ package com.quasar.dorm
 
 import com.quasar.dorm.json.ObjectModule
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.quasar.dorm.json.ObjectDescriptorModule
-import com.quasar.dorm.type.TypeModule
+import com.quasar.dorm.model.json.ObjectDescriptorModule
+import com.quasar.dorm.type.json.TypeModule
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.context.annotation.Bean

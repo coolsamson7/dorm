@@ -5,7 +5,7 @@ package com.quasar.dorm.transaction
  * All rights reserved
  */
 
-import com.quasar.dorm.DataObject
+import com.quasar.dorm.`object`.DataObject
 import com.quasar.dorm.ObjectManager
 import com.quasar.dorm.model.ObjectDescriptor
 import com.quasar.dorm.persistence.DataObjectMapper
