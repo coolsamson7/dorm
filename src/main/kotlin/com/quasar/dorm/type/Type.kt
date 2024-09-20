@@ -78,8 +78,8 @@ open class Type<T:Any>(val baseType: Class<T>) {
 
         this.check(obj, context)
 
-        if (context.violations.size > 0)
-            throw ValidationError(context.violations)
+        if (context.violations != null)
+            throw ValidationError(context.violations!!)
     }
 
     fun isValid(obj: Any): Boolean {
@@ -87,7 +87,7 @@ open class Type<T:Any>(val baseType: Class<T>) {
 
         this.check(obj, context)
 
-        return context.violations.size == 0
+        return context.violations == null
     }
 
     // private
@@ -98,7 +98,7 @@ open class Type<T:Any>(val baseType: Class<T>) {
                 // remember violation
 
                 if (!test.ignore)
-                    context.violations.add(
+                    context.addViolation(
                         TypeViolation(
                             test.type,
                             test.name,
