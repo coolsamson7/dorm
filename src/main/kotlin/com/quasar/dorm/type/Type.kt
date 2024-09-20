@@ -13,6 +13,7 @@ open class Type<T:Any>(val baseType: Class<T>) {
     // instance data
 
     val tests = ArrayList<Test<Any>>()
+    var sealed = false
 
     val defaultValue : DefaultValue<T> = computeDefaultValue(baseType)
 
@@ -42,6 +43,14 @@ open class Type<T:Any>(val baseType: Class<T>) {
             true,
             false
         )
+    }
+
+    // public
+
+    fun seal() : Type<T>  {
+        this.sealed = true
+
+        return this
     }
 
     // fluent
@@ -108,6 +117,9 @@ open class Type<T:Any>(val baseType: Class<T>) {
     // protected
 
     protected fun <O> test(name: String, parameter: Any?, check: Check<O>, stop: Boolean = false, ignore: Boolean = false): Type<T> {
+        if ( sealed )
+            throw Error("type is sealed")
+
         tests.add(Test(baseType, name, parameter, check as Check<Any>, stop, ignore) as Test<Any>)
 
         return this
