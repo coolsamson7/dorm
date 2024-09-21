@@ -70,7 +70,7 @@ class Tracer(val trace: Trace) {
     }
     
     companion object {
-        val ENABLED = System.getProperty("tracing.enabled", "true").toLowerCase().equals("true")
+        val ENABLED = false//System.getProperty("tracing.enabled", "true").toLowerCase().equals("true")
         
         private lateinit var instance : Tracer
 

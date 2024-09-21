@@ -28,8 +28,10 @@ class SingleValuedRelation(property: AttributeEntity?, val targetDescriptor: Obj
     }
     override fun get(objectManager: ObjectManager) : Any? {
         if ( !isLoaded() && property !== null) {
-            if ( property!!.relations.size == 1)
-                target = objectManager.findById(targetDescriptor, property!!.relations.first().id)
+            if ( property!!.relations.size == 1) {
+                val targetEntity = property!!.relations.first()
+                target = objectManager.mapper.read(objectManager.transactionState(), targetDescriptor, targetEntity)
+            }
             else
                 target = null
         }

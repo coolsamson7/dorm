@@ -131,6 +131,28 @@ class DataObjectMapper() {
         }
     }
 
+    fun read(state: TransactionState, objectDescriptor: ObjectDescriptor, entity: EntityEntity): DataObject {
+        return state.retrieve(entity.id) {
+            if ( Tracer.ENABLED)
+                Tracer.trace("com.quasar.dorm", TraceLevel.HIGH, "read %s", objectDescriptor.name)
+
+            val obj = objectDescriptor.create()
+
+            val id =  entity.id
+            obj.entity = entity
+            obj["id"] = id
+
+            val reader = reader4(objectDescriptor)
+
+            for ( attribute in entity.properties)
+                reader.read(obj, objectDescriptor.property(attribute.attribute), attribute)
+
+            // done
+
+            return@retrieve obj
+        }
+    }
+
     fun read(state: TransactionState, objectDescriptor: ObjectDescriptor, attributes: List<AttributeEntity>, start: Int, end: Int) : DataObject {
         return state.retrieve(attributes[start].entity.id) {
             if ( Tracer.ENABLED)

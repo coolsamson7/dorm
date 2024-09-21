@@ -6,10 +6,36 @@ package com.quasar.dorm
  */
 
 import com.quasar.dorm.`object`.DataObject
+import jakarta.persistence.EntityManager
+import jakarta.persistence.PersistenceContext
+import org.hibernate.Session
+import org.hibernate.stat.Statistics
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
+
 class QLQueryTests : AbstractTest() {
+
+    @PersistenceContext
+    private lateinit var entityManager: EntityManager
+
+    lateinit var statistics : Statistics;
+
+    @BeforeEach
+    fun clearStats() {
+        val session = entityManager.unwrap(Session::class.java)
+
+        statistics = session.getSessionFactory().getStatistics()
+    }
+
+    @AfterEach
+    fun printStats() {
+        for ( query in statistics.queries)
+            println(query)
+    }
+
     @Test
     fun testReadAll() {
         createPerson("Andi", 58)
