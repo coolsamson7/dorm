@@ -49,9 +49,10 @@ data class PersonEntity(
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
         name = "person_hobby",
-        joinColumns = arrayOf(JoinColumn(name = "person_id")),
-        inverseJoinColumns = arrayOf(JoinColumn(name = "hobby_id")))
-    val hobbies : Set<HobbyEntity>
+        joinColumns = [JoinColumn(name = "person_id")],
+        inverseJoinColumns = [JoinColumn(name = "hobby_id")]
+    )
+    val hobbies : MutableSet<HobbyEntity>
 )
 
 internal class DORMBenchmark : AbstractTest() {
@@ -63,6 +64,7 @@ internal class DORMBenchmark : AbstractTest() {
     // local
 
     protected fun measure(test: String, n: Int, doIt: () -> Unit) {
+        println("### start " + test)
         val start = System.currentTimeMillis()
 
         objectManager.begin()
@@ -89,7 +91,7 @@ internal class DORMBenchmark : AbstractTest() {
 
             entityManager.persist(hobby)
 
-            val person = PersonEntity(0, "Andi", 58, "v1", "v2", "v3", setOf(hobby))
+            val person = PersonEntity(0, "Andi", 58, "v1", "v2", "v3", mutableSetOf(hobby))
 
             entityManager.persist(person)
 
@@ -106,12 +108,28 @@ internal class DORMBenchmark : AbstractTest() {
         }
     }
 
+    //@Test
+    fun Foo() {
+        // warm up
+
+        withTransaction {
+            val person = PersonEntity(0,"Andi", 58, "v1", "v2", "v3", mutableSetOf())
+            val hobby = HobbyEntity(0, "angeln")
+
+            entityManager.persist(hobby)
+
+            person.hobbies.add(hobby)
+
+            entityManager.persist(person)
+        }
+    }
+
     @Test
     fun testJPA() {
         // warm up
 
         withTransaction {
-            entityManager.persist(PersonEntity(0,"Andi", 58, "v1", "v2", "v3", setOf()))
+            entityManager.persist(PersonEntity(0,"Andi", 58, "v1", "v2", "v3", mutableSetOf()))
 
             val builder: CriteriaBuilder = entityManager.criteriaBuilder
 
@@ -137,7 +155,7 @@ internal class DORMBenchmark : AbstractTest() {
 
         measure("create ${objects} objects ", objects) {
             for (i in 1..objects) {
-                entityManager.persist(PersonEntity(0,"Andi", 58, "v1", "v2", "v3", setOf()))
+                entityManager.persist(PersonEntity(0,"Andi", 58, "v1", "v2", "v3", mutableSetOf()))
             }
         }
 
@@ -174,18 +192,20 @@ internal class DORMBenchmark : AbstractTest() {
         }
 
         measure("filter & project ${objects} objects ", objects) {
-            val builder: CriteriaBuilder = entityManager.criteriaBuilder
+            val builder = entityManager.criteriaBuilder
 
             // update attributes
 
-            val criteriaQuery = builder.createQuery(PersonEntity::class.java)
+            val criteriaQuery = builder.createQuery(Array<Any>::class.java)
             val personEntity = criteriaQuery.from(PersonEntity::class.java)
 
             criteriaQuery
-                .select(personEntity.get("name"))//, personEntity.get("age"))
+                .multiselect(personEntity.get<String>("name"), personEntity.get<Int>("age"))
                 .where(builder.equal(personEntity.get<Int>("name"), "Andi"))
 
             val result = entityManager.createQuery(criteriaQuery).resultList
+
+            System.err.println()
         }
 
         // update
