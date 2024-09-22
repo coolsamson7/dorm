@@ -1,14 +1,15 @@
 package com.quasar.common.tracer
-
-import java.text.SimpleDateFormat
-
 /*
  * @COPYRIGHT (C) 2023 Andreas Ernst
  *
  * All rights reserved
  */
 
+import java.text.SimpleDateFormat
+
 abstract class Format() {
+    open fun setup(parameters: String) {}
+
     abstract fun format(entry: TraceEntry, builder: StringBuilder)
 }
 
@@ -29,27 +30,54 @@ class FormatMessage() : Format() {
 }
 
 class FormatLevel() : Format() {
+    // instance data
+
+    var format : String? = null
+
     // implement
 
+    override fun setup(parameters: String) {
+        this.format = parameters
+    }
+
     override fun format(entry: TraceEntry, builder: StringBuilder) {
-        builder.append(entry.level)
+        if ( format != null)
+            builder.append(String.format("%" + this.format!!, entry.level))
+        else
+            builder.append(entry.level)
     }
 }
 
 class FormatPath() : Format() {
+    // instance data
+
+    var format : String? = null
+
     // implement
 
+    override fun setup(parameters: String) {
+        this.format = parameters
+    }
+
     override fun format(entry: TraceEntry, builder: StringBuilder) {
-        builder.append(entry.path)
+        if ( format != null)
+            builder.append(String.format("%" + this.format!!, entry.path))
+        else
+            builder.append(entry.path)
     }
 }
 
 class FormatTimestamp() : Format() {
     // instance data
 
-    val format = SimpleDateFormat("yyyy-MM-dd HH:mm:ss,SSS")
+    var format = SimpleDateFormat("yyyy-MM-dd HH:mm:ss,SSS")
 
     // implement
+
+    override fun setup(parameters: String) {
+        println(parameters)
+        format = SimpleDateFormat(parameters)
+    }
 
     override fun format(entry: TraceEntry, builder: StringBuilder) {
         builder.append(format.format(entry.timestamp))
@@ -81,12 +109,33 @@ class TraceFormatter(layout: String) {
         var pos = start
 
         var parameter = false
+        var lastFormat : Format? = null
+        var inParameter = false
 
         while ( pos < layout.length) {
-            if ( parameter ) {
+            if ( lastFormat != null) {
+                if ( inParameter) {
+                    if ( layout[pos] == '}') {
+                        lastFormat.setup( layout.substring(start, pos))
+                        start = pos + 1
+                        lastFormat = null
+                        inParameter = false
+                    }
+                }
+                else {
+                    if ( layout[pos] == '{') {
+                        start++
+                        inParameter = true
+                    }
+                    else
+                        lastFormat = null
+                }
+            }
+
+            else if ( parameter ) {
                 val element =  layout[pos]
 
-                when ( element ) {
+                lastFormat = when ( element ) {
                     'p' -> FormatPath()
                     'l' -> FormatLevel()
                     'd' -> FormatTimestamp()
@@ -96,6 +145,8 @@ class TraceFormatter(layout: String) {
                             throw Error("unknown placeholder ${element}")
                         }
                 }
+
+                result.add(lastFormat)
 
                 start = pos +1
 
@@ -112,9 +163,10 @@ class TraceFormatter(layout: String) {
             pos++
         } // while
 
-        if ( pos - start > 0) {
+        if ( pos - start > 0)
             result.add(FormatString( layout.substring(start, pos)))
-        }
+
+        // done
 
         return result.toTypedArray()
     }
@@ -125,7 +177,7 @@ class TraceFormatter(layout: String) {
         val builder = StringBuilder()
 
         for ( format in this.formatter)
-            format(entry)
+            format.format(entry, builder)
 
         return builder.toString()
     }

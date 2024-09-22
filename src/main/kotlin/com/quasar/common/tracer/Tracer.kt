@@ -11,7 +11,7 @@ import java.util.*
  * A Tracer is used to emit trace messages for development purposes.
  * While it shares the logic of a typical logger, it will be turned of in production.
  */
-class Tracer(private val trace: Trace, layout : String = "%t %l [%p] %m") {
+class Tracer(private val trace: Trace, layout : String = "%d %l [%p] %m") {
     // instance data
 
     private val traceLevels = HashMap<String, TraceLevel>()
@@ -71,7 +71,7 @@ class Tracer(private val trace: Trace, layout : String = "%t %l [%p] %m") {
     }
     
     companion object {
-        val ENABLED = System.getProperty("tracing.enabled", "false").lowercase(Locale.getDefault()).equals("true")
+        val ENABLED = true//System.getProperty("tracing.enabled", "false").lowercase(Locale.getDefault()).equals("true")
         
         private lateinit var instance : Tracer
 

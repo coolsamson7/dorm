@@ -54,7 +54,7 @@ class DataObjectMapper() {
                 val property = properties[index]
 
                 if ( property.isAttribute())
-                    when ( property.asAttribute().type.baseType) {
+                    when ( property.asAttribute().baseType()) {
                         String::class.java -> updater4<String>("stringValue",  String::class.java).update(obj.id, property.name, obj.values[index].get(objectManager) as String)
                         Short::class.java -> updater4<Int>("intValue",  Short::class.java).update(obj.id, property.name, (obj.values[index].get(objectManager) as Short).toInt())
                         Int::class.java -> updater4<Int>("intValue",  Int::class.java).update(obj.id, property.name, obj.values[index].get(objectManager) as Int)
@@ -66,7 +66,7 @@ class DataObjectMapper() {
                         Boolean::class.javaObjectType -> updater4<Int>("intValue",  Integer::class.java).update(obj.id, property.name, if (obj.values[index].get(objectManager) as Boolean) 1 else 0)
 
                         else -> {
-                                throw Error("ouch")
+                                throw Error("usupported type ${property.asAttribute().baseType().simpleName}")
                         }
                     }
                 else {
@@ -105,7 +105,7 @@ class DataObjectMapper() {
 
         obj.entity = EntityEntity(0, descriptor.name, mapper.writeValueAsString(obj))
 
-        entityManager.persist(obj.entity) // we need the id...is that required, think of a lifeccle hook?
+        entityManager.persist(obj.entity) // we need the id...is that required, think of a lifecycle hook?
 
         writer4(descriptor).write(state, obj, entityManager) // will create the attribute entities
 

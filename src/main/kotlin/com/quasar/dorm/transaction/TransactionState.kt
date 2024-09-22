@@ -94,7 +94,7 @@ class TransactionState(val objectManager: ObjectManager, val transactionManager:
     }
 
     fun create(obj: DataObject) {
-        val state = ObjectState(obj, Status.MANAGED) // as soon as it is flushed it will be managed
+        val state = ObjectState(obj, Status.MANAGED) // as soon as it is flushed it will be managed TODO ID
 
         // force flush
 
