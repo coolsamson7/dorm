@@ -22,7 +22,7 @@ class MultiValuedRelation(relation: RelationDescriptor<*>, val obj: DataObject, 
 
     private fun load(objectManager: ObjectManager) {
         objects = HashSet()
-        for ( target in property!!.targets ) {
+        for ( target in relations() ) {
             objects!!.add(objectManager.mapper.read(TransactionState.current(), targetDescriptor, target.entity))
         }
     }
@@ -63,7 +63,7 @@ class MultiValuedRelation(relation: RelationDescriptor<*>, val obj: DataObject, 
             // synchronize the objects set with the property.relations
 
             val targetMap = HashMap<Int, PropertyEntity>()
-            val relations = property!!.targets
+            val relations = relations()
 
             // collect all targets in a map
 

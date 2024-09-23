@@ -11,6 +11,8 @@ import org.sirius.common.type.base.*
 import org.sirius.dorm.model.Multiplicity
 import org.sirius.dorm.model.ObjectDescriptor
 import org.sirius.dorm.`object`.MultiValuedRelation
+import org.sirius.dorm.`object`.Relation
+import org.sirius.dorm.`object`.SingleValuedRelation
 import kotlin.test.assertEquals
 
 
@@ -58,7 +60,8 @@ class RelationTests: AbstractTest() {
         withTransaction {
             descriptor = objectManager.type("p")
                 .attribute("name", string())
-                .relation("children", "p", Multiplicity.ZERO_OR_MANY)
+                .relation("children", "p", Multiplicity.ZERO_OR_MANY, "father")
+                .relation("father", "p", Multiplicity.ZERO_OR_ONE, "children")
                 .register()
         }
 
@@ -71,16 +74,42 @@ class RelationTests: AbstractTest() {
 
             person["name"] = "Andi"
 
+            // force load
+
+            person["children"]
+
             id = person.id
 
-            val child = objectManager.create(descriptor!!)
+            // child 1
 
-            child["name"] = "Nika"
+            val child1 = objectManager.create(descriptor!!)
+
+            child1["name"] = "Nika"
+            child1["father"] = person
+
+            val father1 = child1.relation<SingleValuedRelation>("father")
+
+            // child 2
+
+            val child2 = objectManager.create(descriptor!!)
+
+            child2["name"] = "Pupsi"
+            child2["father"] = person
+
+            val father2 = child2.relation<SingleValuedRelation>("father")
+
+            // person children
+
+            val children = person.relation<MultiValuedRelation>("children")
+
+            // should have synchronized in memory already
+
+            assertEquals(2, children.size)
 
             // add as child
 
-            person.value<MultiValuedRelation>("children").add(child)
-            person.relation("children").add(child)
+            //person.value<MultiValuedRelation>("children").add(child)
+            //person.relation("children").add(child)
         }
 
         // reread
@@ -92,9 +121,16 @@ class RelationTests: AbstractTest() {
 
             assert(person!!["children"] !== null)
 
-            val children : MultiValuedRelation = person!!["children"] as MultiValuedRelation
+            val children = person!!["children"] as MultiValuedRelation
 
-            assert(children.size == 1)
+            assert(children.size == 2)
+
+            val iter = children.iterator()
+            val x = iter.next()
+            val y = iter.next()
+
+
+            println()
             //assertEquals("Nika", children[0]["name"])
         }
     }
@@ -130,7 +166,7 @@ class RelationTests: AbstractTest() {
             // add as child
 
             person.value<MultiValuedRelation>("children").add(child)
-            person.relation("children").add(child)
+            person.relation<MultiValuedRelation>("children").add(child)
         }
 
         // reread

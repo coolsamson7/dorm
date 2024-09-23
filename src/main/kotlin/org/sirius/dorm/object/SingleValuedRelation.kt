@@ -27,16 +27,16 @@ class SingleValuedRelation(relation: RelationDescriptor<*>, val obj: DataObject,
 
     override fun flush() {
         if ( isLoaded()) {
-            property!!.targets.clear()
+            relations().clear()
             if ( target !== null) {
-                property!!.targets.add(target!!.values[relation.inverseRelation!!.index].property!!)
+                relations().add(target!!.values[relation.inverseRelation!!.index].property!!)
             }
         }
     }
     override fun get(objectManager: ObjectManager) : Any? {
         if ( !isLoaded() && property !== null) {
-            if ( property!!.targets.size == 1) {
-                val targetProperty = property!!.targets.first()
+            if ( relations().size == 1) {
+                val targetProperty = relations().first()
                 target = objectManager.mapper.read(TransactionState.current(), targetDescriptor, targetProperty.entity)
             }
             else
@@ -50,14 +50,14 @@ class SingleValuedRelation(relation: RelationDescriptor<*>, val obj: DataObject,
         if ( value !== this.target) {
             var inverse = inverseRelation(this.target)
             if ( inverse !== null)
-                inverse.removeInverse(this.target!!)
+                inverse.removeInverse(this.obj)
 
             this.target = value as DataObject?
 
             if ( this.target !== null) {
                 inverse = inverseRelation(this.target)
                 if ( inverse !== null)
-                    inverse.addInverse(value!!)
+                    inverse.addInverse(this.obj)
             }
 
             // done

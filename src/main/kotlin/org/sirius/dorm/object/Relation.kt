@@ -30,6 +30,13 @@ abstract class Relation(val relation: RelationDescriptor<*>, val targetDescripto
         }
         else return null
     }
+
+    fun relations() : MutableSet<PropertyEntity> {
+        return if ( relation.isOwner()) property!!.targets else property!!.sources
+    }
+
+    // abstract
+
     abstract fun addInverse(element: DataObject)
     abstract fun removeInverse(element: DataObject)
 }

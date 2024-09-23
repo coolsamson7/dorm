@@ -46,8 +46,8 @@ class DataObject(val type: ObjectDescriptor, var state : ObjectState?) {
         return values[property(name).index].get(objectManager) as T
     }
 
-    fun relation(name: String) : MultiValuedRelation {
-        return value(name)
+    fun <T: Relation>relation(name: String) : T {
+        return values[property(name).index] as T
     }
 
     operator fun get(name: String) : Any? {

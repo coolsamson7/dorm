@@ -101,4 +101,8 @@ open class RelationDescriptor<T:Any>(name: String, val target: String, val multi
     override fun validate(value: Any?) {
         TODO("Not yet implemented")
     }
+
+    fun isOwner() : Boolean {
+        return inverse !== null
+    }
 }
