@@ -6,6 +6,7 @@ package org.sirius.dorm.persistence.entity
  */
 
 import jakarta.persistence.*
+import org.sirius.dorm.`object`.DataObject
 import java.io.Serializable
 
 data class PropertyId(private val entity: Int = 0, private val attribute: String = "") : Serializable
@@ -48,5 +49,21 @@ data class PropertyEntity(
         joinColumns = [JoinColumn(name = "FROM_ENTITY"), JoinColumn(name = "FROM_ATTRIBUTE")],
         inverseJoinColumns = [JoinColumn(name = "TO_ENTITY"), JoinColumn(name = "TO_ATTRIBUTE")]
     )
-    val relations : MutableSet<PropertyEntity> = HashSet()
-)
+    val targets : MutableSet<PropertyEntity> = HashSet(),
+
+    @ManyToMany(mappedBy="targets", fetch = FetchType.LAZY)
+    val sources : MutableSet<PropertyEntity> = HashSet(),
+) {
+    // override Object
+
+    /*override fun equals(other: Any?): Boolean { TODO
+        if ( other is DataObject)
+            return id == other.id && this.type === other.type
+        else
+            return false
+    }*/
+
+    override fun hashCode(): Int {
+        return type.hashCode() + attribute.hashCode()
+    }
+}

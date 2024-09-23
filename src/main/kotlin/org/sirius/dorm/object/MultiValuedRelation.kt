@@ -10,24 +10,19 @@ import org.sirius.dorm.model.ObjectDescriptor
 import org.sirius.dorm.model.PropertyDescriptor
 import org.sirius.dorm.model.RelationDescriptor
 import org.sirius.dorm.persistence.entity.PropertyEntity
-import org.sirius.dorm.persistence.entity.EntityEntity
 import org.sirius.dorm.transaction.TransactionState
 import java.util.HashMap
 
-class MultiValuedRelation(val relation: RelationDescriptor<*>, val obj: DataObject, property: PropertyEntity?, val targetDescriptor: ObjectDescriptor) : Relation(property), MutableSet<DataObject> {
+class MultiValuedRelation(relation: RelationDescriptor<*>, val obj: DataObject, property: PropertyEntity?, targetDescriptor: ObjectDescriptor) : Relation(relation, targetDescriptor, property), MutableSet<DataObject> {
     // instance data
 
     private var objects : HashSet<DataObject>? = null
 
     // private
 
-    private fun isLoaded() : Boolean {
-        return objects !== null
-    }
-
     private fun load(objectManager: ObjectManager) {
         objects = HashSet()
-        for ( target in property!!.relations ) {
+        for ( target in property!!.targets ) {
             objects!!.add(objectManager.mapper.read(TransactionState.current(), targetDescriptor, target.entity))
         }
     }
@@ -35,6 +30,19 @@ class MultiValuedRelation(val relation: RelationDescriptor<*>, val obj: DataObje
     private fun markDirty() {
         if ( obj.state!!.snapshot == null)
             obj.state!!.takeSnapshot(obj)
+    }
+
+    // implement Relation
+
+    override fun isLoaded() : Boolean {
+        return objects !== null
+    }
+
+    override fun addInverse(element: DataObject) {
+        this.objects!!.add(element)
+    }
+    override fun removeInverse(element: DataObject) {
+        this.objects!!.remove(element)
     }
 
     // implement  Property
@@ -50,23 +58,12 @@ class MultiValuedRelation(val relation: RelationDescriptor<*>, val obj: DataObje
         throw Error("relations don't allow to be set")
     }
 
-    override fun save(): Any {
-        return this
-    }
-
-    override fun restore(state: Any) {
-    }
-
-    override fun isDirty(snapshot: Any) : Boolean {
-        return isLoaded()
-    }
-
     override fun flush() {
         if (isLoaded()) {
             // synchronize the objects set with the property.relations
 
             val targetMap = HashMap<Int, PropertyEntity>()
-            val relations = property!!.relations
+            val relations = property!!.targets
 
             // collect all targets in a map
 
@@ -97,7 +94,17 @@ class MultiValuedRelation(val relation: RelationDescriptor<*>, val obj: DataObje
     override fun add(element: DataObject): Boolean {
         markDirty()
 
-        return objects!!.add(element)
+        if (objects!!.add(element)) {
+            // take care of inverse
+
+            val inverse = inverseRelation(element)
+            if ( inverse !== null) {
+                inverse.addInverse(obj)
+            }
+
+            return true
+        }
+        else return false
     }
 
     override fun addAll(elements: Collection<DataObject>): Boolean {
@@ -112,14 +119,24 @@ class MultiValuedRelation(val relation: RelationDescriptor<*>, val obj: DataObje
     override fun remove(element: DataObject): Boolean {
         markDirty()
 
-        return objects!!.remove(element)
+        if (objects!!.remove(element)) {
+            // take care of inverse
+
+            val inverse = inverseRelation(element!!)
+            if ( inverse !== null) {
+                inverse.removeInverse(element)
+            }
+
+            return true
+        }
+        else return false
     }
 
     override val size: Int
         get() = objects!!.size
 
     override fun clear() {
-        markDirty()
+        markDirty() // TODO
 
         return objects!!.clear()
     }

@@ -12,35 +12,31 @@ import org.sirius.dorm.model.RelationDescriptor
 import org.sirius.dorm.persistence.entity.PropertyEntity
 import org.sirius.dorm.transaction.TransactionState
 
-class SingleValuedRelation(val relation: RelationDescriptor<*>, val obj: DataObject, property: PropertyEntity?, val targetDescriptor: ObjectDescriptor) : Relation(property) {
+class SingleValuedRelation(relation: RelationDescriptor<*>, val obj: DataObject, property: PropertyEntity?, targetDescriptor: ObjectDescriptor) : Relation(relation, targetDescriptor, property) {
     // instance data
 
     var target: DataObject? = DataObject.NONE
 
-    // private
+    // implement Relation
 
-    private fun isLoaded() : Boolean {
+    override fun isLoaded() : Boolean {
         return target !== DataObject.NONE
     }
 
     // override
 
-    override fun isDirty(snapshot: Any) : Boolean {
-        return isLoaded()
-    }
-
     override fun flush() {
         if ( isLoaded()) {
-            property!!.relations.clear()
+            property!!.targets.clear()
             if ( target !== null) {
-                property!!.relations.add(target!!.values[relation.inverseRelation!!.index].property!!)
+                property!!.targets.add(target!!.values[relation.inverseRelation!!.index].property!!)
             }
         }
     }
     override fun get(objectManager: ObjectManager) : Any? {
         if ( !isLoaded() && property !== null) {
-            if ( property!!.relations.size == 1) {
-                val targetProperty = property!!.relations.first()
+            if ( property!!.targets.size == 1) {
+                val targetProperty = property!!.targets.first()
                 target = objectManager.mapper.read(TransactionState.current(), targetDescriptor, targetProperty.entity)
             }
             else
@@ -51,15 +47,32 @@ class SingleValuedRelation(val relation: RelationDescriptor<*>, val obj: DataObj
     }
 
     override fun set(propertyDescriptor: PropertyDescriptor<Any>, value: Any?) : Boolean {
-        this.target = value as DataObject?
+        if ( value !== this.target) {
+            var inverse = inverseRelation(this.target)
+            if ( inverse !== null)
+                inverse.removeInverse(this.target!!)
 
-        return true
+            this.target = value as DataObject?
+
+            if ( this.target !== null) {
+                inverse = inverseRelation(this.target)
+                if ( inverse !== null)
+                    inverse.addInverse(value!!)
+            }
+
+            // done
+
+            return true
+        }
+        else return false
     }
 
-    override fun save(): Any {
-        return this
-    }
+    // new
 
-    override fun restore(state: Any) {
+    override fun addInverse(element: DataObject) {
+        this.target = element
+    }
+    override fun removeInverse(element: DataObject) {
+        this.target = null
     }
 }
