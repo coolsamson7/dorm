@@ -6,14 +6,14 @@ package org.sirius.dorm.model
  */
 
 import org.sirius.dorm.*
-import org.sirius.dorm.persistence.entity.AttributeEntity
+import org.sirius.dorm.persistence.entity.PropertyEntity
 import org.sirius.common.type.Type
 import org.sirius.dorm.`object`.*
 
 abstract class PropertyDescriptor<T:Any>(val name: String) {
     var index = 0
 
-    abstract fun createProperty(obj: DataObject, entity: AttributeEntity?) : Property
+    abstract fun createProperty(obj: DataObject, entity: PropertyEntity?) : Property
 
     abstract fun defaultValue() : Any?
 
@@ -44,7 +44,7 @@ class AttributeDescriptor<T:Any>(name: String, val type: Type<T>, val isPrimaryK
 
     // override
 
-    override fun createProperty(obj: DataObject, entity: AttributeEntity?) : Property {
+    override fun createProperty(obj: DataObject, entity: PropertyEntity?) : Property {
         return Attribute(entity, defaultValue()!!)
     }
 
@@ -72,19 +72,22 @@ enum class Multiplicity(val optional: Boolean, val mutliValued: Boolean) {
     MANY(false, true),
     ZERO_OR_MANY(true, true)
 }
-open class RelationDescriptor<T:Any>(name: String, val target: String, val multiplicity: Multiplicity) : PropertyDescriptor<T>(name) {
+open class RelationDescriptor<T:Any>(name: String, val target: String, val multiplicity: Multiplicity, val inverse: String?) : PropertyDescriptor<T>(name) {
     // instance data
 
     var targetDescriptor: ObjectDescriptor? = null
+    var inverseRelation : RelationDescriptor<*>? = null
 
     // override
 
-    override fun createProperty(obj: DataObject, entity: AttributeEntity?) : Property {
-        return if ( multiplicity === Multiplicity.ONE ) SingleValuedRelation(obj, entity, targetDescriptor!!) else MultiValuedRelation(obj, entity, targetDescriptor!!)
+    override fun createProperty(obj: DataObject, entity: PropertyEntity?) : Property {
+        return if ( multiplicity.mutliValued ) MultiValuedRelation(this, obj, entity, targetDescriptor!!) else SingleValuedRelation(this, obj, entity, targetDescriptor!!)
     }
 
     override fun resolve(objectManager: ObjectManager, descriptor: ObjectDescriptor) {
         targetDescriptor = objectManager.getDescriptor(target)
+        if ( inverse !== null)
+            inverseRelation = targetDescriptor!!.property(inverse) as RelationDescriptor<*>
     }
 
     override fun asRelation() :RelationDescriptor<T> {

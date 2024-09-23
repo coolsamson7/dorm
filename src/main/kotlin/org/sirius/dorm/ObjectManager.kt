@@ -42,7 +42,13 @@ class ObjectDescriptorBuilder(val manager: ObjectManager, val name: String) {
     }
 
     fun relation(name: String, target: String, multiplicity: Multiplicity) : ObjectDescriptorBuilder {
-        properties.add(RelationDescriptor(name, target, multiplicity))
+        properties.add(RelationDescriptor(name, target, multiplicity, null))
+
+        return this
+    }
+
+    fun relation(name: String, target: String, multiplicity: Multiplicity, inverse: String) : ObjectDescriptorBuilder {
+        properties.add(RelationDescriptor(name, target, multiplicity, inverse))
 
         return this
     }

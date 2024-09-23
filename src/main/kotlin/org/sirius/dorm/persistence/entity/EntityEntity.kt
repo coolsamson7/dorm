@@ -23,5 +23,5 @@ data class EntityEntity(
     var json : String,
 
     @OneToMany(mappedBy = "entity", cascade = [CascadeType.ALL], orphanRemoval = true)
-    var properties : MutableList<AttributeEntity> = ArrayList()
+    var properties : MutableList<PropertyEntity> = ArrayList()
 )

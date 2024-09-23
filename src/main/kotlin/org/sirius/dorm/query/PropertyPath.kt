@@ -6,7 +6,7 @@ package org.sirius.dorm.query
  */
 
 import org.sirius.dorm.model.PropertyDescriptor
-import org.sirius.dorm.persistence.entity.AttributeEntity
+import org.sirius.dorm.persistence.entity.PropertyEntity
 import jakarta.persistence.criteria.Path
 import jakarta.persistence.criteria.Root
 
@@ -15,7 +15,7 @@ class PropertyPath(parent: ObjectPath, val property: PropertyDescriptor<Any>) : 
         throw Error("ouch")
     }
 
-    override fun path(root: Root<AttributeEntity>) : Path<Any> {
+    override fun path(root: Root<PropertyEntity>) : Path<Any> {
         return parent!!.path(root).get(property.name)
     }
 
@@ -27,7 +27,7 @@ class PropertyPath(parent: ObjectPath, val property: PropertyDescriptor<Any>) : 
         return property.asAttribute().type.baseType
     }
 
-    override fun <T> expression(root: Root<AttributeEntity>): Path<T> {
+    override fun <T> expression(root: Root<PropertyEntity>): Path<T> {
         return if ( property.name == "id")
             root.get<String>("entity").get<Int>("id") as Path<T>
 

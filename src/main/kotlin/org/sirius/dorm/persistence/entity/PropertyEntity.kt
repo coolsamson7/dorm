@@ -8,10 +8,10 @@ package org.sirius.dorm.persistence.entity
 import jakarta.persistence.*
 import java.io.Serializable
 
-data class AttributeId(private val entity: Int = 0, private val attribute: String = "") : Serializable
+data class PropertyId(private val entity: Int = 0, private val attribute: String = "") : Serializable
 
 @Entity
-@Table(name="ATTRIBUTE",
+@Table(name="PROPERTY",
     indexes = [
         Index(columnList = "TYPE"),
         Index(columnList = "INT_VALUE"),
@@ -19,8 +19,8 @@ data class AttributeId(private val entity: Int = 0, private val attribute: Strin
         Index(columnList = "STRING_VALUE")
     ]
 )
-@IdClass(AttributeId::class)
-data class AttributeEntity(
+@IdClass(PropertyId::class)
+data class PropertyEntity(
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId
     @JoinColumn(name = "ENTITY")
@@ -44,9 +44,9 @@ data class AttributeEntity(
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
-        name = "ATTRIBUTE_ENTITY",
-        joinColumns = [JoinColumn(name = "ENTITY"), JoinColumn(name = "ATTRIBUTE")],
-        inverseJoinColumns = [JoinColumn(name = "ID")]
+        name = "ATTRIBUTE_RELATION",
+        joinColumns = [JoinColumn(name = "FROM_ENTITY"), JoinColumn(name = "FROM_ATTRIBUTE")],
+        inverseJoinColumns = [JoinColumn(name = "TO_ENTITY"), JoinColumn(name = "TO_ATTRIBUTE")]
     )
-    val relations : MutableSet<EntityEntity> = HashSet()
+    val relations : MutableSet<PropertyEntity> = HashSet()
 )

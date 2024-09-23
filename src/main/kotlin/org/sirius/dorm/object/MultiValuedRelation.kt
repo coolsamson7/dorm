@@ -8,12 +8,13 @@ package org.sirius.dorm.`object`
 import org.sirius.dorm.ObjectManager
 import org.sirius.dorm.model.ObjectDescriptor
 import org.sirius.dorm.model.PropertyDescriptor
-import org.sirius.dorm.persistence.entity.AttributeEntity
+import org.sirius.dorm.model.RelationDescriptor
+import org.sirius.dorm.persistence.entity.PropertyEntity
 import org.sirius.dorm.persistence.entity.EntityEntity
 import org.sirius.dorm.transaction.TransactionState
 import java.util.HashMap
 
-class MultiValuedRelation(val obj: DataObject, property: AttributeEntity?, val targetDescriptor: ObjectDescriptor) : Relation(property), MutableSet<DataObject> {
+class MultiValuedRelation(val relation: RelationDescriptor<*>, val obj: DataObject, property: PropertyEntity?, val targetDescriptor: ObjectDescriptor) : Relation(property), MutableSet<DataObject> {
     // instance data
 
     private var objects : HashSet<DataObject>? = null
@@ -27,7 +28,7 @@ class MultiValuedRelation(val obj: DataObject, property: AttributeEntity?, val t
     private fun load(objectManager: ObjectManager) {
         objects = HashSet()
         for ( target in property!!.relations ) {
-            objects!!.add(objectManager.mapper.read(TransactionState.current(), targetDescriptor, target))
+            objects!!.add(objectManager.mapper.read(TransactionState.current(), targetDescriptor, target.entity))
         }
     }
 
@@ -64,13 +65,13 @@ class MultiValuedRelation(val obj: DataObject, property: AttributeEntity?, val t
         if (isLoaded()) {
             // synchronize the objects set with the property.relations
 
-            val targetMap = HashMap<Int, EntityEntity>()
+            val targetMap = HashMap<Int, PropertyEntity>()
             val relations = property!!.relations
 
             // collect all targets in a map
 
             for (previousTarget in relations)
-                targetMap[previousTarget.id] = previousTarget
+                targetMap[previousTarget.entity.id] = previousTarget
 
             // iterate over source objects
 
@@ -78,7 +79,7 @@ class MultiValuedRelation(val obj: DataObject, property: AttributeEntity?, val t
                 val key = target.id
 
                 if (!targetMap.containsKey(key))
-                    relations.add(target.entity!!)
+                    relations.add(target.values[relation.index].property!!)
                 else
                     targetMap.remove(key)
             } // for

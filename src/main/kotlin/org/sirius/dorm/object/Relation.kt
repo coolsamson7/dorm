@@ -5,7 +5,7 @@ package org.sirius.dorm.`object`
  * All rights reserved
  */
 
-import org.sirius.dorm.persistence.entity.AttributeEntity
+import org.sirius.dorm.persistence.entity.PropertyEntity
 
-abstract class Relation(property: AttributeEntity?) : Property(property) {
+abstract class Relation(property: PropertyEntity?) : Property(property) {
 }

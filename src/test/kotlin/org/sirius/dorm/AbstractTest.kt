@@ -73,8 +73,8 @@ class AbstractTest {
 
                     // relations
 
-                    .relation("father", "person", Multiplicity.ONE)
-                    //.relation("children", "person", Multiplicity.N)
+                    .relation("father", "person", Multiplicity.ZERO_OR_ONE, "children")
+                    .relation("children", "person", Multiplicity.ZERO_OR_MANY)
 
                     .attribute("boolean", boolean())
                     .attribute("string", string())

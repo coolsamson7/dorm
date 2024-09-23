@@ -98,4 +98,54 @@ class RelationTests: AbstractTest() {
             //assertEquals("Nika", children[0]["name"])
         }
     }
+
+    @Test
+    fun testOneToManyIncludingInverse() {
+        // create schema
+
+        var descriptor : ObjectDescriptor?= null
+        withTransaction {
+            descriptor = objectManager.type("p1")
+                .attribute("name", string())
+                .relation("parent", "p1", Multiplicity.ZERO_OR_ONE, "children")
+                .relation("children", "p1", Multiplicity.ZERO_OR_MANY, "parent")
+                .register()
+        }
+
+        // test
+
+        var id = 0
+
+        withTransaction {
+            val person = objectManager.create(descriptor!!)
+
+            person["name"] = "Andi"
+
+            id = person.id
+
+            val child = objectManager.create(descriptor!!)
+
+            child["name"] = "Nika"
+
+            // add as child
+
+            person.value<MultiValuedRelation>("children").add(child)
+            person.relation("children").add(child)
+        }
+
+        // reread
+
+        withTransaction {
+            val person = objectManager.findById(descriptor!!, id)
+
+            assert(person !== null)
+
+            assert(person!!["children"] !== null)
+
+            val children : MultiValuedRelation = person!!["children"] as MultiValuedRelation
+
+            assert(children.size == 1)
+            //assertEquals("Nika", children[0]["name"])
+        }
+    }
 }

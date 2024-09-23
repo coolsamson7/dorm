@@ -26,6 +26,7 @@ open class ObjectDescriptorSerializer : StdSerializer<ObjectDescriptor>(ObjectDe
             }
             else {
                 jsonGenerator.writeStringField("target", property.asRelation().target)
+                jsonGenerator.writeStringField("inverse", property.asRelation().inverse)
                 jsonGenerator.writeObjectField("multiplicity", property.asRelation().multiplicity.name)
 
                 property.asRelation()

@@ -8,11 +8,10 @@ package org.sirius.dorm.persistence
 import org.sirius.dorm.model.ObjectDescriptor
 import org.sirius.dorm.model.PropertyDescriptor
 import org.sirius.dorm.`object`.DataObject
-import org.sirius.dorm.`object`.Relation
-import org.sirius.dorm.persistence.entity.AttributeEntity
+import org.sirius.dorm.persistence.entity.PropertyEntity
 
 
-typealias PropertyReader = (obj: DataObject, attribute: AttributeEntity) -> Unit
+typealias PropertyReader = (obj: DataObject, attribute: PropertyEntity) -> Unit
 
 class ObjectReader(descriptor: ObjectDescriptor) {
     // instance data
@@ -24,7 +23,7 @@ class ObjectReader(descriptor: ObjectDescriptor) {
 
     // public
 
-    fun read(obj: DataObject, propertyDescriptor: PropertyDescriptor<Any>, attribute: AttributeEntity) {
+    fun read(obj: DataObject, propertyDescriptor: PropertyDescriptor<Any>, attribute: PropertyEntity) {
         obj.values[propertyDescriptor.index].property = attribute
 
         reader[propertyDescriptor.index-1](obj, attribute)
@@ -33,21 +32,21 @@ class ObjectReader(descriptor: ObjectDescriptor) {
     // companion
 
     companion object {
-        fun valueReader(clazz: Class<Any>) :  (attribute: AttributeEntity) -> Any {
+        fun valueReader(clazz: Class<Any>) :  (attribute: PropertyEntity) -> Any {
             return when (clazz) {
-                Boolean::class.javaObjectType -> { attribute: AttributeEntity -> attribute.intValue == 1 }
+                Boolean::class.javaObjectType -> { attribute: PropertyEntity -> attribute.intValue == 1 }
 
-                Short::class.javaObjectType -> { attribute: AttributeEntity -> attribute.intValue.toShort() }
+                Short::class.javaObjectType -> { attribute: PropertyEntity -> attribute.intValue.toShort() }
 
-                Integer::class.javaObjectType -> { attribute: AttributeEntity -> attribute.intValue }
+                Integer::class.javaObjectType -> { attribute: PropertyEntity -> attribute.intValue }
 
-                Long::class.javaObjectType -> { attribute: AttributeEntity -> attribute.intValue.toLong() }
+                Long::class.javaObjectType -> { attribute: PropertyEntity -> attribute.intValue.toLong() }
 
-                Float::class.javaObjectType -> { attribute: AttributeEntity -> attribute.doubleValue.toFloat() }
+                Float::class.javaObjectType -> { attribute: PropertyEntity -> attribute.doubleValue.toFloat() }
 
-                Double::class.javaObjectType -> { attribute: AttributeEntity -> attribute.doubleValue }
+                Double::class.javaObjectType -> { attribute: PropertyEntity -> attribute.doubleValue }
 
-                String::class.javaObjectType -> { attribute: AttributeEntity -> attribute.stringValue }
+                String::class.javaObjectType -> { attribute: PropertyEntity -> attribute.stringValue }
 
                 else -> throw Error("unsupported type")
             }
@@ -55,41 +54,41 @@ class ObjectReader(descriptor: ObjectDescriptor) {
 
         fun reader4(property: PropertyDescriptor<Any>): PropertyReader {
             if ( !property.isAttribute()) {
-                return  { obj: DataObject, attribute: AttributeEntity ->
+                return  { obj: DataObject, attribute: PropertyEntity ->
                     //obj.values[property.index].property = attribute
                 }
             }
             else
                 return when (property.asAttribute().baseType()) {
-                    Boolean::class.javaObjectType -> { obj: DataObject, attribute: AttributeEntity ->
+                    Boolean::class.javaObjectType -> { obj: DataObject, attribute: PropertyEntity ->
                         obj.values[property.index].init(property, attribute.intValue == 1)
                     }
 
-                    String::class.javaObjectType -> { obj: DataObject, attribute: AttributeEntity ->
+                    String::class.javaObjectType -> { obj: DataObject, attribute: PropertyEntity ->
                         obj.values[property.index].init(property, attribute.stringValue)
                     }
 
-                    Short::class.javaObjectType -> { obj: DataObject, attribute: AttributeEntity ->
+                    Short::class.javaObjectType -> { obj: DataObject, attribute: PropertyEntity ->
                         obj.values[property.index].init(property, attribute.intValue.toShort())
                     }
 
-                    Integer::class.javaObjectType -> { obj: DataObject, attribute: AttributeEntity ->
+                    Integer::class.javaObjectType -> { obj: DataObject, attribute: PropertyEntity ->
                         obj.values[property.index].init(property, attribute.intValue)
                     }
 
-                    Long::class.javaObjectType -> { obj: DataObject, attribute: AttributeEntity ->
+                    Long::class.javaObjectType -> { obj: DataObject, attribute: PropertyEntity ->
                         obj.values[property.index].init(property, attribute.intValue.toLong())
                     }
 
-                    Float::class.javaObjectType -> { obj: DataObject, attribute: AttributeEntity ->
+                    Float::class.javaObjectType -> { obj: DataObject, attribute: PropertyEntity ->
                         obj.values[property.index].init(property, attribute.doubleValue.toFloat())
                     }
 
-                    Double::class.javaObjectType -> { obj: DataObject, attribute: AttributeEntity ->
+                    Double::class.javaObjectType -> { obj: DataObject, attribute: PropertyEntity ->
                         obj.values[property.index].init(property, attribute.doubleValue)
                     }
 
-                    else -> { _: DataObject, _: AttributeEntity ->
+                    else -> { _: DataObject, _: PropertyEntity ->
                         throw Error("unsupported type")
                     }
                 }

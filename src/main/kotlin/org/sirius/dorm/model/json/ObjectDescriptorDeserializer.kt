@@ -30,7 +30,7 @@ open class ObjectDescriptorDeserializer() : StdDeserializer<ObjectDescriptor>(Ob
             }
             else {
                 val multiplicity = Multiplicity.valueOf( property["target"].asText())
-                properties.add(RelationDescriptor(propertyName, property["target"].asText(), multiplicity))
+                properties.add(RelationDescriptor(propertyName, property["target"].asText(), multiplicity, property["inverse"].asText()))
             }
         }
 

@@ -126,6 +126,8 @@ internal class DORMBenchmark : AbstractTest() {
 
     @Test
     fun testJPA() {
+        println("### JPA")
+
         // warm up
 
         withTransaction {
@@ -149,7 +151,7 @@ internal class DORMBenchmark : AbstractTest() {
 
         // create some objects
 
-        val objects = 200
+        val objects = 2000
 
         // create
 
@@ -229,6 +231,8 @@ internal class DORMBenchmark : AbstractTest() {
 
     @Test
     fun test() {
+        println("### DORM")
+
         // warm up
 
         createPerson("Andi", 58)
@@ -236,7 +240,7 @@ internal class DORMBenchmark : AbstractTest() {
 
         // create some objects
 
-        val objects = 200
+        val objects = 2000
 
         // create
 

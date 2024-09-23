@@ -8,10 +8,11 @@ package org.sirius.dorm.`object`
 import org.sirius.dorm.ObjectManager
 import org.sirius.dorm.model.ObjectDescriptor
 import org.sirius.dorm.model.PropertyDescriptor
-import org.sirius.dorm.persistence.entity.AttributeEntity
+import org.sirius.dorm.model.RelationDescriptor
+import org.sirius.dorm.persistence.entity.PropertyEntity
 import org.sirius.dorm.transaction.TransactionState
 
-class SingleValuedRelation(val obj: DataObject, property: AttributeEntity?, val targetDescriptor: ObjectDescriptor) : Relation(property) {
+class SingleValuedRelation(val relation: RelationDescriptor<*>, val obj: DataObject, property: PropertyEntity?, val targetDescriptor: ObjectDescriptor) : Relation(property) {
     // instance data
 
     var target: DataObject? = DataObject.NONE
@@ -32,15 +33,15 @@ class SingleValuedRelation(val obj: DataObject, property: AttributeEntity?, val 
         if ( isLoaded()) {
             property!!.relations.clear()
             if ( target !== null) {
-                property!!.relations.add(target!!.entity!!)
+                property!!.relations.add(target!!.values[relation.inverseRelation!!.index].property!!)
             }
         }
     }
     override fun get(objectManager: ObjectManager) : Any? {
         if ( !isLoaded() && property !== null) {
             if ( property!!.relations.size == 1) {
-                val targetEntity = property!!.relations.first()
-                target = objectManager.mapper.read(TransactionState.current(), targetDescriptor, targetEntity)
+                val targetProperty = property!!.relations.first()
+                target = objectManager.mapper.read(TransactionState.current(), targetDescriptor, targetProperty.entity)
             }
             else
                 target = null

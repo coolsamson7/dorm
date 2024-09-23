@@ -8,9 +8,9 @@ package org.sirius.dorm.`object`
 
 import org.sirius.dorm.ObjectManager
 import org.sirius.dorm.model.PropertyDescriptor
-import org.sirius.dorm.persistence.entity.AttributeEntity
+import org.sirius.dorm.persistence.entity.PropertyEntity
 
-abstract class Property(var property: AttributeEntity?) {
+abstract class Property(var property: PropertyEntity?) {
     abstract fun get(objectManager: ObjectManager) : Any?
 
     abstract fun set(propertyDescriptor: PropertyDescriptor<Any>, value: Any?) : Boolean

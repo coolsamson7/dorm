@@ -7,7 +7,7 @@ package org.sirius.dorm.persistence
 
 import org.sirius.dorm.json.JSONReader
 import org.sirius.dorm.model.ObjectDescriptor
-import org.sirius.dorm.persistence.entity.AttributeEntity
+import org.sirius.dorm.persistence.entity.PropertyEntity
 import org.sirius.dorm.persistence.entity.EntityEntity
 import org.sirius.dorm.transaction.TransactionState
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -112,7 +112,7 @@ class DataObjectMapper() {
         }
     }
 
-    fun read(state: TransactionState, objectDescriptor: ObjectDescriptor, attributes: List<AttributeEntity>, start: Int, end: Int) : DataObject {
+    fun read(state: TransactionState, objectDescriptor: ObjectDescriptor, attributes: List<PropertyEntity>, start: Int, end: Int) : DataObject {
         return state.retrieve(attributes[start].entity.id) {
             if ( Tracer.ENABLED)
                 Tracer.trace("com.sirius.dorm", TraceLevel.HIGH, "read %s[%d]", objectDescriptor.name,  attributes[start].entity.id)

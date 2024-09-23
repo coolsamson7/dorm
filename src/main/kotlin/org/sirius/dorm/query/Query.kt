@@ -7,7 +7,7 @@ package org.sirius.dorm.query
 
 import org.sirius.dorm.model.ObjectDescriptor
 import org.sirius.dorm.ObjectManager
-import org.sirius.dorm.persistence.entity.AttributeEntity
+import org.sirius.dorm.persistence.entity.PropertyEntity
 import org.sirius.dorm.persistence.entity.EntityEntity
 import jakarta.persistence.criteria.*
 
@@ -16,11 +16,11 @@ class From(val objectDescriptor: ObjectDescriptor) : ObjectPath(null) {
         return PropertyPath(this, objectDescriptor.property(property))
     }
 
-    override fun path(root: Root<AttributeEntity>) : Path<Any> {
+    override fun path(root: Root<PropertyEntity>) : Path<Any> {
         return root as Path<Any>
     }
 
-    override fun <T> expression(root: Root<AttributeEntity>): Path<T> {
+    override fun <T> expression(root: Root<PropertyEntity>): Path<T> {
         return root as Path<T>
     }
 
@@ -32,11 +32,11 @@ class From(val objectDescriptor: ObjectDescriptor) : ObjectPath(null) {
 abstract class BooleanExpression :  ObjectExpression()
 abstract class ComparisonExpression(val path: ObjectPath) : BooleanExpression() {
 
-    abstract fun where(executor: QueryExecutor<Any>, builder: CriteriaBuilder, attribute: Root<AttributeEntity>) : Predicate
+    abstract fun where(executor: QueryExecutor<Any>, builder: CriteriaBuilder, attribute: Root<PropertyEntity>) : Predicate
 
     override fun createWhere(executor: QueryExecutor<Any>, builder: CriteriaBuilder, query: CriteriaQuery<Any>, from: Root<Any>) : Predicate {
         val subQuery = query.subquery(Int::class.java)
-        val attribute = subQuery.from(AttributeEntity::class.java) // type: string, entity: Int
+        val attribute = subQuery.from(PropertyEntity::class.java) // type: string, entity: Int
 
         val attributeName = path.attributeName()
 
@@ -65,9 +65,7 @@ abstract class ComparisonExpression(val path: ObjectPath) : BooleanExpression() 
                     this.where(executor, builder, attribute)
                 )
 
-        val attr = if ( from.javaType == EntityEntity::class.java ) "id" else "entity"
-
-        return builder.`in`(from.get<EntityEntity>("entity").get<Int>("id")).value(subQuery) // TODO RELATION
+        return builder.`in`(from.get<EntityEntity>("entity").get<Int>("id")).value(subQuery)
     }
 }
 
@@ -88,7 +86,7 @@ class Or(vararg expr: BooleanExpression) : BooleanExpression() {
 class Eq(path: ObjectPath, val value: Value) : ComparisonExpression(path) {
     // override
 
-    override fun where(executor: QueryExecutor<Any>, builder: CriteriaBuilder, attribute: Root<AttributeEntity>) : Predicate {
+    override fun where(executor: QueryExecutor<Any>, builder: CriteriaBuilder, attribute: Root<PropertyEntity>) : Predicate {
         return builder.equal(path.expression<Any>(attribute), value.resolve(executor, Any::class.java))
     }
 }
@@ -96,7 +94,7 @@ class Eq(path: ObjectPath, val value: Value) : ComparisonExpression(path) {
 class Neq(path: ObjectPath, val value: Value) : ComparisonExpression(path) {
     // override
 
-    override fun where(executor: QueryExecutor<Any>, builder: CriteriaBuilder, attribute: Root<AttributeEntity>) : Predicate {
+    override fun where(executor: QueryExecutor<Any>, builder: CriteriaBuilder, attribute: Root<PropertyEntity>) : Predicate {
         return builder.notEqual(path.expression<Any>(attribute), value.resolve(executor, Any::class.java))
     }
 }
@@ -104,7 +102,7 @@ class Neq(path: ObjectPath, val value: Value) : ComparisonExpression(path) {
 class Lt(path: ObjectPath, val value: Value) : ComparisonExpression(path) {
     // override
 
-    override fun where(executor: QueryExecutor<Any>, builder: CriteriaBuilder, attribute: Root<AttributeEntity>) : Predicate {
+    override fun where(executor: QueryExecutor<Any>, builder: CriteriaBuilder, attribute: Root<PropertyEntity>) : Predicate {
         return builder.lt(path.expression(attribute), value.resolve(executor, Number::class.java))
     }
 }
@@ -112,7 +110,7 @@ class Lt(path: ObjectPath, val value: Value) : ComparisonExpression(path) {
 class Le(path: ObjectPath, val value: Value) : ComparisonExpression(path) {
     // override
 
-    override fun where(executor: QueryExecutor<Any>, builder: CriteriaBuilder, attribute: Root<AttributeEntity>) : Predicate {
+    override fun where(executor: QueryExecutor<Any>, builder: CriteriaBuilder, attribute: Root<PropertyEntity>) : Predicate {
         return builder.le(path.expression(attribute), value.resolve(executor, Number::class.java))
     }
 }
@@ -120,7 +118,7 @@ class Le(path: ObjectPath, val value: Value) : ComparisonExpression(path) {
 class Gt(path: ObjectPath, val value: Value) : ComparisonExpression(path) {
     // override
 
-    override fun where(executor: QueryExecutor<Any>, builder: CriteriaBuilder, attribute: Root<AttributeEntity>) : Predicate {
+    override fun where(executor: QueryExecutor<Any>, builder: CriteriaBuilder, attribute: Root<PropertyEntity>) : Predicate {
         return builder.gt(path.expression(attribute), value.resolve(executor, Number::class.java))
     }
 }
@@ -128,7 +126,7 @@ class Gt(path: ObjectPath, val value: Value) : ComparisonExpression(path) {
 class Ge(path: ObjectPath, val value: Value) : ComparisonExpression(path) {
     // override
 
-    override fun where(executor: QueryExecutor<Any>, builder: CriteriaBuilder, attribute: Root<AttributeEntity>) : Predicate {
+    override fun where(executor: QueryExecutor<Any>, builder: CriteriaBuilder, attribute: Root<PropertyEntity>) : Predicate {
         return builder.ge(path.expression(attribute), value.resolve(executor, Number::class.java))
     }
 }

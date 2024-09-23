@@ -10,12 +10,11 @@ import org.sirius.dorm.model.ObjectDescriptor
 import org.sirius.dorm.ObjectManager
 import org.sirius.dorm.persistence.DataObjectMapper
 import org.sirius.dorm.persistence.ObjectReader
-import org.sirius.dorm.persistence.entity.AttributeEntity
+import org.sirius.dorm.persistence.entity.PropertyEntity
 import org.sirius.dorm.transaction.TransactionState
 import jakarta.persistence.EntityManager
 import jakarta.persistence.criteria.CriteriaQuery
 import jakarta.persistence.criteria.Root
-import org.sirius.dorm.persistence.entity.EntityEntity
 
 class QueryManager(val objectManager: ObjectManager, private val entityManager: EntityManager, private val mapper: DataObjectMapper) {
     // instance data
@@ -55,43 +54,43 @@ class QueryManager(val objectManager: ObjectManager, private val entityManager: 
         // create main query
 
         if (objectQuery.projection != null) {
-            val criteriaQuery = builder.createQuery(AttributeEntity::class.java)
-            val attributeEntity = criteriaQuery.from(AttributeEntity::class.java)
+            val criteriaQuery = builder.createQuery(PropertyEntity::class.java)
+            val propertyEntity = criteriaQuery.from(PropertyEntity::class.java)
 
-            criteriaQuery.select(attributeEntity)
+            criteriaQuery.select(propertyEntity)
 
             //TODO builder.equal(attributeEntity.get<String>("type"), objectQuery.root!!.objectDescriptor.name),
             if ( objectQuery.where != null)
                 criteriaQuery.where(
-                    objectQuery.where!!.createWhere(executor as QueryExecutor<Any>, builder, criteriaQuery as CriteriaQuery<Any>, attributeEntity as Root<Any>),
-                    builder.or(*objectQuery.projection!!.map { objectPath: ObjectPath -> builder.equal(attributeEntity.get<String>("attribute"), objectPath.attributeName()) }.toTypedArray())
+                    objectQuery.where!!.createWhere(executor as QueryExecutor<Any>, builder, criteriaQuery as CriteriaQuery<Any>, propertyEntity as Root<Any>),
+                    builder.or(*objectQuery.projection!!.map { objectPath: ObjectPath -> builder.equal(propertyEntity.get<String>("attribute"), objectPath.attributeName()) }.toTypedArray())
                 )
 
             else
                 criteriaQuery.where(
-                    builder.or(*objectQuery.projection!!.map { objectPath: ObjectPath -> builder.equal(attributeEntity.get<String>("attribute"), objectPath.attributeName()) }.toTypedArray())
+                    builder.or(*objectQuery.projection!!.map { objectPath: ObjectPath -> builder.equal(propertyEntity.get<String>("attribute"), objectPath.attributeName()) }.toTypedArray())
                 )
 
-            criteriaQuery.orderBy(builder.asc(attributeEntity.get<Int>("entity")))
+            criteriaQuery.orderBy(builder.asc(propertyEntity.get<Int>("entity")))
 
-            return computeProjectionResultFromAttributes(objectQuery.projection!!, entityManager.createQuery(criteriaQuery).resultList as List<AttributeEntity>) as List<T>
+            return computeProjectionResultFromAttributes(objectQuery.projection!!, entityManager.createQuery(criteriaQuery).resultList as List<PropertyEntity>) as List<T>
         }
         else {
-            val criteriaQuery = builder.createQuery(AttributeEntity::class.java)
-            val attributeEntity = criteriaQuery.from(AttributeEntity::class.java)
+            val criteriaQuery = builder.createQuery(PropertyEntity::class.java)
+            val propertyEntity = criteriaQuery.from(PropertyEntity::class.java)
 
-            criteriaQuery.select(attributeEntity)
+            criteriaQuery.select(propertyEntity)
 
             if ( objectQuery.where !== null)
                 criteriaQuery.where(
-                    builder.equal(attributeEntity.get<String>("type"), objectQuery.root!!.objectDescriptor.name),
-                    objectQuery.where!!.createWhere(executor as QueryExecutor<Any>, builder, criteriaQuery as CriteriaQuery<Any>, attributeEntity as Root<Any>),
+                    builder.equal(propertyEntity.get<String>("type"), objectQuery.root!!.objectDescriptor.name),
+                    objectQuery.where!!.createWhere(executor as QueryExecutor<Any>, builder, criteriaQuery as CriteriaQuery<Any>, propertyEntity as Root<Any>),
                 )
             else  criteriaQuery.where(
-                builder.equal(attributeEntity.get<String>("type"), objectQuery.root!!.objectDescriptor.name),
+                builder.equal(propertyEntity.get<String>("type"), objectQuery.root!!.objectDescriptor.name),
             )
 
-            criteriaQuery.orderBy(builder.asc(attributeEntity.get<Int>("entity")))
+            criteriaQuery.orderBy(builder.asc(propertyEntity.get<Int>("entity")))
 
             /*
             val entities = entityManager.createQuery(criteriaQuery).resultList
@@ -104,11 +103,11 @@ class QueryManager(val objectManager: ObjectManager, private val entityManager: 
             return entities.map { entity -> mapper.readFromEntity(state, objectDescriptor, entity) } as List<T>
             */
 
-            return computeObjectResultFromAttributes(objectQuery.root!!.objectDescriptor, TransactionState.current(), entityManager.createQuery(criteriaQuery).resultList  as List<AttributeEntity>) as List<T>
+            return computeObjectResultFromAttributes(objectQuery.root!!.objectDescriptor, TransactionState.current(), entityManager.createQuery(criteriaQuery).resultList  as List<PropertyEntity>) as List<T>
         }
     }
 
-    private fun computeObjectResultFromAttributes(objectDescriptor: ObjectDescriptor, state: TransactionState, attributes: List<AttributeEntity>) : List<DataObject>  {
+    private fun computeObjectResultFromAttributes(objectDescriptor: ObjectDescriptor, state: TransactionState, attributes: List<PropertyEntity>) : List<DataObject>  {
         // compute result
 
         val result = ArrayList<DataObject>()
@@ -138,7 +137,7 @@ class QueryManager(val objectManager: ObjectManager, private val entityManager: 
         return result
     }
 
-    private fun computeProjectionResultFromAttributes(projection: Array<out ObjectPath>, attributes: List<AttributeEntity>) : List<Array<Any?>> {
+    private fun computeProjectionResultFromAttributes(projection: Array<out ObjectPath>, attributes: List<PropertyEntity>) : List<Array<Any?>> {
         // setup mapping
 
         val name2Index = HashMap<String,Int>()
