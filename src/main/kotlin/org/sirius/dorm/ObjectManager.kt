@@ -9,8 +9,6 @@ import org.sirius.dorm.`object`.DataObject
 import org.sirius.dorm.persistence.DataObjectMapper
 import org.sirius.dorm.persistence.entity.EntityEntity
 import org.sirius.dorm.query.*
-import org.sirius.dorm.query.parser.OQLLexer
-import org.sirius.dorm.query.parser.OQLParser
 import org.sirius.dorm.transaction.Status
 import org.sirius.dorm.transaction.TransactionState
 import org.sirius.common.type.Type
@@ -126,7 +124,7 @@ class ObjectManager() {
     fun create(objectDescriptor: ObjectDescriptor) : DataObject {
         val obj = objectDescriptor.create()
 
-        transactionState().create(obj)
+        TransactionState.current().create(obj)
 
         return obj
     }
@@ -139,31 +137,27 @@ class ObjectManager() {
     // tx
 
     fun begin() {
-        transactionState.set(TransactionState(this, transactionManager))
+        TransactionState.set(this, transactionManager)
     }
 
     fun commit() {
         try {
-            transactionState().commit(mapper)
+            TransactionState.current().commit(mapper)
         }
         finally {
             mapper.clear()
-            transactionState.remove()
+            TransactionState.remove()
         }
     }
 
     fun rollback() {
         try {
-            transactionState().rollback(mapper)
+            TransactionState.current().rollback(mapper)
         }
         finally {
             mapper.clear()
-            transactionState.remove()
+            TransactionState.remove()
         }
-    }
-
-    fun transactionState() : TransactionState {
-        return transactionState.get()
     }
 
     fun queryManager() : QueryManager {
@@ -190,7 +184,7 @@ class ObjectManager() {
         val entity = entityManager.find(EntityEntity::class.java, id)
 
         return if ( entity !== null)
-            mapper.read(transactionState(), descriptor, entity)
+            mapper.read(TransactionState.current(), descriptor, entity)
         else
             null
     }
@@ -198,8 +192,6 @@ class ObjectManager() {
     // companion
 
     companion object {
-        val transactionState = ThreadLocal<TransactionState>()
-
         lateinit var instance : ObjectManager
     }
 }

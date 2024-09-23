@@ -1,15 +1,16 @@
 package org.sirius.dorm
+/*
+ * @COPYRIGHT (C) 2023 Andreas Ernst
+ *
+ * All rights reserved
+ */
 
 import org.sirius.common.tracer.TraceLevel
 import org.sirius.common.tracer.Tracer
 import org.sirius.common.tracer.trace.ConsoleTrace
 import org.junit.jupiter.api.Test
 
-/*
- * @COPYRIGHT (C) 2023 Andreas Ernst
- *
- * All rights reserved
- */
+
 class TracerTest {
     @Test
     fun testTracer() {
@@ -18,14 +19,14 @@ class TracerTest {
         tracer
             .setTraceLevel("", TraceLevel.OFF)
             .setTraceLevel("com", TraceLevel.LOW)
-            .setTraceLevel("com.quasar", TraceLevel.MEDIUM)
+            .setTraceLevel("com.sirius", TraceLevel.MEDIUM)
 
         assert(!tracer.isTraced("", TraceLevel.FULL))
         assert(tracer.isTraced("com", TraceLevel.LOW))
         assert(tracer.isTraced("com.foo.bar", TraceLevel.LOW))
 
-        Tracer.trace("com.quasar", TraceLevel.LOW, "hello world")
-        Tracer.trace("com.quasar", TraceLevel.MEDIUM, "hello world")
+        Tracer.trace("com.sirius", TraceLevel.LOW, "hello world")
+        Tracer.trace("com.sirius", TraceLevel.MEDIUM, "hello world")
 
     }
 }

@@ -40,17 +40,18 @@ class DataObjectMapper() {
 
     fun update(state: TransactionState, obj: DataObject) {
         if ( Tracer.ENABLED)
-            Tracer.trace("com.quasar.dorm", TraceLevel.HIGH, "update %s", obj.type.name)
+            Tracer.trace("sirius.sirius.dorm", TraceLevel.HIGH, "update %s[%d]", obj.type.name, obj.id)
 
         val builder = entityManager.criteriaBuilder
 
         val objectManager = state.objectManager
+        val snapshot = obj.state!!.snapshot!!
 
         // update attributes
 
         val properties = obj.type.properties
         for ( index in 1..<obj.values.size) {
-            if ( obj.values[index].isDirty(obj.state!!.snapshot!![index])) {
+            if ( obj.values[index].isDirty(snapshot[index])) {
                 val property = properties[index]
 
                 if ( property.isAttribute())
@@ -81,7 +82,7 @@ class DataObjectMapper() {
 
         val entityCriteriaQuery = builder.createCriteriaUpdate(EntityEntity::class.java)
         val entityFrom = entityCriteriaQuery.from(EntityEntity::class.java)
-
+//TODO remove
         entityCriteriaQuery
             .set("json", json)
             .where(builder.equal(entityFrom.get<Int>("id"), obj.id))
@@ -91,21 +92,22 @@ class DataObjectMapper() {
 
     fun delete(state: TransactionState, obj: DataObject) {
         if ( Tracer.ENABLED)
-            Tracer.trace("com.quasar.dorm", TraceLevel.HIGH, "read %s", obj.type.name)
+            Tracer.trace("com.sirius.dorm", TraceLevel.HIGH, "delete %s[%d]", obj.type.name, obj.id)
 
 
         entityManager.remove(obj.entity!!)
     }
 
     fun create(state: TransactionState, obj: DataObject) {
-        if ( Tracer.ENABLED)
-            Tracer.trace("com.quasar.dorm", TraceLevel.HIGH, "create %s", obj.type.name)
-
         val descriptor = obj.type
 
         obj.entity = EntityEntity(0, descriptor.name, mapper.writeValueAsString(obj))
 
         entityManager.persist(obj.entity) // we need the id...is that required, think of a lifecycle hook?
+
+        if ( Tracer.ENABLED)
+            Tracer.trace("com.sirius.dorm", TraceLevel.HIGH, "create %s[%d]", obj.type.name, obj.entity!!.id)
+
 
         writer4(descriptor).write(state, obj, entityManager) // will create the attribute entities
 
@@ -134,7 +136,7 @@ class DataObjectMapper() {
     fun read(state: TransactionState, objectDescriptor: ObjectDescriptor, entity: EntityEntity): DataObject {
         return state.retrieve(entity.id) {
             if ( Tracer.ENABLED)
-                Tracer.trace("com.quasar.dorm", TraceLevel.HIGH, "read %s", objectDescriptor.name)
+                Tracer.trace("com.sirius.dorm", TraceLevel.HIGH, "read %s", objectDescriptor.name)
 
             val obj = objectDescriptor.create()
 
@@ -156,7 +158,7 @@ class DataObjectMapper() {
     fun read(state: TransactionState, objectDescriptor: ObjectDescriptor, attributes: List<AttributeEntity>, start: Int, end: Int) : DataObject {
         return state.retrieve(attributes[start].entity.id) {
             if ( Tracer.ENABLED)
-                Tracer.trace("com.quasar.dorm", TraceLevel.HIGH, "read %s", objectDescriptor.name)
+                Tracer.trace("com.sirius.dorm", TraceLevel.HIGH, "read %s[%d]", objectDescriptor.name,  attributes[start].entity.id)
 
             val obj = objectDescriptor.create()
 

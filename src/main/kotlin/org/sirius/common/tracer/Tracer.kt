@@ -31,7 +31,7 @@ class Tracer(private val trace: org.sirius.common.tracer.Trace, layout : String 
 
     fun trace(path: String, level: TraceLevel, message: String, vararg args: Any) {
         if (this.isTraced(path, level))
-            this.trace.trace(org.sirius.common.tracer.TraceEntry(path, level, message.format(*args), Date()), formatter)
+            this.trace.trace(TraceEntry(path, level, message.format(*args), Date()), formatter)
     }
 
     // private

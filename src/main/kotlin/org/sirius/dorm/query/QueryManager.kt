@@ -15,6 +15,7 @@ import org.sirius.dorm.transaction.TransactionState
 import jakarta.persistence.EntityManager
 import jakarta.persistence.criteria.CriteriaQuery
 import jakarta.persistence.criteria.Root
+import org.sirius.dorm.persistence.entity.EntityEntity
 
 class QueryManager(val objectManager: ObjectManager, private val entityManager: EntityManager, private val mapper: DataObjectMapper) {
     // instance data
@@ -47,9 +48,9 @@ class QueryManager(val objectManager: ObjectManager, private val entityManager: 
 
     private fun <T : Any> computeQueryResult(objectQuery: Query<T>, executor: QueryExecutor<T>) : List<T> {
         // flush managed objects that could influence query results
-        // currently this is onle the roor, since we don't support joins yet
+        // currently this is only the root, since we don't support joins yet
 
-        executor.queryManager.objectManager.transactionState().flush(objectQuery.root!!.objectDescriptor)
+        TransactionState.current().flush(objectQuery.root!!.objectDescriptor)
 
         // create main query
 
@@ -59,6 +60,7 @@ class QueryManager(val objectManager: ObjectManager, private val entityManager: 
 
             criteriaQuery.select(attributeEntity)
 
+            //TODO builder.equal(attributeEntity.get<String>("type"), objectQuery.root!!.objectDescriptor.name),
             if ( objectQuery.where != null)
                 criteriaQuery.where(
                     objectQuery.where!!.createWhere(executor as QueryExecutor<Any>, builder, criteriaQuery as CriteriaQuery<Any>, attributeEntity as Root<Any>),
@@ -82,8 +84,12 @@ class QueryManager(val objectManager: ObjectManager, private val entityManager: 
 
             if ( objectQuery.where !== null)
                 criteriaQuery.where(
+                    builder.equal(attributeEntity.get<String>("type"), objectQuery.root!!.objectDescriptor.name),
                     objectQuery.where!!.createWhere(executor as QueryExecutor<Any>, builder, criteriaQuery as CriteriaQuery<Any>, attributeEntity as Root<Any>),
                 )
+            else  criteriaQuery.where(
+                builder.equal(attributeEntity.get<String>("type"), objectQuery.root!!.objectDescriptor.name),
+            )
 
             criteriaQuery.orderBy(builder.asc(attributeEntity.get<Int>("entity")))
 
@@ -92,13 +98,13 @@ class QueryManager(val objectManager: ObjectManager, private val entityManager: 
 
             // compute result
 
-            val state = objectManager.transactionState()
+            val state = TransactionState.transactionState()
             val objectDescriptor = objectQuery.root!!.objectDescriptor
 
             return entities.map { entity -> mapper.readFromEntity(state, objectDescriptor, entity) } as List<T>
             */
 
-            return computeObjectResultFromAttributes(objectQuery.root!!.objectDescriptor, objectManager.transactionState(), entityManager.createQuery(criteriaQuery).resultList  as List<AttributeEntity>) as List<T>
+            return computeObjectResultFromAttributes(objectQuery.root!!.objectDescriptor, TransactionState.current(), entityManager.createQuery(criteriaQuery).resultList  as List<AttributeEntity>) as List<T>
         }
     }
 

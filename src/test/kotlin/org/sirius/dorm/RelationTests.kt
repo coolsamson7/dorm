@@ -7,6 +7,10 @@ package org.sirius.dorm
 
 import org.sirius.dorm.`object`.DataObject
 import org.junit.jupiter.api.Test
+import org.sirius.common.type.base.*
+import org.sirius.dorm.model.Multiplicity
+import org.sirius.dorm.model.ObjectDescriptor
+import org.sirius.dorm.`object`.MultiValuedRelation
 import kotlin.test.assertEquals
 
 
@@ -42,7 +46,55 @@ class RelationTests: AbstractTest() {
 
             assert(father !== null)
 
-            assertEquals("helmut", father!!["name"])
+            assertEquals("Helmut", father!!["name"])
+        }
+    }
+
+    @Test
+    fun testOneToMany() {
+        // create schema
+
+        var descriptor : ObjectDescriptor?= null
+        withTransaction {
+            descriptor = objectManager.type("p")
+                .attribute("name", string())
+                .relation("children", "p", Multiplicity.ZERO_OR_MANY)
+                .register()
+        }
+
+        // test
+
+        var id = 0
+
+        withTransaction {
+            val person = objectManager.create(descriptor!!)
+
+            person["name"] = "Andi"
+
+            id = person.id
+
+            val child = objectManager.create(descriptor!!)
+
+            child["name"] = "Nika"
+
+            // add as child
+
+            (person["children"] as MultiValuedRelation).add(child)
+        }
+
+        // reread
+
+        withTransaction {
+            val person = objectManager.findById(descriptor!!, id)
+
+            assert(person !== null)
+
+            assert(person!!["children"] !== null)
+
+            val children : MultiValuedRelation = person!!["children"] as MultiValuedRelation
+
+            assert(children.size == 1)
+            //assertEquals("Nika", children[0]["name"])
         }
     }
 }

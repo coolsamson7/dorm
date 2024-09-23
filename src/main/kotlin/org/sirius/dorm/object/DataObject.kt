@@ -11,10 +11,11 @@ import org.sirius.dorm.persistence.entity.EntityEntity
 import org.sirius.dorm.transaction.ObjectState
 
 
-class DataObject(val type: ObjectDescriptor, var state : ObjectState?, val values: Array<Property>) {
+class DataObject(val type: ObjectDescriptor, var state : ObjectState?) {
     // instance data
 
     var entity: EntityEntity? = null
+    val values  = type.createValues(this)
 
     // public
 
@@ -37,11 +38,11 @@ class DataObject(val type: ObjectDescriptor, var state : ObjectState?, val value
 
     // public operators
 
-    fun <T:Any> value(index: Int) : T {
+    fun <T:Any> value(index: Int) : T { // TODO???
         return values[index].get(objectManager) as T
     }
 
-    /*fun reference(index: Int) : SingleValuedRelation {
+    /*fun reference(index: Int) : SingleValuedRelation { TODO
         return values[index] as SingleValuedRelation
     }
 
@@ -66,7 +67,20 @@ class DataObject(val type: ObjectDescriptor, var state : ObjectState?, val value
         values[property.index].set(property, value)
     }
 
+    // override Object
+
+    override fun equals(other: Any?): Boolean {
+        if ( other is DataObject)
+            return id == other.id && this.type === other.type
+        else
+            return false
+    }
+
+    override fun hashCode(): Int {
+        return type.hashCode() + id.hashCode()
+    }
+
     companion object {
-        val NONE = DataObject(ObjectDescriptor("none", arrayOf()), null, arrayOf())
+        val NONE = DataObject(ObjectDescriptor("none", arrayOf()), null)
     }
 }

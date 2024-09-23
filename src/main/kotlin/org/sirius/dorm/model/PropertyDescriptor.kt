@@ -6,17 +6,14 @@ package org.sirius.dorm.model
  */
 
 import org.sirius.dorm.*
-import org.sirius.dorm.`object`.Attribute
-import org.sirius.dorm.`object`.MultiValuedRelation
-import org.sirius.dorm.`object`.Property
-import org.sirius.dorm.`object`.SingleValuedRelation
 import org.sirius.dorm.persistence.entity.AttributeEntity
 import org.sirius.common.type.Type
+import org.sirius.dorm.`object`.*
 
 abstract class PropertyDescriptor<T:Any>(val name: String) {
     var index = 0
 
-    abstract fun createProperty(entity: AttributeEntity?) : Property
+    abstract fun createProperty(obj: DataObject, entity: AttributeEntity?) : Property
 
     abstract fun defaultValue() : Any?
 
@@ -47,7 +44,7 @@ class AttributeDescriptor<T:Any>(name: String, val type: Type<T>, val isPrimaryK
 
     // override
 
-    override fun createProperty(entity: AttributeEntity?) : Property {
+    override fun createProperty(obj: DataObject, entity: AttributeEntity?) : Property {
         return Attribute(entity, defaultValue()!!)
     }
 
@@ -82,8 +79,8 @@ open class RelationDescriptor<T:Any>(name: String, val target: String, val multi
 
     // override
 
-    override fun createProperty(entity: AttributeEntity?) : Property {
-        return if ( multiplicity === Multiplicity.ONE ) SingleValuedRelation(entity, targetDescriptor!!) else MultiValuedRelation(entity, targetDescriptor!!)
+    override fun createProperty(obj: DataObject, entity: AttributeEntity?) : Property {
+        return if ( multiplicity === Multiplicity.ONE ) SingleValuedRelation(obj, entity, targetDescriptor!!) else MultiValuedRelation(obj, entity, targetDescriptor!!)
     }
 
     override fun resolve(objectManager: ObjectManager, descriptor: ObjectDescriptor) {

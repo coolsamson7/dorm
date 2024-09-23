@@ -42,19 +42,19 @@ class AbstractTest {
         Tracer(ConsoleTrace(), "%t{yyyy-MM-dd HH:mm:ss,SSS} %l{-10s} [%p] %m")
             .setTraceLevel("", TraceLevel.OFF)
             .setTraceLevel("com", TraceLevel.LOW)
-            .setTraceLevel("com.quasar.dorm", TraceLevel.HIGH)
+            .setTraceLevel("com.sirius.dorm", TraceLevel.HIGH)
     }
 
     lateinit var statistics : Statistics;
 
-    @BeforeEach
+    //@BeforeEach
     fun clearStats() {
         val session = entityManager.unwrap(Session::class.java)
 
         statistics = session.getSessionFactory().getStatistics()
     }
 
-    @AfterEach
+    //@AfterEach
     fun printStats() {
         for ( query in statistics.queries)
             println(query)

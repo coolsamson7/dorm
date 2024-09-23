@@ -1,11 +1,17 @@
 package org.sirius.dorm.`object`
+/*
+ * @COPYRIGHT (C) 2023 Andreas Ernst
+ *
+ * All rights reserved
+ */
 
 import org.sirius.dorm.ObjectManager
 import org.sirius.dorm.model.ObjectDescriptor
 import org.sirius.dorm.model.PropertyDescriptor
 import org.sirius.dorm.persistence.entity.AttributeEntity
+import org.sirius.dorm.transaction.TransactionState
 
-class SingleValuedRelation(property: AttributeEntity?, val targetDescriptor: ObjectDescriptor) : Relation(property) {
+class SingleValuedRelation(val obj: DataObject, property: AttributeEntity?, val targetDescriptor: ObjectDescriptor) : Relation(property) {
     // instance data
 
     var target: DataObject? = DataObject.NONE
@@ -17,6 +23,10 @@ class SingleValuedRelation(property: AttributeEntity?, val targetDescriptor: Obj
     }
 
     // override
+
+    override fun isDirty(snapshot: Any) : Boolean {
+        return isLoaded()
+    }
 
     override fun flush() {
         if ( isLoaded()) {
@@ -30,7 +40,7 @@ class SingleValuedRelation(property: AttributeEntity?, val targetDescriptor: Obj
         if ( !isLoaded() && property !== null) {
             if ( property!!.relations.size == 1) {
                 val targetEntity = property!!.relations.first()
-                target = objectManager.mapper.read(objectManager.transactionState(), targetDescriptor, targetEntity)
+                target = objectManager.mapper.read(TransactionState.current(), targetDescriptor, targetEntity)
             }
             else
                 target = null

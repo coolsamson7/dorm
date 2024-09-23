@@ -119,4 +119,20 @@ class TransactionState(val objectManager: ObjectManager, val transactionManager:
 
         executeOperations()
     }
+
+    companion object {
+        private val current = ThreadLocal<TransactionState>()
+
+        fun current() : TransactionState {
+            return current.get()
+        }
+
+        fun set(objectManager: ObjectManager, transactionManager: PlatformTransactionManager) {
+            current.set(TransactionState(objectManager, transactionManager))
+        }
+
+        fun remove() {
+            current.remove()
+        }
+    }
 }

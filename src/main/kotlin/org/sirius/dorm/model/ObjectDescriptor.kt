@@ -20,8 +20,8 @@ class ObjectDescriptor(val name: String, val properties: Array<PropertyDescripto
 
     // public
 
-    private fun createValues(): Array<Property> {
-        return properties.map { property -> property.createProperty(null) }.toTypedArray()
+    fun createValues(obj: DataObject): Array<Property> {
+        return properties.map { property -> property.createProperty(obj, null) }.toTypedArray()
     }
 
     fun resolve(objectManager: ObjectManager) {
@@ -31,7 +31,7 @@ class ObjectDescriptor(val name: String, val properties: Array<PropertyDescripto
     }
 
     fun create() : DataObject {
-        return DataObject(this, null, createValues())
+        return DataObject(this, null) // TODO
     }
 
     fun property(property: String) : PropertyDescriptor<Any> {
