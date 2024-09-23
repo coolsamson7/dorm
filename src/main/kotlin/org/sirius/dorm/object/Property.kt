@@ -1,14 +1,16 @@
 package org.sirius.dorm.`object`
-
-import org.sirius.dorm.ObjectManager
-import org.sirius.dorm.model.PropertyDescriptor
 /*
  * @COPYRIGHT (C) 2023 Andreas Ernst
  *
  * All rights reserved
  */
 
-abstract class Property() {
+
+import org.sirius.dorm.ObjectManager
+import org.sirius.dorm.model.PropertyDescriptor
+import org.sirius.dorm.persistence.entity.AttributeEntity
+
+abstract class Property(var property: AttributeEntity?) {
     abstract fun get(objectManager: ObjectManager) : Any?
 
     abstract fun set(propertyDescriptor: PropertyDescriptor<Any>, value: Any?) : Boolean

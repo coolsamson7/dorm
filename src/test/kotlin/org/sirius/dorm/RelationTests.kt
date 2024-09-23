@@ -79,7 +79,8 @@ class RelationTests: AbstractTest() {
 
             // add as child
 
-            (person["children"] as MultiValuedRelation).add(child)
+            person.value<MultiValuedRelation>("children").add(child)
+            person.relation("children").add(child)
         }
 
         // reread

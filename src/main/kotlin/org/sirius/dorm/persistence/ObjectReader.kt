@@ -25,6 +25,8 @@ class ObjectReader(descriptor: ObjectDescriptor) {
     // public
 
     fun read(obj: DataObject, propertyDescriptor: PropertyDescriptor<Any>, attribute: AttributeEntity) {
+        obj.values[propertyDescriptor.index].property = attribute
+
         reader[propertyDescriptor.index-1](obj, attribute)
     }
 
@@ -54,7 +56,7 @@ class ObjectReader(descriptor: ObjectDescriptor) {
         fun reader4(property: PropertyDescriptor<Any>): PropertyReader {
             if ( !property.isAttribute()) {
                 return  { obj: DataObject, attribute: AttributeEntity ->
-                    (obj.values[property.index] as Relation).property = attribute
+                    //obj.values[property.index].property = attribute
                 }
             }
             else

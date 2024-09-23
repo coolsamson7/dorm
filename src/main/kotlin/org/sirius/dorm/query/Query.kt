@@ -41,6 +41,7 @@ abstract class ComparisonExpression(val path: ObjectPath) : BooleanExpression() 
         val attributeName = path.attributeName()
 
         // id is the id of the entity...
+
         if ( attributeName == "id")
             subQuery
                 .select(attribute.get<EntityEntity>("entity").get<Int>("id"))

@@ -4,7 +4,7 @@ import org.sirius.dorm.ObjectManager
 import org.sirius.dorm.model.PropertyDescriptor
 import org.sirius.dorm.persistence.entity.AttributeEntity
 
-class Attribute(property: AttributeEntity?, var value: Any) : Property() {
+class Attribute(property: AttributeEntity?, var value: Any) : Property(property) {
     override fun get(objectManager: ObjectManager) : Any? {
         return value
     }

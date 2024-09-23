@@ -71,7 +71,7 @@ class Tracer(private val trace: org.sirius.common.tracer.Trace, layout : String 
     }
     
     companion object {
-        val ENABLED = true//System.getProperty("tracing.enabled", "false").lowercase(Locale.getDefault()).equals("true")
+        val ENABLED = System.getProperty("tracing.enabled", "false").lowercase(Locale.getDefault()).equals("true")
         
         private lateinit var instance : Tracer
 

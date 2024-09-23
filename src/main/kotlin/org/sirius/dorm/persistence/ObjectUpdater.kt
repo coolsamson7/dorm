@@ -12,36 +12,26 @@ import org.sirius.dorm.`object`.DataObject
 import org.sirius.dorm.`object`.Relation
 import org.sirius.dorm.persistence.entity.AttributeEntity
 import org.sirius.dorm.transaction.TransactionState
-import jakarta.persistence.EntityManager
 
-typealias PropertyWriter = (state: TransactionState, obj: DataObject, property: Int, attribute: AttributeEntity) -> Unit
-
-class ObjectWriter(private val descriptor: ObjectDescriptor) {
+class ObjectUpdater(private val descriptor: ObjectDescriptor) {
     // instance data
 
     private val writer: Array<PropertyWriter> = descriptor.properties
-        .filter { property -> property.name !== "id" }
+        //.filter { property -> property.name !== "id" }
         .map { property -> writer4(property, descriptor.objectManager!!)}.toTypedArray()
 
     // public
 
-    fun update(state: TransactionState, obj: DataObject, property: Int, attribute: AttributeEntity) {
-        writer[property-1](state, obj, property, attribute)
-    }
-
-    fun write(state: TransactionState, obj: DataObject, entityManager: EntityManager) {
-        var i = 1
+    fun update(state: TransactionState, obj: DataObject) {
+        var i = 0
+        val snapshot = obj.state!!.snapshot!!
         for ( writer in writer) {
-            val propertyDescriptor = descriptor.properties[i]
-            val attribute = AttributeEntity(obj.entity!!, propertyDescriptor.name, descriptor.name, "", 0, 0.0)
+            val property = obj.values[i]
 
-            // set entity, we may need it for flushing relations
+            if ( property.isDirty(snapshot[i]))
+                writer(state, obj, i, property.property!!)
 
-            obj.values[i].property = attribute
-
-            writer(state, obj, i++, attribute)
-
-            entityManager.persist(attribute)
+            i++
         }
     }
 
@@ -51,7 +41,7 @@ class ObjectWriter(private val descriptor: ObjectDescriptor) {
         fun writer4(property: PropertyDescriptor<Any>, objectManager: ObjectManager) : PropertyWriter {
             if ( !property.isAttribute()) {
                 return { state: TransactionState, obj: DataObject, index: Int, attribute: AttributeEntity ->
-                    state.addOperation(AdjustRelation(obj.values[index] as Relation))
+                    (obj.values[index] as Relation).flush()
                 }
             }
             else

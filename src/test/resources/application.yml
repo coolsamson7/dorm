@@ -11,8 +11,8 @@ spring:
     properties:
       hibernate:
         format_sql: false
-        generate_statistics: true
-    show-sql: true
+        generate_statistics: false
+    show-sql: false
     defer-datasource-initialization: true
     hibernate:
       ddl-auto: update

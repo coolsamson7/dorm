@@ -38,17 +38,17 @@ class DataObject(val type: ObjectDescriptor, var state : ObjectState?) {
 
     // public operators
 
-    fun <T:Any> value(index: Int) : T { // TODO???
+    fun <T:Any> value(index: Int) : T {
         return values[index].get(objectManager) as T
     }
 
-    /*fun reference(index: Int) : SingleValuedRelation { TODO
-        return values[index] as SingleValuedRelation
+    fun <T:Any> value(name: String) : T {
+        return values[property(name).index].get(objectManager) as T
     }
 
-    fun relation(index: Int) : MultiValuedRelation {
-        return values[index] as MultiValuedRelation
-    }*/
+    fun relation(name: String) : MultiValuedRelation {
+        return value(name)
+    }
 
     operator fun get(name: String) : Any? {
         return values[property(name).index].get(objectManager)
