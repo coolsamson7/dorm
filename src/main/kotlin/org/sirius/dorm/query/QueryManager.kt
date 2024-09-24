@@ -112,7 +112,7 @@ class QueryManager(val objectManager: ObjectManager, private val entityManager: 
 
         val result = ArrayList<DataObject>()
 
-        var entity = -1
+        var entity = -1L
         var start = -1
         var index = 0
 
@@ -168,7 +168,7 @@ class QueryManager(val objectManager: ObjectManager, private val entityManager: 
 
         val result = ArrayList<Array<Any?>>()
 
-        var entity = -1
+        var entity = -1L
         var start = -1
         var index = 0
         for (attribute in attributes) {

@@ -22,14 +22,14 @@ class DataObject(val type: ObjectDescriptor, status: Status, var state : ObjectS
 
     var objectManager: ObjectManager
         get() = type.objectManager!!
-        set(value) { }
+        set(_) { }
 
     fun property(property: String) : PropertyDescriptor<Any> {
         return type.property(property)
     }
 
-    var id: Int
-        get() = values[0].get(objectManager) as Int
+    var id: Long
+        get() = values[0].get(objectManager) as Long
         set(value) { values[0].set(type.properties[0], value) }
 
 

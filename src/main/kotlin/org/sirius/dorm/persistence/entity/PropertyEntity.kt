@@ -43,11 +43,11 @@ data class PropertyEntity(
     @Column(name = "DOUBLE_VALUE")
     var doubleValue : Double,
 
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.LAZY, cascade = [CascadeType.REMOVE])
     @JoinTable(
-        name = "ATTRIBUTE_RELATION",
-        joinColumns = [JoinColumn(name = "FROM_ENTITY"), JoinColumn(name = "FROM_ATTRIBUTE")],
-        inverseJoinColumns = [JoinColumn(name = "TO_ENTITY"), JoinColumn(name = "TO_ATTRIBUTE")]
+        name = "RELATION",
+        joinColumns = [JoinColumn(name = "FROM_ENTITY"), JoinColumn(name = "FROM")],
+        inverseJoinColumns = [JoinColumn(name = "TO_ENTITY"), JoinColumn(name = "TO")]
     )
     val targets : MutableSet<PropertyEntity> = HashSet(),
 

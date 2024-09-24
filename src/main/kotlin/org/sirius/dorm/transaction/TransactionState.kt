@@ -22,7 +22,7 @@ abstract class Operation() {
 class TransactionState(val objectManager: ObjectManager, val transactionManager: PlatformTransactionManager) {
     // instance data
 
-    val states = HashMap<Int, ObjectState>()
+    val states = HashMap<Long, ObjectState>()
     val status : TransactionStatus
 
     val pendingOperations = ArrayList<Operation>()
@@ -86,7 +86,7 @@ class TransactionState(val objectManager: ObjectManager, val transactionManager:
 
     // public
 
-    fun retrieve(id: Int, ifMissing: () -> DataObject) : DataObject {
+    fun retrieve(id: Long, ifMissing: () -> DataObject) : DataObject {
         return states.getOrPut(id) { ObjectState(ifMissing(), Status.MANAGED) }.obj
     }
 
@@ -94,7 +94,7 @@ class TransactionState(val objectManager: ObjectManager, val transactionManager:
         states.put(state.obj.id, state)
     }
 
-    fun create(obj: DataObject) : DataObject{
+    fun create(obj: DataObject) : DataObject {
         val state = ObjectState(obj, Status.CREATED)
 
         obj.entity = EntityEntity(0, obj.type.name, "{}", ArrayList())
@@ -102,10 +102,6 @@ class TransactionState(val objectManager: ObjectManager, val transactionManager:
         this.objectManager.entityManager.persist(obj.entity)
 
         obj["id"] = obj.entity!!.id
-
-        // force flush
-
-        //objectManager.mapper.create(this, obj)
 
         states.put(obj.id, state)
 

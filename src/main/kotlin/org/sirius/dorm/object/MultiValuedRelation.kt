@@ -64,7 +64,7 @@ class MultiValuedRelation(relation: RelationDescriptor<*>, status: Status, val o
         if (isLoaded()) {
             // synchronize the objects set with the property.relations
 
-            val targetMap = HashMap<Int, PropertyEntity>()
+            val targetMap = HashMap<Long, PropertyEntity>()
             val relations = relations()
 
             // collect all targets in a map
@@ -121,17 +121,16 @@ class MultiValuedRelation(relation: RelationDescriptor<*>, status: Status, val o
     override fun remove(element: DataObject): Boolean {
         markDirty()
 
-        if (objects!!.remove(element)) {
+        return if (objects!!.remove(element)) {
             // take care of inverse
 
-            val inverse = inverseRelation(element!!)
-            if ( inverse !== null) {
+            val inverse = inverseRelation(element)
+            if ( inverse !== null)
                 inverse.removeInverse(element)
-            }
 
-            return true
+            true
         }
-        else return false
+        else false
     }
 
     override val size: Int

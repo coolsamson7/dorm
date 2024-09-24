@@ -175,7 +175,7 @@ class ObjectManager() {
         }
     }
 
-    fun findById(descriptor: ObjectDescriptor, id: Int) : DataObject? {
+    fun findById(descriptor: ObjectDescriptor, id: Long) : DataObject? {
         val entity = entityManager.find(EntityEntity::class.java, id)
 
         return if ( entity !== null)

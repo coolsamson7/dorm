@@ -14,7 +14,7 @@ data class EntityEntity(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     @Column(name = "ID")
-    var id : Int,
+    var id : Long,
 
     @Column(name = "TYPE")
     var type : String,
