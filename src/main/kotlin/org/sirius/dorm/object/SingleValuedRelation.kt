@@ -31,6 +31,10 @@ class SingleValuedRelation(relation: RelationDescriptor<*>, val obj: DataObject,
             if ( target !== null) {
                 relations().add(target!!.values[relation.inverseRelation!!.index].property!!)
             }
+            else {
+                if ( !relation.multiplicity.optional)
+                    throw Error("missing ...") // TODO
+            }
         }
     }
     override fun get(objectManager: ObjectManager) : Any? {

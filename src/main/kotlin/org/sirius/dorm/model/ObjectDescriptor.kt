@@ -25,9 +25,11 @@ class ObjectDescriptor(val name: String, val properties: Array<PropertyDescripto
     }
 
     fun resolve(objectManager: ObjectManager) {
-        this.objectManager = objectManager
-        for ( property in properties)
-            property.resolve(objectManager, this)
+        if ( this.objectManager == null) {
+            this.objectManager = objectManager
+            for (property in properties)
+                property.resolve(objectManager, this)
+        }
     }
 
     fun create() : DataObject {

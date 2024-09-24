@@ -55,14 +55,8 @@ class ObjectDescriptorBuilder(val manager: ObjectManager, val name: String) {
 
     // public
 
-    fun register() : ObjectDescriptor {
-        val descriptor = ObjectDescriptor(name, properties.toTypedArray(), manager)
-
-        manager.register(descriptor)
-
-        descriptor.resolve(manager)
-
-        return descriptor
+    fun register() {
+        manager.register( ObjectDescriptor(name, properties.toTypedArray()))
     }
 }
 
@@ -108,12 +102,11 @@ class ObjectManager() {
 
         if ( descriptor == null) {
             descriptor = objectDescriptorStorage.findByName(name)
-            if ( descriptor != null) {
-                descriptor.resolve(this)
-
+            if ( descriptor != null)
                 descriptors[name] = descriptor
-            }
         }
+
+        descriptor?.resolve(this)
 
         return descriptor
     }
@@ -128,11 +121,7 @@ class ObjectManager() {
     }
 
     fun create(objectDescriptor: ObjectDescriptor) : DataObject {
-        val obj = objectDescriptor.create()
-
-        TransactionState.current().create(obj)
-
-        return obj
+        return TransactionState.current().create(objectDescriptor.create())
     }
 
     fun delete(obj: DataObject) {

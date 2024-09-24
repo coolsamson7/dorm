@@ -56,21 +56,23 @@ class RelationTests: AbstractTest() {
     fun testOneToMany() {
         // create schema
 
-        var descriptor : ObjectDescriptor?= null
+
         withTransaction {
-            descriptor = objectManager.type("p")
+             objectManager.type("p")
                 .attribute("name", string())
                 .relation("children", "p", Multiplicity.ZERO_OR_MANY, "father")
                 .relation("father", "p", Multiplicity.ZERO_OR_ONE, "children")
                 .register()
         }
 
+        val descriptor =  objectManager.getDescriptor("p")
+
         // test
 
         var id = 0
 
         withTransaction {
-            val person = objectManager.create(descriptor!!)
+            val person = objectManager.create(descriptor)
 
             person["name"] = "Andi"
 
@@ -82,7 +84,7 @@ class RelationTests: AbstractTest() {
 
             // child 1
 
-            val child1 = objectManager.create(descriptor!!)
+            val child1 = objectManager.create(descriptor)
 
             child1["name"] = "Nika"
             child1["father"] = person
@@ -91,7 +93,7 @@ class RelationTests: AbstractTest() {
 
             // child 2
 
-            val child2 = objectManager.create(descriptor!!)
+            val child2 = objectManager.create(descriptor)
 
             child2["name"] = "Pupsi"
             child2["father"] = person
@@ -115,7 +117,7 @@ class RelationTests: AbstractTest() {
         // reread
 
         withTransaction {
-            val person = objectManager.findById(descriptor!!, id)
+            val person = objectManager.findById(descriptor, id)
 
             assert(person !== null)
 
@@ -136,17 +138,58 @@ class RelationTests: AbstractTest() {
     }
 
     @Test
+    fun testValidateRelation() {
+        // create schema
+
+
+        withTransaction {
+            objectManager.type("product")
+                .attribute("name", string())
+                .relation("part", "part", Multiplicity.ZERO_OR_MANY, "product")
+                .register()
+
+            objectManager.type("part")
+                .attribute("name", string())
+                .relation("product", "product", Multiplicity.ONE)
+                .register()
+        }
+
+        val productDescriptor = objectManager.getDescriptor("product")
+        val partDescriptor = objectManager.getDescriptor("part")
+
+        // test
+
+        try {
+            withTransaction {
+                val product = objectManager.create(productDescriptor)
+
+                product["name"] = "Car"
+
+                val part = objectManager.create(partDescriptor)
+
+                part["name"] = "Motor"
+
+                //part["product"] = product
+            }
+        }
+        catch(exception: Throwable) {
+            println() // T
+        }
+    }
+
+    @Test
     fun testOneToManyIncludingInverse() {
         // create schema
 
-        var descriptor : ObjectDescriptor?= null
         withTransaction {
-            descriptor = objectManager.type("p1")
+             objectManager.type("p1")
                 .attribute("name", string())
                 .relation("parent", "p1", Multiplicity.ZERO_OR_ONE, "children")
                 .relation("children", "p1", Multiplicity.ZERO_OR_MANY, "parent")
                 .register()
         }
+
+        val descriptor =  objectManager.findDescriptor("p1")
 
         // test
 
@@ -159,7 +202,7 @@ class RelationTests: AbstractTest() {
 
             id = person.id
 
-            val child = objectManager.create(descriptor!!)
+            val child = objectManager.create(descriptor)
 
             child["name"] = "Nika"
 

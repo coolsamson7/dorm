@@ -67,7 +67,7 @@ class AbstractTest {
                 val stringType = string().length(100)
                 val intType = int()
 
-                personDescriptor = objectManager.type("person")
+                objectManager.type("person")
                     .attribute("name", stringType)
                     .attribute("age", intType)
 
@@ -85,7 +85,8 @@ class AbstractTest {
                     .attribute("double", double())
                     .register()
             }
-            else personDescriptor = objectManager.getDescriptor("person")
+
+            personDescriptor = objectManager.getDescriptor("person")
         }
     }
 

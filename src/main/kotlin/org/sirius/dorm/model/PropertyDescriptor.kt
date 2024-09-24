@@ -86,8 +86,10 @@ open class RelationDescriptor<T:Any>(name: String, val target: String, val multi
 
     override fun resolve(objectManager: ObjectManager, descriptor: ObjectDescriptor) {
         targetDescriptor = objectManager.getDescriptor(target)
-        if ( inverse !== null)
+        if ( inverse !== null) {
             inverseRelation = targetDescriptor!!.property(inverse) as RelationDescriptor<*>
+            inverseRelation!!.inverseRelation = this // both directions
+        }
     }
 
     override fun asRelation() :RelationDescriptor<T> {

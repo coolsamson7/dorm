@@ -65,7 +65,6 @@ class DataObjectMapper() {
         if ( Tracer.ENABLED)
             Tracer.trace("com.sirius.dorm", TraceLevel.HIGH, "create %s[%d]", obj.type.name, obj.entity!!.id)
 
-
         writer4(descriptor).write(state, obj, entityManager) // will create the attribute entities
 
         // set as value as well
