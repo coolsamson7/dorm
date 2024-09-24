@@ -19,7 +19,16 @@ class StringType : Type<String>(String::class.java) {
         return this
     }
 
-    // TODO: matches
+    fun matches(expression: String/*, info?: ConstraintInfo*/) : StringType {
+        val re = Regex(expression)
+        this.test<String>(
+            "matches",
+            expression,
+            { obj -> obj.matches(re) }
+        )
+
+        return this
+    }
 }
 
 fun string() : StringType {return StringType()

@@ -27,6 +27,7 @@ open class Type<T:Any>(val baseType: Class<T>) {
             Float::class.javaObjectType -> { -> 0.0f as T }
             Double::class.javaObjectType -> { -> 0.0  as T }
             Boolean::class.javaObjectType -> { -> false as T }
+            Char::class.javaObjectType -> { -> ' ' as T }
             else -> {
                 throw Error("unsupported type ${type.simpleName}")
             }
