@@ -53,24 +53,16 @@ class DataObjectMapper() {
         if ( Tracer.ENABLED)
             Tracer.trace("com.sirius.dorm", TraceLevel.HIGH, "delete %s[%d]", obj.type.name, obj.id)
 
-        entityManager.remove(obj.entity!!)
+        entityManager.remove(obj.entity!!) // will delete properties
+
+        // what about aggregated objects
     }
 
     fun create(state: TransactionState, obj: DataObject) {
-        val descriptor = obj.type
-
-        //obj.entity = EntityEntity(0, descriptor.name, mapper.writeValueAsString(obj))
-
-        //entityManager.persist(obj.entity) // we need the id...is that required, think of a lifecycle hook?
-
         if ( Tracer.ENABLED)
             Tracer.trace("com.sirius.dorm", TraceLevel.HIGH, "create %s[%d]", obj.type.name, obj.entity!!.id)
 
-        writer4(descriptor).write(state, obj, entityManager) // will create the attribute entities
-
-        // set as value as well
-
-        obj.id = obj.entity!!.id
+        writer4(obj.type).write(state, obj, entityManager) // will create the attribute entities
     }
 
 

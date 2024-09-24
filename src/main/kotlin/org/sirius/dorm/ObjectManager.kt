@@ -18,6 +18,7 @@ import jakarta.persistence.PersistenceContext
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.RecognitionException
+import org.sirius.dorm.query.parser.OQLParser
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import org.springframework.transaction.PlatformTransactionManager
@@ -41,14 +42,14 @@ class ObjectDescriptorBuilder(val manager: ObjectManager, val name: String) {
         return this
     }
 
-    fun relation(name: String, target: String, multiplicity: Multiplicity) : ObjectDescriptorBuilder {
-        properties.add(RelationDescriptor(name, target, multiplicity, null))
+    fun relation(name: String, target: String, multiplicity: Multiplicity, cascade: Cascade? = null) : ObjectDescriptorBuilder {
+        properties.add(RelationDescriptor(name, target, multiplicity, cascade, null))
 
         return this
     }
 
-    fun relation(name: String, target: String, multiplicity: Multiplicity, inverse: String) : ObjectDescriptorBuilder {
-        properties.add(RelationDescriptor(name, target, multiplicity, inverse))
+    fun relation(name: String, target: String, multiplicity: Multiplicity, inverse: String, cascade: Cascade? = null) : ObjectDescriptorBuilder {
+        properties.add(RelationDescriptor(name, target, multiplicity, cascade, inverse))
 
         return this
     }
@@ -125,8 +126,7 @@ class ObjectManager() {
     }
 
     fun delete(obj: DataObject) {
-        if ( obj.state != null)
-            obj.state!!.status = Status.DELETED
+        obj.state?.status = Status.DELETED
     }
 
     // tx
@@ -162,7 +162,7 @@ class ObjectManager() {
     fun <T: Any> query(query: String, resultType: Class<T> = DataObject::class.java as Class<T>) : Query<T> {
         val tokenStream = CommonTokenStream(org.sirius.dorm.query.parser.OQLLexer(CharStreams.fromString(query)))
 
-        val parser = org.sirius.dorm.query.parser.OQLParser(tokenStream)
+        val parser = OQLParser(tokenStream)
 
         parser.setup(queryManager())
         try {
