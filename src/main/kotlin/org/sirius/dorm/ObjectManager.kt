@@ -126,7 +126,7 @@ class ObjectManager() {
     }
 
     fun delete(obj: DataObject) {
-        obj.state?.status = Status.DELETED
+        obj.delete()
     }
 
     // tx

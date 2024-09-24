@@ -19,7 +19,11 @@ class SingleValuedRelation(relation: RelationDescriptor<*>, status: Status, val 
 
     var target: DataObject? = if ( status == Status.CREATED ) null else DataObject.NONE
 
-    // private
+    // implement Relation
+
+    override fun deleted() {
+        target?.delete()
+    }
 
     override fun load(objectManager: ObjectManager) {
        if ( property !== null) {
@@ -32,8 +36,6 @@ class SingleValuedRelation(relation: RelationDescriptor<*>, status: Status, val 
         }
         else target = null
     }
-
-    // implement Relation
 
     override fun isLoaded() : Boolean {
         return target !== DataObject.NONE
@@ -80,8 +82,6 @@ class SingleValuedRelation(relation: RelationDescriptor<*>, status: Status, val 
         }
         else return false
     }
-
-    // new
 
     override fun addInverse(element: DataObject) {
         this.target = element

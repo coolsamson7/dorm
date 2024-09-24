@@ -13,6 +13,8 @@ import org.sirius.dorm.persistence.entity.PropertyEntity
 abstract class Relation(val relation: RelationDescriptor<*>, val targetDescriptor: ObjectDescriptor, property: PropertyEntity?) : Property(property) {
     abstract fun isLoaded(): Boolean
 
+    abstract fun deleted();
+
     abstract fun load(objectManager: ObjectManager)
 
     override fun save(): Any {

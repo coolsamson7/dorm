@@ -47,11 +47,11 @@ open class RelationDescriptor<T:Any>(name: String, val target: String, val multi
     }
 
     override fun defaultValue(): Any? {
-        TODO("Not yet implemented")
+        return null // actually not called at all
     }
 
     override fun validate(value: Any?) {
-        TODO("Not yet implemented")
+        // currently not used
     }
 
     fun isOwner() : Boolean {

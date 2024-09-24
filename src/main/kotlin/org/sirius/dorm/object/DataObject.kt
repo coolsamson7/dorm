@@ -5,6 +5,7 @@ package org.sirius.dorm.`object`
  * All rights reserved
  */
 import org.sirius.dorm.ObjectManager
+import org.sirius.dorm.model.Cascade
 import org.sirius.dorm.model.ObjectDescriptor
 import org.sirius.dorm.model.PropertyDescriptor
 import org.sirius.dorm.persistence.entity.EntityEntity
@@ -19,6 +20,22 @@ class DataObject(val type: ObjectDescriptor, status: Status, var state : ObjectS
     val values  = type.createValues(this, status)
 
     // public
+
+    fun delete() {
+        state?.status = Status.DELETED
+
+        var i = 0
+        for (property in type.properties) {
+            if (!property.isAttribute()) {
+                if (property.asRelation().cascade == Cascade.DELETE) {
+                    if ((values[i] as Relation).isLoaded())
+                        (values[i] as Relation).deleted()
+                }
+            }
+
+            i++
+        }
+    }
 
     var objectManager: ObjectManager
         get() = type.objectManager!!

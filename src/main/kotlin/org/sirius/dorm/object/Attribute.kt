@@ -16,12 +16,12 @@ class Attribute(property: PropertyEntity?, var value: Any) : Property(property) 
     override fun set(propertyDescriptor: PropertyDescriptor<Any>, value: Any?) : Boolean {
         propertyDescriptor.validate(value)
 
-        if ( value != this.value ) {
+        return if ( value != this.value ) {
             this.value = value!!
 
-            return true
+            true
         }
-        else return false
+        else false
     }
 
     override fun save(): Any {

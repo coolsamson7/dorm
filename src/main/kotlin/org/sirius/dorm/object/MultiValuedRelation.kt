@@ -36,10 +36,14 @@ class MultiValuedRelation(relation: RelationDescriptor<*>, status: Status, val o
 
     // implement Relation
 
+    override fun deleted() {
+        for ( obj in this.objects!!)
+            obj.delete()
+    }
+
     override fun isLoaded() : Boolean {
         return objects !== null
     }
-
     override fun addInverse(element: DataObject) {
         this.objects!!.add(element)
     }
