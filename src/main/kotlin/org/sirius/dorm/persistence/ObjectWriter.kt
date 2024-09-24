@@ -42,6 +42,8 @@ class ObjectWriter(private val descriptor: ObjectDescriptor) {
             writer(state, obj, i++, attribute)
 
             entityManager.persist(attribute)
+
+            //obj.entity!!.properties.add(attribute)
         }
     }
 

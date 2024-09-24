@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.module.SimpleDeserializers
 import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.databind.module.SimpleSerializers
 import com.fasterxml.jackson.databind.ser.std.StdSerializer
+import org.sirius.dorm.transaction.Status
 import java.io.IOException
 import java.util.concurrent.ConcurrentHashMap
 
@@ -29,7 +30,7 @@ class JSONReader(private val objectDescriptor: ObjectDescriptor) {
     // public
 
     fun read(node: JsonNode) : DataObject {
-        val obj = objectDescriptor.create()
+        val obj = objectDescriptor.create(Status.MANAGED)
 
         for ( reader in readers)
             reader(node, obj)

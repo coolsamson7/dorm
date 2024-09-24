@@ -5,12 +5,15 @@ package org.sirius.dorm.`object`
  * All rights reserved
  */
 
+import org.sirius.dorm.ObjectManager
 import org.sirius.dorm.model.ObjectDescriptor
 import org.sirius.dorm.model.RelationDescriptor
 import org.sirius.dorm.persistence.entity.PropertyEntity
 
 abstract class Relation(val relation: RelationDescriptor<*>, val targetDescriptor: ObjectDescriptor, property: PropertyEntity?) : Property(property) {
     abstract fun isLoaded(): Boolean
+
+    abstract fun load(objectManager: ObjectManager)
 
     override fun save(): Any {
         return this

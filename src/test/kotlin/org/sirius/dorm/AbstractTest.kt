@@ -65,7 +65,7 @@ class AbstractTest {
         withTransaction {
             if ( objectManager.findDescriptor("person") == null) {
                 val stringType = string().length(100)
-                val intType = int()
+                val intType = int().greaterEqual(0)
 
                 objectManager.type("person")
                     .attribute("name", stringType)
@@ -136,13 +136,15 @@ class AbstractTest {
         return query.execute().getResultList()
     }
 
-    protected fun createPerson(name: String, age: Int) {
+    protected fun createPerson(name: String, age: Int) : Int{
         objectManager.begin()
         try {
-            val person1 = objectManager.create(personDescriptor!!)
+            val person = objectManager.create(personDescriptor!!)
 
-            person1["name"] = name
-            person1["age"] = age
+            person["name"] = name
+            person["age"] = age
+
+            return person.id
         }
         finally {
             objectManager.commit()

@@ -9,6 +9,7 @@ import org.sirius.dorm.`object`.DataObject
 import org.sirius.dorm.ObjectManager
 import org.sirius.dorm.model.ObjectDescriptor
 import org.sirius.dorm.persistence.DataObjectMapper
+import org.sirius.dorm.persistence.entity.EntityEntity
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.TransactionDefinition
 import org.springframework.transaction.TransactionStatus
@@ -94,11 +95,17 @@ class TransactionState(val objectManager: ObjectManager, val transactionManager:
     }
 
     fun create(obj: DataObject) : DataObject{
-        val state = ObjectState(obj, Status.MANAGED) // as soon as it is flushed it will be managed TODO ID
+        val state = ObjectState(obj, Status.CREATED)
+
+        obj.entity = EntityEntity(0, obj.type.name, "{}", ArrayList())
+
+        this.objectManager.entityManager.persist(obj.entity)
+
+        obj["id"] = obj.entity!!.id
 
         // force flush
 
-        objectManager.mapper.create(this, obj)
+        //objectManager.mapper.create(this, obj)
 
         states.put(obj.id, state)
 

@@ -10,7 +10,7 @@ spring:
   logging:
     level:
       org:
-        hibernate:
+        x_hibernate:
           orm:
             jdbc:
               bind: trace

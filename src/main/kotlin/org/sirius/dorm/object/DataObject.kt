@@ -9,13 +9,14 @@ import org.sirius.dorm.model.ObjectDescriptor
 import org.sirius.dorm.model.PropertyDescriptor
 import org.sirius.dorm.persistence.entity.EntityEntity
 import org.sirius.dorm.transaction.ObjectState
+import org.sirius.dorm.transaction.Status
 
 
-class DataObject(val type: ObjectDescriptor, var state : ObjectState?) {
+class DataObject(val type: ObjectDescriptor, status: Status, var state : ObjectState?) {
     // instance data
 
     var entity: EntityEntity? = null
-    val values  = type.createValues(this)
+    val values  = type.createValues(this, status)
 
     // public
 
@@ -81,6 +82,6 @@ class DataObject(val type: ObjectDescriptor, var state : ObjectState?) {
     }
 
     companion object {
-        val NONE = DataObject(ObjectDescriptor("none", arrayOf()), null)
+        val NONE = DataObject(ObjectDescriptor("none", arrayOf()), Status.CREATED, null)
     }
 }

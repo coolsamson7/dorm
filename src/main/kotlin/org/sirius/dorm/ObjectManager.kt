@@ -67,7 +67,7 @@ class ObjectManager() {
     val descriptors = ConcurrentHashMap<String, ObjectDescriptor>()
 
     @PersistenceContext
-    private lateinit var entityManager: EntityManager
+    lateinit var entityManager: EntityManager
     @Autowired
     private lateinit var transactionManager: PlatformTransactionManager
     @Autowired
@@ -121,7 +121,7 @@ class ObjectManager() {
     }
 
     fun create(objectDescriptor: ObjectDescriptor) : DataObject {
-        return TransactionState.current().create(objectDescriptor.create())
+        return TransactionState.current().create(objectDescriptor.create(Status.CREATED))
     }
 
     fun delete(obj: DataObject) {

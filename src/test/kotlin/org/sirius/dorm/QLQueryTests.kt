@@ -11,9 +11,6 @@ import org.junit.jupiter.api.Test
 
 
 class QLQueryTests : AbstractTest() {
-
-
-
     @Test
     fun testReadAll() {
         createPerson("Andi", 58)

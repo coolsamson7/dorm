@@ -8,6 +8,8 @@ package org.sirius.dorm.model
 import org.sirius.dorm.`object`.DataObject
 import org.sirius.dorm.ObjectManager
 import org.sirius.dorm.`object`.Property
+import org.sirius.dorm.transaction.ObjectState
+import org.sirius.dorm.transaction.Status
 
 class ObjectDescriptor(val name: String, val properties: Array<PropertyDescriptor<Any>>, var objectManager: ObjectManager? = null) {
     // instance data
@@ -20,8 +22,8 @@ class ObjectDescriptor(val name: String, val properties: Array<PropertyDescripto
 
     // public
 
-    fun createValues(obj: DataObject): Array<Property> {
-        return properties.map { property -> property.createProperty(obj, null) }.toTypedArray()
+    fun createValues(obj: DataObject, status: Status): Array<Property> {
+        return properties.map { property -> property.createProperty(obj, status, null) }.toTypedArray()
     }
 
     fun resolve(objectManager: ObjectManager) {
@@ -32,8 +34,8 @@ class ObjectDescriptor(val name: String, val properties: Array<PropertyDescripto
         }
     }
 
-    fun create() : DataObject {
-        return DataObject(this, null) // TODO
+    fun create(status: Status) : DataObject {
+        return DataObject(this, status, null) // TODO anders
     }
 
     fun property(property: String) : PropertyDescriptor<Any> {

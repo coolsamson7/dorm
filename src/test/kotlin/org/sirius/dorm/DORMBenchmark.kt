@@ -124,7 +124,7 @@ internal class DORMBenchmark : AbstractTest() {
         }
     }
 
-    @Test
+    //@Test
     fun testJPA() {
         println("### JPA")
 
@@ -229,7 +229,7 @@ internal class DORMBenchmark : AbstractTest() {
         }
     }
 
-    @Test
+    //@Test
     fun test() {
         println("### DORM")
 

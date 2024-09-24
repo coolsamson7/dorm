@@ -16,6 +16,7 @@ import org.sirius.common.tracer.Tracer
 import org.sirius.dorm.`object`.DataObject
 import jakarta.persistence.EntityManager
 import jakarta.persistence.PersistenceContext
+import org.sirius.dorm.transaction.Status
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import java.util.concurrent.ConcurrentHashMap
@@ -58,9 +59,9 @@ class DataObjectMapper() {
     fun create(state: TransactionState, obj: DataObject) {
         val descriptor = obj.type
 
-        obj.entity = EntityEntity(0, descriptor.name, mapper.writeValueAsString(obj))
+        //obj.entity = EntityEntity(0, descriptor.name, mapper.writeValueAsString(obj))
 
-        entityManager.persist(obj.entity) // we need the id...is that required, think of a lifecycle hook?
+        //entityManager.persist(obj.entity) // we need the id...is that required, think of a lifecycle hook?
 
         if ( Tracer.ENABLED)
             Tracer.trace("com.sirius.dorm", TraceLevel.HIGH, "create %s[%d]", obj.type.name, obj.entity!!.id)
@@ -94,7 +95,7 @@ class DataObjectMapper() {
             if ( Tracer.ENABLED)
                 Tracer.trace("com.sirius.dorm", TraceLevel.HIGH, "read %s", objectDescriptor.name)
 
-            val obj = objectDescriptor.create()
+            val obj = objectDescriptor.create(Status.MANAGED)
 
             val id =  entity.id
             obj.entity = entity
@@ -116,7 +117,7 @@ class DataObjectMapper() {
             if ( Tracer.ENABLED)
                 Tracer.trace("com.sirius.dorm", TraceLevel.HIGH, "read %s[%d]", objectDescriptor.name,  attributes[start].entity.id)
 
-            val obj = objectDescriptor.create()
+            val obj = objectDescriptor.create(Status.MANAGED)
 
             obj.entity = attributes[start].entity
             val id =  obj.entity!!.id

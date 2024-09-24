@@ -6,16 +6,32 @@ package org.sirius.dorm.`object`
  */
 
 import org.sirius.dorm.ObjectManager
+import org.sirius.dorm.ObjectManagerError
 import org.sirius.dorm.model.ObjectDescriptor
 import org.sirius.dorm.model.PropertyDescriptor
 import org.sirius.dorm.model.RelationDescriptor
 import org.sirius.dorm.persistence.entity.PropertyEntity
+import org.sirius.dorm.transaction.Status
 import org.sirius.dorm.transaction.TransactionState
 
-class SingleValuedRelation(relation: RelationDescriptor<*>, val obj: DataObject, property: PropertyEntity?, targetDescriptor: ObjectDescriptor) : Relation(relation, targetDescriptor, property) {
+class SingleValuedRelation(relation: RelationDescriptor<*>, status: Status, val obj: DataObject, property: PropertyEntity?, targetDescriptor: ObjectDescriptor) : Relation(relation, targetDescriptor, property) {
     // instance data
 
-    var target: DataObject? = DataObject.NONE
+    var target: DataObject? = if ( status == Status.CREATED ) null else DataObject.NONE
+
+    // private
+
+    override fun load(objectManager: ObjectManager) {
+       if ( property !== null) {
+            if ( relations().size == 1) {
+                val targetProperty = relations().first()
+                target = objectManager.mapper.read(TransactionState.current(), targetDescriptor, targetProperty.entity)
+            }
+            else
+                target = null
+        }
+        else target = null
+    }
 
     // implement Relation
 
@@ -33,19 +49,13 @@ class SingleValuedRelation(relation: RelationDescriptor<*>, val obj: DataObject,
             }
             else {
                 if ( !relation.multiplicity.optional)
-                    throw Error("missing ...") // TODO
+                    throw ObjectManagerError("relation ${obj.type.name}.${relation.name} is required")
             }
         }
     }
     override fun get(objectManager: ObjectManager) : Any? {
-        if ( !isLoaded() && property !== null) {
-            if ( relations().size == 1) {
-                val targetProperty = relations().first()
-                target = objectManager.mapper.read(TransactionState.current(), targetDescriptor, targetProperty.entity)
-            }
-            else
-                target = null
-        }
+        if ( !isLoaded())
+            load(objectManager)
 
         return target
     }

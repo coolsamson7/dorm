@@ -159,6 +159,8 @@ class RelationTests: AbstractTest() {
 
         // test
 
+        var caughtError = false
+
         try {
             withTransaction {
                 val product = objectManager.create(productDescriptor)
@@ -172,9 +174,11 @@ class RelationTests: AbstractTest() {
                 //part["product"] = product
             }
         }
-        catch(exception: Throwable) {
-            println() // T
+        catch(exception: ObjectManagerError) {
+            caughtError = true
         }
+
+        assertEquals(true, caughtError)
     }
 
     @Test

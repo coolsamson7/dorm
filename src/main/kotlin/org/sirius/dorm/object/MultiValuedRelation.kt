@@ -10,21 +10,23 @@ import org.sirius.dorm.model.ObjectDescriptor
 import org.sirius.dorm.model.PropertyDescriptor
 import org.sirius.dorm.model.RelationDescriptor
 import org.sirius.dorm.persistence.entity.PropertyEntity
+import org.sirius.dorm.transaction.Status
 import org.sirius.dorm.transaction.TransactionState
 import java.util.HashMap
 
-class MultiValuedRelation(relation: RelationDescriptor<*>, val obj: DataObject, property: PropertyEntity?, targetDescriptor: ObjectDescriptor) : Relation(relation, targetDescriptor, property), MutableSet<DataObject> {
+class MultiValuedRelation(relation: RelationDescriptor<*>, status: Status, val obj: DataObject, property: PropertyEntity?, targetDescriptor: ObjectDescriptor) : Relation(relation, targetDescriptor, property), MutableSet<DataObject> {
     // instance data
 
-    private var objects : HashSet<DataObject>? = null
+    private var objects : HashSet<DataObject>? = if ( status == Status.CREATED) HashSet() else null
 
     // private
 
-    private fun load(objectManager: ObjectManager) {
+    override fun load(objectManager: ObjectManager) {
         objects = HashSet()
-        for ( target in relations() ) {
-            objects!!.add(objectManager.mapper.read(TransactionState.current(), targetDescriptor, target.entity))
-        }
+        if ( property !== null)
+            for ( target in relations() ) {
+                objects!!.add(objectManager.mapper.read(TransactionState.current(), targetDescriptor, target.entity))
+            }
     }
 
     private fun markDirty() {

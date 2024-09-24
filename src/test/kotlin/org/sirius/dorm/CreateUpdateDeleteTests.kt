@@ -6,19 +6,45 @@ package org.sirius.dorm
  */
 
 import org.junit.jupiter.api.Test
+import org.sirius.common.type.ValidationError
 import kotlin.test.assertEquals
 
 
 class CreateUpdateDeleteTests: AbstractTest() {
     @Test
     fun testOne() {
-        createPerson("Andi", 58)
+        val id = createPerson("Andi", 58)
+
+        withTransaction {
+            val person = objectManager.findById(personDescriptor!!, id)!!
+
+            assertEquals("Andi", person["name"])
+            assertEquals(58, person["age"])
+        }
+    }
+
+    @Test
+    fun testValidation() {
+        var caughtError = false
+        try {
+            withTransaction {
+                val person = objectManager.create(personDescriptor!!)
+
+                person["name"] = "Andi"
+                person["age"] = -1
+            }
+        }
+        catch(e: ValidationError) {
+            caughtError = true
+        }
+
+        assertEquals(true, caughtError)
     }
 
     @Test
     fun testCreate() {
-        createPerson("Andi", 58)
-        createPerson("Sandra", 52)
+        val andiId = createPerson("Andi", 58)
+        val sandraId = createPerson("Sandra", 52)
 
         // update
 
