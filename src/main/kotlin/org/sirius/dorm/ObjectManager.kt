@@ -21,6 +21,7 @@ import org.antlr.v4.runtime.RecognitionException
 import org.sirius.common.type.base.long
 import org.sirius.dorm.query.parser.OQLParser
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Component
 import org.springframework.transaction.PlatformTransactionManager
 import java.util.concurrent.ConcurrentHashMap
@@ -74,6 +75,8 @@ class ObjectManager() {
     private lateinit var transactionManager: PlatformTransactionManager
     @Autowired
     lateinit var mapper: DataObjectMapper
+    @Autowired
+    lateinit var jdbcTemplate: JdbcTemplate
 
     @Autowired
     private lateinit var objectDescriptorStorage: ObjectDescriptorStorage

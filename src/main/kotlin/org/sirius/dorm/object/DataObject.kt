@@ -68,6 +68,10 @@ class DataObject(val type: ObjectDescriptor, status: Status, var state : ObjectS
         return values[property(name).index] as T
     }
 
+    fun <T: Relation>relation(index: Int) : T {
+        return values[index] as T
+    }
+
     operator fun get(name: String) : Any? {
         return values[property(name).index].get(objectManager)
     }

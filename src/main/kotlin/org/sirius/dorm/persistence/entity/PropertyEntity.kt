@@ -46,8 +46,8 @@ data class PropertyEntity(
     @ManyToMany(fetch = FetchType.LAZY, cascade = [CascadeType.REMOVE])
     @JoinTable(
         name = "RELATIONS",
-        joinColumns = [JoinColumn(name = "FROM_ENTITY"), JoinColumn(name = "FROM_")],
-        inverseJoinColumns = [JoinColumn(name = "TO_ENTITY"), JoinColumn(name = "TO_")]
+        joinColumns = [JoinColumn(name = "FROM_ATTR"), JoinColumn(name = "FROM_ENTITY")],
+        inverseJoinColumns = [JoinColumn(name = "TO_ATTR"), JoinColumn(name = "TO_ENTITY")]
     )
     val targets : MutableSet<PropertyEntity> = HashSet(),
 

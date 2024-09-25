@@ -5,15 +5,21 @@ package org.sirius.dorm.transaction
  * All rights reserved
  */
 
-import org.sirius.dorm.`object`.DataObject
+import jakarta.persistence.criteria.CriteriaBuilder
+import jakarta.persistence.criteria.CriteriaDelete
+import jakarta.persistence.criteria.Root
 import org.sirius.dorm.ObjectManager
+import org.sirius.dorm.model.Cascade
 import org.sirius.dorm.model.ObjectDescriptor
+import org.sirius.dorm.`object`.DataObject
+import org.sirius.dorm.`object`.Relation
 import org.sirius.dorm.persistence.DataObjectMapper
 import org.sirius.dorm.persistence.entity.EntityEntity
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.TransactionDefinition
 import org.springframework.transaction.TransactionStatus
 import org.springframework.transaction.support.DefaultTransactionDefinition
+
 
 abstract class Operation() {
     abstract fun execute()
@@ -47,15 +53,74 @@ class TransactionState(val objectManager: ObjectManager, val transactionManager:
         pendingOperations.clear()
 
     }
+
+    fun processDeletedObjects() {
+        val objects = states.values.filter { state -> state.status == Status.DELETED }
+
+        // this is the set of deleted objects
+
+        val ids = HashSet<Long>()//objects.map { state -> state.obj.id }.toHashSet()
+
+        val queue : MutableList<Long> = objects.map { state -> state.obj.id}.toMutableList()
+        while ( queue.isNotEmpty()) {
+            val id = queue.removeAt(0);
+
+            if (!ids.contains(id)) {
+                ids.add(id)
+
+                if (states.containsKey(id)) {
+                    val obj = states[id]!!.obj
+
+                    obj.state?.status = Status.DELETED
+
+                    var i = 0
+                    for (property in obj.type.properties) {
+                        if (!property.isAttribute() && property.asRelation().cascade == Cascade.DELETE) {
+                            val relation = obj.relation<Relation>(i)
+
+                            if (relation.isLoaded()) {
+                                for (r in relation.relations())
+                                    queue.add(r.entity.id)
+                            }
+                            else { // FROM_ATTR  | FROM_ENTITY | TO_ATTR    | TO_ENTITY |
+                                objectManager.jdbcTemplate.query<Long>("SELECT DISTINCT TO_ENTITY FROM RELATIONS WHERE FROM_ENTITY = ${id} AND FROM_ATTR='${property.name}'") { rs, _ ->
+                                    rs.getLong("TO_ENTITY")
+                                }.forEach { id -> queue.add(id) }
+                            }
+                        } // if
+
+                        i++
+                    } // for
+                } // if
+            } // if
+        } // while
+
+        // finally delete
+
+        val entityManager = objectManager.entityManager
+
+        val criteriaBuilder = entityManager.getCriteriaBuilder()
+
+        val criteriaDelete = criteriaBuilder.createCriteriaDelete(EntityEntity::class.java)
+
+        val root = criteriaDelete.from(EntityEntity::class.java)
+
+        criteriaDelete.where( criteriaBuilder.isTrue(root.get<Long>("id").`in`(*ids.toTypedArray())))
+
+        entityManager.createQuery(criteriaDelete).executeUpdate()
+    }
+
     // TX
 
     fun commit(mapper: DataObjectMapper) {
+        processDeletedObjects()
+
         // commit changes
 
         for (state in states.values) {
             when ( state.status) {
                 Status.CREATED ->  mapper.create(this, state.obj)
-                Status.DELETED -> mapper.delete(this, state.obj)
+                Status.DELETED -> { /* already processed */}//mapper.delete(this, state.obj)
                 Status.MANAGED -> {
                     if ( state.isDirty())
                         mapper.update(this, state.obj)
