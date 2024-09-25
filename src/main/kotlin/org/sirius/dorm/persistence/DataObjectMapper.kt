@@ -46,7 +46,7 @@ class DataObjectMapper() {
 
          // update entity
 
-        obj.entity!!.json = mapper.writeValueAsString(obj)
+        obj.entity!!.json = ""//TODO ? mapper.writeValueAsString(obj)
     }
 
     fun delete(state: TransactionState, obj: DataObject) {

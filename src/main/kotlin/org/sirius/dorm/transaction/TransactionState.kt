@@ -16,19 +16,54 @@ import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.TransactionDefinition
 import org.springframework.transaction.TransactionStatus
 import org.springframework.transaction.support.DefaultTransactionDefinition
+import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
+import kotlin.collections.HashSet
 
 
 abstract class Operation() {
     abstract fun execute()
 }
 
+data class RedoKey(val id : Long, val relation: String) {}
+
+abstract class UpdateRelation {
+    abstract fun execute(relation: Relation)
+}
+
+class AddToRelation(val obj: DataObject) : UpdateRelation() {
+    override fun execute(relation: Relation) {
+        relation.addInverse(obj)
+    }
+}
+
+class RemoveFromRelation(val obj: DataObject) : UpdateRelation() {
+    override fun execute(relation: Relation) {
+        relation.removeInverse(obj)
+    }
+}
+class Redo() {
+    val operations = LinkedList<UpdateRelation>()
+
+    fun add(update: UpdateRelation) {
+        operations.add(update)
+    }
+
+    fun execute(relation: Relation) {
+        for ( operation in operations)
+            operation.execute(relation)
+    }
+}
+
 class TransactionState(val objectManager: ObjectManager, val transactionManager: PlatformTransactionManager) {
     // instance data
 
-    val states = HashMap<Long, ObjectState>()
+    private val states = HashMap<Long, ObjectState>()
     val status : TransactionStatus
 
-    val pendingOperations = ArrayList<Operation>()
+    private val pendingOperations = ArrayList<Operation>()
+    private val redos = HashMap<RedoKey, Redo> ()
 
     init {
         val def = DefaultTransactionDefinition()
@@ -37,6 +72,21 @@ class TransactionState(val objectManager: ObjectManager, val transactionManager:
         def.propagationBehavior = TransactionDefinition.PROPAGATION_REQUIRED
 
         status = transactionManager.getTransaction(def)
+    }
+
+    fun addRedo(id: Long, relation: String, redo: UpdateRelation) {
+        val key = RedoKey(id, relation)
+        redos.getOrPut(key, { Redo() }).add(redo)
+    }
+
+    fun checkRedos(id: Long, relationName: String, relation: Relation) {
+        val key = RedoKey(id, relationName)
+        val redo = redos[key]
+        if ( redo !== null) {
+            redo.execute(relation)
+
+            redos.remove(key)
+        } // if
     }
 
     fun addOperation(operation: Operation) {
@@ -51,6 +101,7 @@ class TransactionState(val objectManager: ObjectManager, val transactionManager:
 
     }
 
+    // TODO do it in waves
     fun processDeletedObjects() {
         val objects = states.values.filter { state -> state.status == Status.DELETED }
 
@@ -79,7 +130,7 @@ class TransactionState(val objectManager: ObjectManager, val transactionManager:
                                 for (r in relation.relations())
                                     queue.add(r.entity.id)
                             }
-                            else { // FROM_ATTR  | FROM_ENTITY | TO_ATTR    | TO_ENTITY |
+                            else { // TODO prepeared statement?
                                 objectManager.jdbcTemplate.query<Long>("SELECT DISTINCT TO_ENTITY FROM RELATIONS WHERE FROM_ENTITY = ${id} AND FROM_ATTR='${property.name}'") { rs, _ ->
                                     rs.getLong("TO_ENTITY")
                                 }.forEach { id -> queue.add(id) }

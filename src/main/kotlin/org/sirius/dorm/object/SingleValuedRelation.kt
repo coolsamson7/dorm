@@ -11,6 +11,8 @@ import org.sirius.dorm.model.ObjectDescriptor
 import org.sirius.dorm.model.PropertyDescriptor
 import org.sirius.dorm.model.RelationDescriptor
 import org.sirius.dorm.persistence.entity.PropertyEntity
+import org.sirius.dorm.transaction.AddToRelation
+import org.sirius.dorm.transaction.RemoveFromRelation
 import org.sirius.dorm.transaction.Status
 import org.sirius.dorm.transaction.TransactionState
 
@@ -27,12 +29,18 @@ class SingleValuedRelation(relation: RelationDescriptor<*>, status: Status, val 
 
     override fun load(objectManager: ObjectManager) {
        if ( property !== null) {
+           // start with the persistent state
+
             if ( relations().size == 1) {
                 val targetProperty = relations().first()
                 target = objectManager.mapper.read(TransactionState.current(), targetDescriptor, targetProperty.entity)
             }
             else
                 target = null
+
+           // redo anything related to me
+
+           TransactionState.current().checkRedos(this.obj.id, relation.name, this)
         }
         else target = null
     }
@@ -67,6 +75,8 @@ class SingleValuedRelation(relation: RelationDescriptor<*>, status: Status, val 
             var inverse = inverseRelation(this.target)
             if ( inverse !== null)
                 inverse.removeInverse(this.obj)
+            else if ( this.target !== null)
+                TransactionState.current().addRedo(this.target!!.id, relation.inverseRelation!!.name, RemoveFromRelation(this.obj))
 
             this.target = value as DataObject?
 
@@ -74,6 +84,8 @@ class SingleValuedRelation(relation: RelationDescriptor<*>, status: Status, val 
                 inverse = inverseRelation(this.target)
                 if ( inverse !== null)
                     inverse.addInverse(this.obj)
+                else
+                    TransactionState.current().addRedo(this.target!!.id, relation.inverseRelation!!.name, AddToRelation(this.obj))
             }
 
             // done

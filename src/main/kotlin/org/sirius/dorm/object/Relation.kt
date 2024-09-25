@@ -29,11 +29,11 @@ abstract class Relation(val relation: RelationDescriptor<*>, val targetDescripto
     }
 
     protected fun inverseRelation(obj: DataObject?) : Relation? {
-        if ( obj !== null && isLoaded()) {
+        return if ( obj !== null && isLoaded()) {
             val relation = obj.values[relation.inverseRelation!!.index] as Relation
-            return if (relation.isLoaded()) relation else null
+            if (relation.isLoaded()) relation else null
         }
-        else return null
+        else null
     }
 
     fun relations() : MutableSet<PropertyEntity> {

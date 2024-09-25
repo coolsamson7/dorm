@@ -10,6 +10,8 @@ import org.sirius.dorm.model.ObjectDescriptor
 import org.sirius.dorm.model.PropertyDescriptor
 import org.sirius.dorm.model.RelationDescriptor
 import org.sirius.dorm.persistence.entity.PropertyEntity
+import org.sirius.dorm.transaction.AddToRelation
+import org.sirius.dorm.transaction.RemoveFromRelation
 import org.sirius.dorm.transaction.Status
 import org.sirius.dorm.transaction.TransactionState
 import java.util.HashMap
@@ -23,10 +25,15 @@ class MultiValuedRelation(relation: RelationDescriptor<*>, status: Status, val o
 
     override fun load(objectManager: ObjectManager) {
         objects = HashSet()
-        if ( property !== null)
-            for ( target in relations() ) {
-                objects!!.add(objectManager.mapper.read(TransactionState.current(), targetDescriptor, target.entity))
-            }
+        if ( property !== null) {
+            val transactionState = TransactionState.current()
+            for (target in relations())
+                objects!!.add(objectManager.mapper.read(transactionState, targetDescriptor, target.entity))
+
+            // redo anything related to me
+
+            transactionState.checkRedos(this.obj.id, relation.name, this)
+        }
     }
 
     private fun markDirty() {
@@ -100,17 +107,18 @@ class MultiValuedRelation(relation: RelationDescriptor<*>, status: Status, val o
     override fun add(element: DataObject): Boolean {
         markDirty()
 
-        if (objects!!.add(element)) {
+        return if (objects!!.add(element)) {
             // take care of inverse
 
             val inverse = inverseRelation(element)
-            if ( inverse !== null) {
+            if ( inverse !== null)
                 inverse.addInverse(obj)
-            }
+            else
+                TransactionState.current().addRedo(element.id, relation.inverseRelation!!.name, AddToRelation(this.obj))
 
-            return true
+            true
         }
-        else return false
+        else false
     }
 
     override fun addAll(elements: Collection<DataObject>): Boolean {
@@ -131,6 +139,8 @@ class MultiValuedRelation(relation: RelationDescriptor<*>, status: Status, val o
             val inverse = inverseRelation(element)
             if ( inverse !== null)
                 inverse.removeInverse(element)
+            else
+                TransactionState.current().addRedo(element.id, relation.inverseRelation!!.name, RemoveFromRelation(this.obj))
 
             true
         }

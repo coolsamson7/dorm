@@ -24,4 +24,17 @@ data class EntityEntity(
 
     @OneToMany(mappedBy = "entity", cascade = [CascadeType.ALL], orphanRemoval = true)
     var properties : MutableList<PropertyEntity> = ArrayList()
-)
+) {
+    // override Object
+
+    override fun equals(other: Any?): Boolean {
+        if ( other is EntityEntity)
+            return this === other
+        else
+            return false
+    }
+
+    override fun hashCode(): Int {
+        return id.hashCode() + type.hashCode()
+    }
+}

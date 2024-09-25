@@ -56,12 +56,12 @@ data class PropertyEntity(
 ) {
     // override Object
 
-    /*override fun equals(other: Any?): Boolean { TODO
-        if ( other is DataObject)
-            return id == other.id && this.type === other.type
+    override fun equals(other: Any?): Boolean {
+        if ( other is PropertyEntity)
+            return this === other
         else
             return false
-    }*/
+    }
 
     override fun hashCode(): Int {
         return type.hashCode() + attribute.hashCode()

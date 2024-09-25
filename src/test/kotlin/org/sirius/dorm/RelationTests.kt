@@ -58,7 +58,6 @@ class RelationTests: AbstractTest() {
     fun testOneToMany() {
         // create schema
 
-
         withTransaction {
              objectManager.type("p")
                 .attribute("name", string())
@@ -80,7 +79,7 @@ class RelationTests: AbstractTest() {
 
             // force load
 
-            person["children"]
+            //person["children"]
 
             id = person.id
 
