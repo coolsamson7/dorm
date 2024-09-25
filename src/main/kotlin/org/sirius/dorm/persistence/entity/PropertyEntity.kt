@@ -9,7 +9,7 @@ import jakarta.persistence.*
 import org.sirius.dorm.`object`.DataObject
 import java.io.Serializable
 
-data class PropertyId(private val entity: Int = 0, private val attribute: String = "") : Serializable
+data class PropertyId(private val entity: Long = 0L, private val attribute: String = "") : Serializable
 
 @Entity
 @Table(name="PROPERTY",
@@ -45,9 +45,9 @@ data class PropertyEntity(
 
     @ManyToMany(fetch = FetchType.LAZY, cascade = [CascadeType.REMOVE])
     @JoinTable(
-        name = "RELATION",
-        joinColumns = [JoinColumn(name = "FROM_ENTITY"), JoinColumn(name = "FROM")],
-        inverseJoinColumns = [JoinColumn(name = "TO_ENTITY"), JoinColumn(name = "TO")]
+        name = "RELATIONS",
+        joinColumns = [JoinColumn(name = "FROM_ENTITY"), JoinColumn(name = "FROM_")],
+        inverseJoinColumns = [JoinColumn(name = "TO_ENTITY"), JoinColumn(name = "TO_")]
     )
     val targets : MutableSet<PropertyEntity> = HashSet(),
 

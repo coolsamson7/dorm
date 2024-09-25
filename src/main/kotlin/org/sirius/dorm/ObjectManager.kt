@@ -18,6 +18,7 @@ import jakarta.persistence.PersistenceContext
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.RecognitionException
+import org.sirius.common.type.base.long
 import org.sirius.dorm.query.parser.OQLParser
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -31,7 +32,7 @@ class ObjectDescriptorBuilder(val manager: ObjectManager, val name: String) {
     private val properties = ArrayList<PropertyDescriptor<Any>>()
 
     init {
-        attribute("id", int(), true)
+        attribute("id", long(), true)
     }
 
     // fluent

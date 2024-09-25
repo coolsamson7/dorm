@@ -76,4 +76,10 @@ class TypeTests {
         assert(double().greaterEqual(0.toDouble()).isValid(1.toDouble()))
         assert(!double().greaterEqual(0.toDouble()).isValid(-1.toDouble()))
     }
+
+    @Test
+    fun testChar() {
+        assert(!character().isValid(1))
+        assert(character().isValid('a'))
+    }
 }

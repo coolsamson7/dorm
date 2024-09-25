@@ -15,6 +15,8 @@ class CreateUpdateDeleteTests: AbstractTest() {
     fun testOne() {
         val id = createPerson("Andi", 58)
 
+        printTables()
+
         withTransaction {
             val person = objectManager.findById(personDescriptor!!, id)!!
 

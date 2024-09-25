@@ -8,18 +8,20 @@ package org.sirius.dorm
 import org.sirius.dorm.`object`.DataObject
 import org.junit.jupiter.api.Test
 import org.sirius.common.type.base.*
+import org.sirius.dorm.model.Cascade
 import org.sirius.dorm.model.Multiplicity
 import org.sirius.dorm.model.ObjectDescriptor
 import org.sirius.dorm.`object`.MultiValuedRelation
 import org.sirius.dorm.`object`.Relation
 import org.sirius.dorm.`object`.SingleValuedRelation
+import org.sirius.dorm.query.eq
 import kotlin.test.assertEquals
 
 
 class RelationTests: AbstractTest() {
     @Test
     fun testOneToOne() {
-        var id = 0
+        var id = 0L
 
         withTransaction {
             val andi = objectManager.create(personDescriptor!!)
@@ -69,7 +71,7 @@ class RelationTests: AbstractTest() {
 
         // test
 
-        var id = 0
+        var id = 0L
 
         withTransaction {
             val person = objectManager.create(descriptor)
@@ -114,6 +116,8 @@ class RelationTests: AbstractTest() {
             //person.relation("children").add(child)
         }
 
+        printTables()
+
         // reread
 
         withTransaction {
@@ -131,8 +135,6 @@ class RelationTests: AbstractTest() {
             val x = iter.next()
             val y = iter.next()
 
-
-            println()
             //assertEquals("Nika", children[0]["name"])
         }
     }
@@ -141,11 +143,10 @@ class RelationTests: AbstractTest() {
     fun testValidateRelation() {
         // create schema
 
-
         withTransaction {
             objectManager.type("product")
                 .attribute("name", string())
-                .relation("part", "part", Multiplicity.ZERO_OR_MANY, "product")
+                .relation("parts", "part", Multiplicity.ZERO_OR_MANY, "product", Cascade.DELETE)
                 .register()
 
             objectManager.type("part")
@@ -179,6 +180,53 @@ class RelationTests: AbstractTest() {
         }
 
         assertEquals(true, caughtError)
+
+        // now really
+
+        var id = 0L
+        withTransaction {
+            val product = objectManager.create(productDescriptor)
+
+            product["name"] = "Car"
+
+            val part = objectManager.create(partDescriptor)
+
+            part["name"] = "Motor"
+
+            part["product"] = product
+
+            id = product.id
+        }
+
+        printTables()
+
+        // try delete
+
+        withTransaction {
+            val product = objectManager.findById(productDescriptor, id)!!
+
+            objectManager.delete(product)
+        }
+
+        // check
+
+        withTransaction {
+            val queryManager = objectManager.queryManager()
+            val part = queryManager.from(partDescriptor)
+
+            // no where
+
+            val query = queryManager
+                .create()
+                .select(part)
+                .from(part)
+
+            val result = query.executor()
+                .execute()
+                .getResultList()
+
+            assertEquals(0, result.size)
+        }
     }
 
     @Test
@@ -197,7 +245,7 @@ class RelationTests: AbstractTest() {
 
         // test
 
-        var id = 0
+        var id = 0L
 
         withTransaction {
             val person = objectManager.create(descriptor!!)
@@ -215,6 +263,8 @@ class RelationTests: AbstractTest() {
             person.value<MultiValuedRelation>("children").add(child)
             person.relation<MultiValuedRelation>("children").add(child)
         }
+
+        printTables()
 
         // reread
 
