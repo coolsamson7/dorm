@@ -39,24 +39,41 @@ class TablePrinter {
 
     @Autowired
     lateinit var jdbcTemplate: JdbcTemplate
+    //
+
+    val person : Array<ColumnType> = arrayOf(
+        ColumnType("ID  ", Int::class.java, "%-4d"),
+        ColumnType("NAME      ", String::class.java, "%-10s")
+    )
+
+    val hobby : Array<ColumnType> = arrayOf(
+        ColumnType("ID  ", Long::class.java, "%-4d"),
+        ColumnType("NAME  ", String::class.java, "%-10s")
+    )
+
+    val person2hobby : Array<ColumnType> = arrayOf(
+        ColumnType("PERSON_ID  ", Long::class.java, "%-10s"),
+        ColumnType("HOBBY_ID   ", Long::class.java, "%-10s")
+    )
+    //
 
     val entity : Array<ColumnType> = arrayOf(
-        ColumnType("ID  ", Long::class.java, "%4d"),
+        ColumnType("ID  ", Long::class.java, "%-4d"),
         ColumnType("TYPE      ", String::class.java, "%-10s")
     )
 
     val relations : Array<ColumnType> = arrayOf(
-        ColumnType("FROM_ENTITY", String::class.java, "%-11s"),
-        ColumnType("FROM_", Long::class.java, "%5d"),
-        ColumnType("TO_ENTITY", String::class.java, "%-11s"),
-        ColumnType("TO_", Long::class.java, "%5d")
+        ColumnType("FROM_ATTR ", String::class.java, "%-10s"),
+        ColumnType("FROM_ENTITY", Long::class.java, "%11d"),
+        ColumnType("TO_ATTR   ", String::class.java, "%-10s"),
+        ColumnType("TO_ENTITY", Long::class.java, "%9d")
     )
 
     val property : Array<ColumnType> = arrayOf(
         ColumnType("ENTITY    ", Long::class.java,"%-10d"),
         ColumnType("ATTRIBUTE ", String::class.java, "%-10s"),
         ColumnType("TYPE      ", String::class.java, "%-10s"),
-        ColumnType("STRING_VALUE", String::class.java, "%-11s"),
+        ColumnType("STRING_VALUE", String::class.java, "%-12s"),
         ColumnType("INT_VALUE ", Int::class.java, "%-10d"),
         ColumnType("DOUBLE_VALUE", Double::class.java, "%-12f")
     )
@@ -68,6 +85,13 @@ class TablePrinter {
         print("PROPERTY", property)
         print("RELATIONS", relations)
     }
+
+    fun printPersons() {
+        print("PERSON", person)
+        print("HOBBY", hobby)
+        print("PERSON_HOBBY", person2hobby)
+    }
+
 
     fun print(entity: String, columns: Array<ColumnType> ) {
         println(entity)
@@ -119,6 +143,10 @@ class AbstractTest {
 
     protected fun printTables() {
       printer.printAll()
+    }
+
+    protected fun printPersons() {
+        printer.printPersons()
     }
 
     //@BeforeEach
@@ -188,11 +216,18 @@ class AbstractTest {
 
     protected fun withTransaction(doIt: () -> Unit) {
         objectManager.begin()
+        var committed = false
         try {
             doIt()
-        }
-        finally {
+
+            committed = true
             objectManager.commit()
+        }
+        catch (throwable: Throwable) {
+            if ( !committed )
+                objectManager.rollback()
+
+            throw throwable
         }
     }
 

@@ -208,6 +208,8 @@ class RelationTests: AbstractTest() {
             objectManager.delete(product)
         }
 
+        printTables()
+
         // check
 
         withTransaction {

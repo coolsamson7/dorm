@@ -20,9 +20,13 @@ data class HobbyEntity(
     @Column(name = "NAME")
     var name : String,
 
-    //@ManyToMany(mappedBy = "hobbies")
-    //val persons : Set<PersonEntity>
-)
+    @ManyToMany(mappedBy = "hobbies")
+    val persons : MutableSet<PersonEntity>
+) {
+    override fun hashCode(): Int {
+        return 1
+    }
+}
 
 @Entity
 @Table(name="PERSON")
@@ -87,17 +91,29 @@ internal class DORMBenchmark : AbstractTest() {
     fun testRelation() {
         var id = 0
         withTransaction {
-            val hobby = HobbyEntity(0, "angeln")
+            val hobby1 = HobbyEntity(0, "skaten", HashSet())
+            val hobby2 = HobbyEntity(0, "laufen", HashSet())
 
-            entityManager.persist(hobby)
+            entityManager.persist(hobby1)
+            entityManager.persist(hobby2)
 
-            val person = PersonEntity(0, "Andi", 58, "v1", "v2", "v3", mutableSetOf(hobby))
+            val person = PersonEntity(0, "Andi", 58, "v1", "v2", "v3", HashSet())
 
             entityManager.persist(person)
+
+            person.hobbies.add(hobby1)
+            person.hobbies.add(hobby2)
+
+            hobby1.persons.add(person)
+            hobby2.persons.add(person)
+
+           val x = hobby1.persons
 
             id = person.id
 
         }
+
+        printPersons()
 
         withTransaction {
             val person = entityManager.find(PersonEntity::class.java, id)
@@ -114,7 +130,7 @@ internal class DORMBenchmark : AbstractTest() {
 
         withTransaction {
             val person = PersonEntity(0,"Andi", 58, "v1", "v2", "v3", mutableSetOf())
-            val hobby = HobbyEntity(0, "angeln")
+            val hobby = HobbyEntity(0, "angeln", mutableSetOf())
 
             entityManager.persist(hobby)
 
@@ -124,7 +140,7 @@ internal class DORMBenchmark : AbstractTest() {
         }
     }
 
-    //@Test
+    @Test
     fun testJPA() {
         println("### JPA")
 
@@ -229,7 +245,7 @@ internal class DORMBenchmark : AbstractTest() {
         }
     }
 
-    //@Test
+    @Test
     fun test() {
         println("### DORM")
 
