@@ -5,9 +5,6 @@ package org.sirius.dorm.transaction
  * All rights reserved
  */
 
-import jakarta.persistence.criteria.CriteriaBuilder
-import jakarta.persistence.criteria.CriteriaDelete
-import jakarta.persistence.criteria.Root
 import org.sirius.dorm.ObjectManager
 import org.sirius.dorm.model.Cascade
 import org.sirius.dorm.model.ObjectDescriptor
@@ -101,40 +98,48 @@ class TransactionState(val objectManager: ObjectManager, val transactionManager:
 
         val criteriaBuilder = entityManager.getCriteriaBuilder()
 
-        val criteriaDelete = criteriaBuilder.createCriteriaDelete(EntityEntity::class.java)
+        val criteriaQuery = criteriaBuilder.createQuery(EntityEntity::class.java)
 
-        val root = criteriaDelete.from(EntityEntity::class.java)
+        val entity = criteriaQuery.from(EntityEntity::class.java)
+        criteriaQuery.where( criteriaBuilder.isTrue(entity.get<Long>("id").`in`(*ids.toTypedArray())))
 
-        criteriaDelete.where( criteriaBuilder.isTrue(root.get<Long>("id").`in`(*ids.toTypedArray())))
-
-        entityManager.createQuery(criteriaDelete).executeUpdate()
+         for ( e in entityManager.createQuery(criteriaQuery).resultList)
+             entityManager.remove(e)
     }
 
     // TX
 
     fun commit(mapper: DataObjectMapper) {
-        processDeletedObjects()
+        try {
+            processDeletedObjects()
 
-        // commit changes
+            // commit changes
 
-        for (state in states.values) {
-            when ( state.status) {
-                Status.CREATED ->  mapper.create(this, state.obj)
-                Status.DELETED -> { /* already processed */}//mapper.delete(this, state.obj)
-                Status.MANAGED -> {
-                    if ( state.isDirty())
-                        mapper.update(this, state.obj)
+            for (state in states.values) {
+                when (state.status) {
+                    Status.CREATED -> mapper.create(this, state.obj)
+                    Status.DELETED -> { /* already processed */
+                    }//mapper.delete(this, state.obj)
+                    Status.MANAGED -> {
+                        if (state.isDirty())
+                            mapper.update(this, state.obj)
+                    }
                 }
             }
+
+            // execute pending operations
+
+            executeOperations()
+
+            // and commit tx
+
+            transactionManager.commit(status)
         }
+        catch(exception: Throwable) {
+            transactionManager.rollback(status)
 
-        // execute pending operations
-
-        executeOperations()
-
-        // and commit tx
-
-        transactionManager.commit(status)
+            throw exception
+        }
     }
 
     fun rollback(mapper: DataObjectMapper) {
