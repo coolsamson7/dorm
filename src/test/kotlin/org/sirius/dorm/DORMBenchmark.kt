@@ -10,8 +10,8 @@ import jakarta.persistence.*
 import jakarta.persistence.criteria.CriteriaBuilder
 import org.junit.jupiter.api.Test
 import org.sirius.common.type.base.*
-import org.sirius.dorm.model.Multiplicity
 import org.sirius.dorm.model.ObjectDescriptor
+import org.sirius.dorm.model.attribute
 
 @Entity
 @Table(name="HOBBY")
@@ -109,7 +109,7 @@ internal class DORMBenchmark : AbstractTest() {
 
         withTransaction {
             objectManager.type("small-person")
-                .attribute("name", string())
+                .property(attribute("name").type(string()))
                 .register()
         }
 

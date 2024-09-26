@@ -8,9 +8,7 @@ package org.sirius.dorm
 import org.sirius.dorm.`object`.DataObject
 import org.junit.jupiter.api.Test
 import org.sirius.common.type.base.*
-import org.sirius.dorm.model.Cascade
-import org.sirius.dorm.model.Multiplicity
-import org.sirius.dorm.model.ObjectDescriptor
+import org.sirius.dorm.model.*
 import org.sirius.dorm.`object`.MultiValuedRelation
 import org.sirius.dorm.`object`.Relation
 import org.sirius.dorm.`object`.SingleValuedRelation
@@ -58,9 +56,9 @@ class RelationTests: AbstractTest() {
     fun testSynchronization() {
         withTransaction {
             objectManager.type("pp")
-                .attribute("name", string())
-                .relation("children", "pp", Multiplicity.ZERO_OR_MANY, "father")
-                .relation("father", "pp", Multiplicity.ZERO_OR_ONE, "children")
+                .property(attribute("name").type(string()))
+                .property(relation("children").target("pp").multiplicity(Multiplicity.ZERO_OR_MANY).inverse("father"))
+                .property(relation("father").target("pp").multiplicity(Multiplicity.ZERO_OR_ONE).inverse("children"))
                 .register()
         }
 
@@ -80,18 +78,21 @@ class RelationTests: AbstractTest() {
 
             val child = objectManager.create(descriptor)
 
+            child["name"] = "Nika"
+
             childId = child.id
 
             person.relation<MultiValuedRelation>("children").add(child)
-
         }
 
-        printTables()
+        printTables() // expect 1 relation
 
         // reread
 
         withTransaction {
             val child = objectManager.findById(descriptor, childId)!!
+
+            assert(child["father"] !== null)
 
             child["father"] = null
 
@@ -102,7 +103,7 @@ class RelationTests: AbstractTest() {
             assertEquals(0, father.relation<MultiValuedRelation>("children").size)
         }
 
-        printTables()
+        printTables() // expect empty relation
 
         // other way round
 
@@ -118,6 +119,8 @@ class RelationTests: AbstractTest() {
 
             assert(childFather == father)
         }
+
+        printTables() // expect 1 relation
     }
 
     @Test
@@ -126,9 +129,9 @@ class RelationTests: AbstractTest() {
 
         withTransaction {
              objectManager.type("p")
-                .attribute("name", string())
-                .relation("children", "p", Multiplicity.ZERO_OR_MANY, "father")
-                .relation("father", "p", Multiplicity.ZERO_OR_ONE, "children")
+                .property(attribute("name").type(string()))
+                .property(relation("children").target("p").multiplicity(Multiplicity.ZERO_OR_MANY).inverse("father").owner())
+                .property(relation("father").target("p").multiplicity(Multiplicity.ZERO_OR_ONE).inverse("children"))
                 .register()
         }
 
@@ -210,13 +213,13 @@ class RelationTests: AbstractTest() {
 
         withTransaction {
             objectManager.type("product")
-                .attribute("name", string())
-                .relation("parts", "part", Multiplicity.ZERO_OR_MANY, "product", Cascade.DELETE)
+                .property(attribute("name").type(string()))
+                .property(relation("parts").target("part").multiplicity(Multiplicity.ZERO_OR_MANY).inverse("product").cascade(Cascade.DELETE).owner())
                 .register()
 
             objectManager.type("part")
-                .attribute("name", string())
-                .relation("product", "product", Multiplicity.ONE)
+                .property(attribute("name").type(string()))
+                .property(relation("product").target("product").inverse("parts").multiplicity(Multiplicity.ONE))
                 .register()
         }
 
@@ -302,9 +305,9 @@ class RelationTests: AbstractTest() {
 
         withTransaction {
              objectManager.type("p1")
-                .attribute("name", string())
-                .relation("parent", "p1", Multiplicity.ZERO_OR_ONE, "children")
-                .relation("children", "p1", Multiplicity.ZERO_OR_MANY, "parent")
+                .property(attribute("name").type(string()))
+                .property(relation("parent").target("p1").multiplicity(Multiplicity.ZERO_OR_ONE).inverse("children").owner())
+                .property(relation("children").target("p1").multiplicity(Multiplicity.ZERO_OR_MANY).inverse("parent"))
                 .register()
         }
 

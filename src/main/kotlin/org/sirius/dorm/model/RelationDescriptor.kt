@@ -13,7 +13,7 @@ import org.sirius.dorm.`object`.SingleValuedRelation
 import org.sirius.dorm.persistence.entity.PropertyEntity
 import org.sirius.dorm.transaction.Status
 
-open class RelationDescriptor<T:Any>(name: String, val target: String, val multiplicity: Multiplicity, val cascade: Cascade?, val inverse: String?) : PropertyDescriptor<T>(name) {
+open class RelationDescriptor<T:Any>(name: String, val target: String, val multiplicity: Multiplicity, val cascade: Cascade?, val inverse: String?, val owner: Boolean) : PropertyDescriptor<T>(name) {
     // instance data
 
     var targetDescriptor: ObjectDescriptor? = null
@@ -55,6 +55,6 @@ open class RelationDescriptor<T:Any>(name: String, val target: String, val multi
     }
 
     fun isOwner() : Boolean {
-        return inverse !== null
+        return owner
     }
 }

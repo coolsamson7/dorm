@@ -51,10 +51,10 @@ class MultiValuedRelation(relation: RelationDescriptor<*>, status: Status, val o
     override fun isLoaded() : Boolean {
         return objects !== null
     }
-    override fun addInverse(element: DataObject) {
+    override fun addedToInverse(element: DataObject) {
         this.objects!!.add(element)
     }
-    override fun removeInverse(element: DataObject) {
+    override fun removedFromInverse(element: DataObject) {
         this.objects!!.remove(element)
     }
 
@@ -112,7 +112,7 @@ class MultiValuedRelation(relation: RelationDescriptor<*>, status: Status, val o
 
             val inverse = inverseRelation(element)
             if ( inverse !== null)
-                inverse.addInverse(obj)
+                inverse.addedToInverse(obj)
             else
                 TransactionState.current().addRedo(element.id, relation.inverseRelation!!.name, AddToRelation(this.obj))
 
@@ -138,7 +138,7 @@ class MultiValuedRelation(relation: RelationDescriptor<*>, status: Status, val o
 
             val inverse = inverseRelation(element)
             if ( inverse !== null)
-                inverse.removeInverse(element)
+                inverse.removedFromInverse(element)
             else
                 TransactionState.current().addRedo(element.id, relation.inverseRelation!!.name, RemoveFromRelation(this.obj))
 

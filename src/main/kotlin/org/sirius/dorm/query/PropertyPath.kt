@@ -23,7 +23,7 @@ class PropertyPath(parent: ObjectPath, val property: PropertyDescriptor<Any>) : 
         return property.name
     }
 
-    override fun type() : Class<Any> {
+    override fun type() : Class<out Any> {
         return property.asAttribute().type.baseType
     }
 

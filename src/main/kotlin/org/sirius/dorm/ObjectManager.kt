@@ -11,57 +11,17 @@ import org.sirius.dorm.persistence.entity.EntityEntity
 import org.sirius.dorm.query.*
 import org.sirius.dorm.transaction.Status
 import org.sirius.dorm.transaction.TransactionState
-import org.sirius.common.type.Type
-import org.sirius.common.type.base.int
 import jakarta.persistence.EntityManager
 import jakarta.persistence.PersistenceContext
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.RecognitionException
-import org.sirius.common.type.base.long
 import org.sirius.dorm.query.parser.OQLParser
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Component
 import org.springframework.transaction.PlatformTransactionManager
 import java.util.concurrent.ConcurrentHashMap
-
-
-class ObjectDescriptorBuilder(val manager: ObjectManager, val name: String) {
-    // instance data
-
-    private val properties = ArrayList<PropertyDescriptor<Any>>()
-
-    init {
-        attribute("id", long(), true)
-    }
-
-    // fluent
-
-    fun <T: Any> attribute(name: String, type: Type<T>, isPrimaryKey: Boolean = false) : ObjectDescriptorBuilder {
-        properties.add(AttributeDescriptor(name, type as Type<Any>, isPrimaryKey))
-
-        return this
-    }
-
-    fun relation(name: String, target: String, multiplicity: Multiplicity, cascade: Cascade? = null) : ObjectDescriptorBuilder {
-        properties.add(RelationDescriptor(name, target, multiplicity, cascade, null))
-
-        return this
-    }
-
-    fun relation(name: String, target: String, multiplicity: Multiplicity, inverse: String, cascade: Cascade? = null) : ObjectDescriptorBuilder {
-        properties.add(RelationDescriptor(name, target, multiplicity, cascade, inverse))
-
-        return this
-    }
-
-    // public
-
-    fun register() {
-        manager.register( ObjectDescriptor(name, properties.toTypedArray()))
-    }
-}
 
 @Component
 class ObjectManager() {

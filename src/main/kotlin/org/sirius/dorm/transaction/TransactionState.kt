@@ -34,13 +34,13 @@ abstract class UpdateRelation {
 
 class AddToRelation(val obj: DataObject) : UpdateRelation() {
     override fun execute(relation: Relation) {
-        relation.addInverse(obj)
+        relation.addedToInverse(obj)
     }
 }
 
 class RemoveFromRelation(val obj: DataObject) : UpdateRelation() {
     override fun execute(relation: Relation) {
-        relation.removeInverse(obj)
+        relation.removedFromInverse(obj)
     }
 }
 class Redo() {

@@ -79,7 +79,7 @@ class SingleValuedRelation(relation: RelationDescriptor<*>, status: Status, val 
         if ( value !== this.target) {
             var inverse = inverseRelation(this.target)
             if ( inverse !== null)
-                inverse.removeInverse(this.obj)
+                inverse.removedFromInverse(this.obj)
             else if ( this.target !== null)
                 TransactionState.current().addRedo(this.target!!.id, relation.inverseRelation!!.name, RemoveFromRelation(this.obj))
 
@@ -88,7 +88,7 @@ class SingleValuedRelation(relation: RelationDescriptor<*>, status: Status, val 
             if ( this.target !== null) {
                 inverse = inverseRelation(this.target)
                 if ( inverse !== null)
-                    inverse.addInverse(this.obj)
+                    inverse.addedToInverse(this.obj)
                 else
                     TransactionState.current().addRedo(this.target!!.id, relation.inverseRelation!!.name, AddToRelation(this.obj))
             }
@@ -100,10 +100,10 @@ class SingleValuedRelation(relation: RelationDescriptor<*>, status: Status, val 
         else return false
     }
 
-    override fun addInverse(element: DataObject) {
+    override fun addedToInverse(element: DataObject) {
         this.target = element
     }
-    override fun removeInverse(element: DataObject) {
+    override fun removedFromInverse(element: DataObject) {
         this.target = null
     }
 }

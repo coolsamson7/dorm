@@ -17,6 +17,8 @@ import org.sirius.common.tracer.trace.ConsoleTrace
 import org.sirius.common.type.base.*
 import org.sirius.dorm.model.Multiplicity
 import org.sirius.dorm.model.ObjectDescriptor
+import org.sirius.dorm.model.attribute
+import org.sirius.dorm.model.relation
 import org.sirius.dorm.`object`.DataObject
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -170,21 +172,21 @@ class AbstractTest {
                 val intType = int().greaterEqual(0)
 
                 objectManager.type("person")
-                    .attribute("name", stringType)
-                    .attribute("age", intType)
+                    .property(attribute("name").type(stringType))
+                    .property(attribute("age").type(intType))
 
                     // relations
 
-                    .relation("father", "person", Multiplicity.ZERO_OR_ONE, "children")
-                    .relation("children", "person", Multiplicity.ZERO_OR_MANY)
+                    .property(relation("father").target("person").multiplicity(Multiplicity.ZERO_OR_ONE).inverse("children"))
+                    .property(relation("children").target("person").multiplicity(Multiplicity.ZERO_OR_MANY).inverse("father"))
 
-                    .attribute("boolean", boolean())
-                    .attribute("string", string())
-                    .attribute("short", short())
-                    .attribute("int", int())
-                    .attribute("long", long())
-                    .attribute("float", float())
-                    .attribute("double", double())
+                    .property(attribute("boolean").type(boolean()))
+                    .property(attribute("string").type(string()))
+                    .property(attribute("short").type(short()))
+                    .property(attribute("int").type(int()))
+                    .property(attribute("long").type(long()))
+                    .property(attribute("float").type(float()))
+                    .property(attribute("double").type(double()))
                     .register()
             }
 

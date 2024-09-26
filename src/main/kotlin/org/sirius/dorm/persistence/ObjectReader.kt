@@ -33,7 +33,7 @@ class ObjectReader(descriptor: ObjectDescriptor, objectManager: ObjectManager) {
     // companion
 
     companion object {
-        fun valueReader(clazz: Class<Any>) :  (attribute: PropertyEntity) -> Any {
+        fun valueReader(clazz: Class<out Any>) :  (attribute: PropertyEntity) -> Any {
             return when (clazz) {
                 Boolean::class.javaObjectType -> { attribute: PropertyEntity -> attribute.intValue == 1 }
 

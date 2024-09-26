@@ -33,15 +33,13 @@ class ObjectWriter(private val descriptor: ObjectDescriptor) {
         var i = 1
         for ( writer in writer) {
             val propertyDescriptor = descriptor.properties[i]
-            val attribute = PropertyEntity(obj.entity!!, propertyDescriptor.name, descriptor.name, "", 0, 0.0)
+            val property = PropertyEntity(obj.entity!!, propertyDescriptor.name, descriptor.name, "", 0, 0.0)
 
-            // set entity, we may need it for flushing relations
+            obj.values[i].property = property
 
-            obj.values[i].property = attribute
+            writer(state, obj, i++, property)
 
-            writer(state, obj, i++, attribute)
-
-            entityManager.persist(attribute)
+            entityManager.persist(property)
 
             //obj.entity!!.properties.add(attribute)
         }

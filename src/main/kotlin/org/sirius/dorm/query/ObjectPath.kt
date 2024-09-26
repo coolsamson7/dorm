@@ -17,7 +17,7 @@ abstract class ObjectPath(val parent : ObjectPath? = null) {
 
     abstract fun <T>expression(root: Root<PropertyEntity>): Path<T>
 
-    abstract fun type() : Class<Any>
+    abstract fun type() : Class<out Any>
 
     open fun attributeName() : String {
         throw Error("abstract")

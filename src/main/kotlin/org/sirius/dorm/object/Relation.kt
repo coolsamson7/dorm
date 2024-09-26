@@ -42,6 +42,6 @@ abstract class Relation(val relation: RelationDescriptor<*>, val targetDescripto
 
     // abstract
 
-    abstract fun addInverse(element: DataObject)
-    abstract fun removeInverse(element: DataObject)
+    abstract fun addedToInverse(element: DataObject)
+    abstract fun removedFromInverse(element: DataObject)
 }
