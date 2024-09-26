@@ -5,6 +5,7 @@ package org.sirius.dorm.persistence
  * All rights reserved
  */
 
+import org.sirius.dorm.ObjectManager
 import org.sirius.dorm.model.ObjectDescriptor
 import org.sirius.dorm.model.PropertyDescriptor
 import org.sirius.dorm.`object`.DataObject
@@ -13,13 +14,13 @@ import org.sirius.dorm.persistence.entity.PropertyEntity
 
 typealias PropertyReader = (obj: DataObject, attribute: PropertyEntity) -> Unit
 
-class ObjectReader(descriptor: ObjectDescriptor) {
+class ObjectReader(descriptor: ObjectDescriptor, objectManager: ObjectManager) {
     // instance data
 
     private val reader: Array<PropertyReader> =
         descriptor.properties
             .filter { property -> property.name !== "id" }
-            .map { property -> reader4(property) }.toTypedArray()
+            .map { property -> reader4(property, objectManager) }.toTypedArray()
 
     // public
 
@@ -52,7 +53,7 @@ class ObjectReader(descriptor: ObjectDescriptor) {
             }
         }
 
-        fun reader4(property: PropertyDescriptor<Any>): PropertyReader {
+        fun reader4(property: PropertyDescriptor<Any>, objectManager: ObjectManager): PropertyReader {
             if ( !property.isAttribute()) {
                 return  { obj: DataObject, attribute: PropertyEntity ->
                     //obj.values[property.index].property = attribute
@@ -61,31 +62,31 @@ class ObjectReader(descriptor: ObjectDescriptor) {
             else
                 return when (property.asAttribute().baseType()) {
                     Boolean::class.javaObjectType -> { obj: DataObject, attribute: PropertyEntity ->
-                        obj.values[property.index].init(property, attribute.intValue == 1)
+                        obj.values[property.index].init(property, attribute.intValue == 1, objectManager)
                     }
 
                     String::class.javaObjectType -> { obj: DataObject, attribute: PropertyEntity ->
-                        obj.values[property.index].init(property, attribute.stringValue)
+                        obj.values[property.index].init(property, attribute.stringValue, objectManager)
                     }
 
                     Short::class.javaObjectType -> { obj: DataObject, attribute: PropertyEntity ->
-                        obj.values[property.index].init(property, attribute.intValue.toShort())
+                        obj.values[property.index].init(property, attribute.intValue.toShort(), objectManager)
                     }
 
                     Integer::class.javaObjectType -> { obj: DataObject, attribute: PropertyEntity ->
-                        obj.values[property.index].init(property, attribute.intValue)
+                        obj.values[property.index].init(property, attribute.intValue, objectManager)
                     }
 
                     Long::class.javaObjectType -> { obj: DataObject, attribute: PropertyEntity ->
-                        obj.values[property.index].init(property, attribute.intValue.toLong())
+                        obj.values[property.index].init(property, attribute.intValue.toLong(), objectManager)
                     }
 
                     Float::class.javaObjectType -> { obj: DataObject, attribute: PropertyEntity ->
-                        obj.values[property.index].init(property, attribute.doubleValue.toFloat())
+                        obj.values[property.index].init(property, attribute.doubleValue.toFloat(), objectManager)
                     }
 
                     Double::class.javaObjectType -> { obj: DataObject, attribute: PropertyEntity ->
-                        obj.values[property.index].init(property, attribute.doubleValue)
+                        obj.values[property.index].init(property, attribute.doubleValue, objectManager)
                     }
 
                     else -> { _: DataObject, _: PropertyEntity ->

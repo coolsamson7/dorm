@@ -16,6 +16,7 @@ import org.sirius.common.tracer.Tracer
 import org.sirius.dorm.`object`.DataObject
 import jakarta.persistence.EntityManager
 import jakarta.persistence.PersistenceContext
+import org.sirius.dorm.ObjectManager
 import org.sirius.dorm.transaction.Status
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -93,7 +94,7 @@ class DataObjectMapper() {
             obj.entity = entity
             obj["id"] = id
 
-            val reader = reader4(objectDescriptor)
+            val reader = reader4(objectDescriptor, state.objectManager)
 
             for ( attribute in entity.properties)
                 reader.read(obj, objectDescriptor.property(attribute.attribute), attribute)
@@ -116,7 +117,7 @@ class DataObjectMapper() {
 
             obj.id = id
 
-            val reader = reader4(objectDescriptor)
+            val reader = reader4(objectDescriptor, state.objectManager)
 
             for ( i in start..end) {
                 val attribute = attributes[i]
@@ -132,8 +133,8 @@ class DataObjectMapper() {
 
     // private
 
-    private fun reader4(objectDescriptor: ObjectDescriptor) : ObjectReader {
-        return reader.getOrPut(objectDescriptor.name) { -> ObjectReader(objectDescriptor) }
+    private fun reader4(objectDescriptor: ObjectDescriptor, objectManager: ObjectManager) : ObjectReader {
+        return reader.getOrPut(objectDescriptor.name) { -> ObjectReader(objectDescriptor, objectManager) }
     }
 
     private fun jsonReader4(objectDescriptor: ObjectDescriptor) : JSONReader {

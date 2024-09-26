@@ -67,7 +67,7 @@ class MultiValuedRelation(relation: RelationDescriptor<*>, status: Status, val o
         return this
     }
 
-    override fun set(propertyDescriptor: PropertyDescriptor<Any>, value: Any?) : Boolean  {
+    override fun set(propertyDescriptor: PropertyDescriptor<Any>, value: Any?,  objectManager: ObjectManager) : Boolean  {
         throw Error("relations don't allow to be set")
     }
 

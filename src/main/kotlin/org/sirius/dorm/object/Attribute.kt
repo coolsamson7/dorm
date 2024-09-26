@@ -9,11 +9,11 @@ class Attribute(property: PropertyEntity?, var value: Any) : Property(property) 
         return value
     }
 
-    override fun init(propertyDescriptor: PropertyDescriptor<Any>, value: Any?) {
+    override fun init(propertyDescriptor: PropertyDescriptor<Any>, value: Any?,  objectManager: ObjectManager) {
         this.value = value!!
     }
 
-    override fun set(propertyDescriptor: PropertyDescriptor<Any>, value: Any?) : Boolean {
+    override fun set(propertyDescriptor: PropertyDescriptor<Any>, value: Any?, objectManager: ObjectManager) : Boolean {
         propertyDescriptor.validate(value)
 
         return if ( value != this.value ) {

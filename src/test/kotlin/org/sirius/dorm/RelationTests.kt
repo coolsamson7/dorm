@@ -55,6 +55,72 @@ class RelationTests: AbstractTest() {
     }
 
     @Test
+    fun testSynchronization() {
+        withTransaction {
+            objectManager.type("pp")
+                .attribute("name", string())
+                .relation("children", "pp", Multiplicity.ZERO_OR_MANY, "father")
+                .relation("father", "pp", Multiplicity.ZERO_OR_ONE, "children")
+                .register()
+        }
+
+        val descriptor =  objectManager.getDescriptor("pp")
+
+        // create
+
+        var id = 0L
+        var childId = 0L
+
+        withTransaction {
+            val person = objectManager.create(descriptor)
+
+            person["name"] = "Andi"
+
+            id = person.id
+
+            val child = objectManager.create(descriptor)
+
+            childId = child.id
+
+            person.relation<MultiValuedRelation>("children").add(child)
+
+        }
+
+        printTables()
+
+        // reread
+
+        withTransaction {
+            val child = objectManager.findById(descriptor, childId)!!
+
+            child["father"] = null
+
+            // load father and check if the relation is empty
+
+            val father = objectManager.findById(descriptor, id)!!
+
+            assertEquals(0, father.relation<MultiValuedRelation>("children").size)
+        }
+
+        printTables()
+
+        // other way round
+
+        withTransaction {
+            val father = objectManager.findById(descriptor, id)!!
+            val child = objectManager.findById(descriptor, childId)!!
+
+            father.relation<MultiValuedRelation>("children").add(child)
+
+            // load father and check if the relation is empty
+
+            val childFather = child["father"]
+
+            assert(childFather == father)
+        }
+    }
+
+    @Test
     fun testOneToMany() {
         // create schema
 
@@ -90,7 +156,7 @@ class RelationTests: AbstractTest() {
             child1["name"] = "Nika"
             child1["father"] = person
 
-            val father1 = child1.relation<SingleValuedRelation>("father")
+            val father1 = child1["father"]
 
             // child 2
 
@@ -99,7 +165,7 @@ class RelationTests: AbstractTest() {
             child2["name"] = "Pupsi"
             child2["father"] = person
 
-            val father2 = child2.relation<SingleValuedRelation>("father")
+            val father2 = child2["father"]
 
             // person children
 

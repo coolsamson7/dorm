@@ -70,7 +70,12 @@ class SingleValuedRelation(relation: RelationDescriptor<*>, status: Status, val 
         return target
     }
 
-    override fun set(propertyDescriptor: PropertyDescriptor<Any>, value: Any?) : Boolean {
+    override fun set(propertyDescriptor: PropertyDescriptor<Any>, value: Any?,  objectManager: ObjectManager) : Boolean {
+        // check loaded
+
+        if ( !isLoaded())
+            load(objectManager)
+
         if ( value !== this.target) {
             var inverse = inverseRelation(this.target)
             if ( inverse !== null)

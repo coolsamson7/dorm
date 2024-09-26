@@ -46,8 +46,8 @@ class DataObject(val type: ObjectDescriptor, status: Status, var state : ObjectS
     }
 
     var id: Long
-        get() = values[0].get(objectManager) as Long
-        set(value) { values[0].set(type.properties[0], value) }
+        get() = (values[0] as Attribute).value as Long
+        set(value) { (values[0]as Attribute).value = value }
 
 
     fun snapshot() : List<Any> {
@@ -65,18 +65,18 @@ class DataObject(val type: ObjectDescriptor, status: Status, var state : ObjectS
     }
 
     fun <T: Relation>relation(name: String) : T {
-        return values[property(name).index] as T
+        return (values[property(name).index] as Relation).get(objectManager) as T
     }
 
     fun <T: Relation>relation(index: Int) : T {
-        return values[index] as T
+        return (values[index] as Relation).get(objectManager) as T
     }
 
     operator fun get(name: String) : Any? {
         return values[property(name).index].get(objectManager)
     }
 
-    operator fun set(name: String, value: Any) {
+    operator fun set(name: String, value: Any?) {
         val property = property(name)
 
         // take snapshot in any case
@@ -86,7 +86,7 @@ class DataObject(val type: ObjectDescriptor, status: Status, var state : ObjectS
 
         // set raw value
 
-        values[property.index].set(property, value)
+        values[property.index].set(property, value, objectManager)
     }
 
     // override Object

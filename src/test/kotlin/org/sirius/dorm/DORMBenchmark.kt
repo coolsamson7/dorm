@@ -9,6 +9,9 @@ import org.sirius.dorm.query.eq
 import jakarta.persistence.*
 import jakarta.persistence.criteria.CriteriaBuilder
 import org.junit.jupiter.api.Test
+import org.sirius.common.type.base.*
+import org.sirius.dorm.model.Multiplicity
+import org.sirius.dorm.model.ObjectDescriptor
 
 @Entity
 @Table(name="HOBBY")
@@ -21,10 +24,9 @@ data class HobbyEntity(
     var name : String,
 
     @ManyToMany(mappedBy = "hobbies")
-    val persons : MutableSet<PersonEntity>
-) {
+    val persons : MutableSet<PersonEntity>) {
     override fun hashCode(): Int {
-        return 1
+        return id.hashCode()
     }
 }
 
@@ -41,14 +43,26 @@ data class PersonEntity(
     @Column(name = "AGE")
     var age : Int,
 
-    @Column(name = "V1")
-    var v1 : String,
+    @Column(name = "BOOL")
+    var bool : Boolean,
 
-    @Column(name = "V2")
-    var v2 : String,
+    @Column(name = "STRING")
+    var string : String,
 
-    @Column(name = "V3")
-    var v3 : String,
+    @Column(name = "SHORT")
+    var short : Short,
+
+    @Column(name = "INT")
+    var int : Int,
+
+    @Column(name = "LONG")
+    var long : Long,
+
+    @Column(name = "FLOAT")
+    var float : Float,
+
+    @Column(name = "DOUBLE")
+    var double : Double,
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
@@ -57,7 +71,11 @@ data class PersonEntity(
         inverseJoinColumns = [JoinColumn(name = "hobby_id")]
     )
     val hobbies : MutableSet<HobbyEntity>
-)
+) {
+    override fun hashCode(): Int {
+        return id.hashCode()
+    }
+}
 
 internal class DORMBenchmark : AbstractTest() {
     // instance data
@@ -85,6 +103,30 @@ internal class DORMBenchmark : AbstractTest() {
         }
     }
 
+    @Test
+    fun tes() {
+        var person : ObjectDescriptor?
+
+        withTransaction {
+            objectManager.type("small-person")
+                .attribute("name", string())
+                .register()
+        }
+
+        val objects = 2000
+
+        // create
+
+        measure("create ${objects} objects ", objects) {
+            person = objectManager.findDescriptor("small-person")
+            for (i in 1..objects) {
+                val person1 = objectManager.create(person!!)
+
+                person1["name"] = "Andi"
+            }
+        }
+    }
+
     // test
 
     //@Test
@@ -97,7 +139,7 @@ internal class DORMBenchmark : AbstractTest() {
             entityManager.persist(hobby1)
             entityManager.persist(hobby2)
 
-            val person = PersonEntity(0, "Andi", 58, "v1", "v2", "v3", HashSet())
+            val person = PersonEntity(0, "Andi", 58, false, "strung", 1, 1, 1, 1.0f, 1.0, HashSet())
 
             entityManager.persist(person)
 
@@ -129,7 +171,7 @@ internal class DORMBenchmark : AbstractTest() {
         // warm up
 
         withTransaction {
-            val person = PersonEntity(0,"Andi", 58, "v1", "v2", "v3", mutableSetOf())
+            val person = PersonEntity(0,"Andi", 58, false, "strung", 1, 1, 1, 1.0f, 1.0, HashSet())
             val hobby = HobbyEntity(0, "angeln", mutableSetOf())
 
             entityManager.persist(hobby)
@@ -147,7 +189,7 @@ internal class DORMBenchmark : AbstractTest() {
         // warm up
 
         withTransaction {
-            entityManager.persist(PersonEntity(0,"Andi", 58, "v1", "v2", "v3", mutableSetOf()))
+            entityManager.persist(PersonEntity(0,"Andi", 58, false, "strung", 1, 1, 1, 1.0f, 1.0, HashSet()))
 
             val builder: CriteriaBuilder = entityManager.criteriaBuilder
 
@@ -173,7 +215,7 @@ internal class DORMBenchmark : AbstractTest() {
 
         measure("create ${objects} objects ", objects) {
             for (i in 1..objects) {
-                entityManager.persist(PersonEntity(0,"Andi", 58, "v1", "v2", "v3", mutableSetOf()))
+                entityManager.persist(PersonEntity(0,"Andi", 58, false, "strung", 1, 1, 1, 1.0f, 1.0, HashSet()))
             }
         }
 
@@ -334,4 +376,5 @@ internal class DORMBenchmark : AbstractTest() {
                 person["name"] = "Changed"
         }
     }
+
 }

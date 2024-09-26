@@ -13,10 +13,10 @@ import org.sirius.dorm.persistence.entity.PropertyEntity
 abstract class Property(var property: PropertyEntity?) {
     abstract fun get(objectManager: ObjectManager) : Any?
 
-    abstract fun set(propertyDescriptor: PropertyDescriptor<Any>, value: Any?) : Boolean
+    abstract fun set(propertyDescriptor: PropertyDescriptor<Any>, value: Any?, objectManager: ObjectManager) : Boolean
 
-    open fun init(propertyDescriptor: PropertyDescriptor<Any>, value: Any?) {
-        this.set(propertyDescriptor, value)
+    open fun init(propertyDescriptor: PropertyDescriptor<Any>, value: Any?,  objectManager: ObjectManager) {
+        this.set(propertyDescriptor, value,  objectManager)
     }
 
     // snapshot stuff
