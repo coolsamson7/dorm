@@ -1,6 +1,7 @@
 package org.sirius.dorm.`object`
 
 import org.sirius.dorm.ObjectManager
+import org.sirius.dorm.ObjectManagerError
 import org.sirius.dorm.model.PropertyDescriptor
 import org.sirius.dorm.persistence.entity.PropertyEntity
 

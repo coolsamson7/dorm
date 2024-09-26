@@ -43,7 +43,7 @@ data class PropertyEntity(
     @Column(name = "DOUBLE_VALUE")
     var doubleValue : Double,
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = [CascadeType.REMOVE])
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
         name = "RELATIONS",
         joinColumns = [JoinColumn(name = "FROM_ATTR"), JoinColumn(name = "FROM_ENTITY")],
@@ -51,7 +51,13 @@ data class PropertyEntity(
     )
     val targets : MutableSet<PropertyEntity> = HashSet(),
 
-    @ManyToMany(mappedBy="targets", fetch = FetchType.LAZY)
+    //@ManyToMany(mappedBy="targets", fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "RELATIONS",
+        joinColumns = [JoinColumn(name = "TO_ATTR"), JoinColumn(name = "TO_ENTITY")],
+        inverseJoinColumns = [JoinColumn(name = "FROM_ATTR"), JoinColumn(name = "FROM_ENTITY")]
+    )
     val sources : MutableSet<PropertyEntity> = HashSet(),
 ) {
     // override Object

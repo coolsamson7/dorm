@@ -51,15 +51,50 @@ class SingleValuedRelation(relation: RelationDescriptor<*>, status: Status, val 
 
     // override
 
+    override fun validate() {
+        if ( target === null &&  !relation.multiplicity.optional)
+            throw ObjectManagerError("relation ${obj.type.name}.${relation.name} is required")
+    }
+
     override fun flush() {
         if ( isLoaded()) {
-            relations().clear()
-            if ( target !== null) {
-                relations().add(target!!.values[relation.inverseRelation!!.index].property!!)
+            // validate
+
+            validate()
+
+            // adjust relation
+
+            val relationenEntities = relations()
+
+            val n = if (relation.isOwner() ) "targets" else "sources"
+
+            if ( target === null) {
+                if ( relationenEntities.isNotEmpty()) {
+                    if ( relationenEntities.size > 1)
+                        throw Error("iuch")
+
+                    val property = relationenEntities.first()
+
+                    relationenEntities.clear()
+
+                    println("remove ${property.entity.id}.${property.attribute} from entity[${obj.id}].${relation.name}.${n}")
+                }
             }
             else {
-                if ( !relation.multiplicity.optional)
-                    throw ObjectManagerError("relation ${obj.type.name}.${relation.name} is required")
+                if ( relationenEntities.size == 1) {
+                    val property = relationenEntities.first()
+                    if (property.entity !== target!!.entity ) {
+                        println("add ${property.entity.id}.${property.attribute} to entity[${obj.id}].${relation.name}.${n}")
+                        relationenEntities.add(property)
+                    }
+                }
+
+                if (relationenEntities.size == 0) {
+                    val property = target!!.values[relation.inverseRelation!!.index].property!!
+                    println("add ${property.entity.id}.${property.attribute} to entity[${obj.id}].${relation.name}.${n}")
+                    relationenEntities.add(property)
+                }
+                else  throw Error("iuch")
             }
         }
     }

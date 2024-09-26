@@ -73,6 +73,8 @@ class MultiValuedRelation(relation: RelationDescriptor<*>, status: Status, val o
 
     override fun flush() {
         if (isLoaded()) {
+            val n = if (relation.isOwner() ) "targets" else "sources"
+
             // synchronize the objects set with the property.relations
 
             val targetMap = HashMap<Long, PropertyEntity>()
@@ -88,8 +90,12 @@ class MultiValuedRelation(relation: RelationDescriptor<*>, status: Status, val o
             for (target in objects!!) {
                 val key = target.id
 
-                if (!targetMap.containsKey(key))
-                    relations.add(target.values[relation.index].property!!)
+                if (!targetMap.containsKey(key)) {
+                    val property = target.values[relation.inverseRelation!!.index].property!!
+
+                    println("add ${property.entity.id}.${property.attribute} to entity[${obj.id}].${relation.name}.${n}")
+                    relations.add(property)
+                }
                 else
                     targetMap.remove(key)
             } // for
@@ -97,6 +103,7 @@ class MultiValuedRelation(relation: RelationDescriptor<*>, status: Status, val o
             // deleted
 
             for (deleted in targetMap.values) {
+                println("delete ${deleted.entity.id}.${property!!.attribute} from entity[${obj.id}].${relation.name}.${n}")
                 relations.remove(deleted)
             } // if
         }

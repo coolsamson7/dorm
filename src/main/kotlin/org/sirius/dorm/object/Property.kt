@@ -29,5 +29,7 @@ abstract class Property(var property: PropertyEntity?) {
         return false
     }
 
+    open fun validate() {}
+
     open fun flush() {}
 }
