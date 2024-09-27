@@ -40,4 +40,9 @@ class AttributeDescriptor<T:Any>(name: String, val type: Type<*>, val isPrimaryK
     override fun isAttribute() : Boolean {
         return true
     }
+
+    // override Object
+    override fun toString(): String {
+        return "${this.name}"
+    }
 }

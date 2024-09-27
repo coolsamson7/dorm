@@ -27,9 +27,14 @@ data class EntityEntity(
 ) {
     // override Object
 
+    override fun toString(): String {
+        return "${type}[${id}]"
+    }
+
     override fun equals(other: Any?): Boolean {
-        if ( other is EntityEntity)
-            return this === other
+        if ( other is EntityEntity) {
+            return this.id == other.id
+        }
         else
             return false
     }

@@ -64,37 +64,31 @@ class SingleValuedRelation(relation: RelationDescriptor<*>, status: Status, val 
 
             // adjust relation
 
-            val relationenEntities = relations()
-
-            val n = if (relation.isOwner() ) "targets" else "sources"
+            val rel = relations()
 
             if ( target === null) {
-                if ( relationenEntities.isNotEmpty()) {
-                    if ( relationenEntities.size > 1)
-                        throw Error("iuch")
+                if ( rel.isNotEmpty()) {
+                    val property = rel.first()
 
-                    val property = relationenEntities.first()
+                    rel.remove(property)
 
-                    relationenEntities.clear()
-
-                    println("remove ${property.entity.id}.${property.attribute} from entity[${obj.id}].${relation.name}.${n}")
-                }
+                    if ( !relation.isOwner()) {
+                        property.targets.remove(this.property)
+                    }
+               }
             }
             else {
-                if ( relationenEntities.size == 1) {
-                    val property = relationenEntities.first()
+                if ( rel.size == 1) {
+                    val property = rel.first()
                     if (property.entity !== target!!.entity ) {
-                        println("add ${property.entity.id}.${property.attribute} to entity[${obj.id}].${relation.name}.${n}")
-                        relationenEntities.add(property)
+                        rel.add(property)
                     }
                 }
 
-                if (relationenEntities.size == 0) {
+                if (rel.size == 0) {
                     val property = target!!.values[relation.inverseRelation!!.index].property!!
-                    println("add ${property.entity.id}.${property.attribute} to entity[${obj.id}].${relation.name}.${n}")
-                    relationenEntities.add(property)
+                    rel.add(property)
                 }
-                else  throw Error("iuch")
             }
         }
     }

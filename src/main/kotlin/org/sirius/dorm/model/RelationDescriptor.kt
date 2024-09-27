@@ -57,4 +57,9 @@ open class RelationDescriptor<T:Any>(name: String, val target: String, val multi
     fun isOwner() : Boolean {
         return owner
     }
+
+    // override Object
+    override fun toString(): String {
+        return "${this.name}"
+    }
 }

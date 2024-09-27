@@ -36,4 +36,10 @@ class Attribute(property: PropertyEntity?, var value: Any) : Property(property) 
     override fun isDirty(snapshot: Any) : Boolean {
         return value != snapshot
     }
+
+    // override Object
+
+    override fun toString(): String {
+        return "${this.value}"
+    }
 }

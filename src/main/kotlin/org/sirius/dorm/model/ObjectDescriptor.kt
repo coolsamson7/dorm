@@ -41,4 +41,9 @@ class ObjectDescriptor(val name: String, val properties: Array<PropertyDescripto
     fun property(property: String) : PropertyDescriptor<Any> {
         return properties.find { prop -> prop.name == property}!!
     }
+
+    // override Object
+    override fun toString(): String {
+        return "${this.name}"
+    }
 }
