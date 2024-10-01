@@ -5,6 +5,8 @@ package org.sirius.dorm.query
  * All rights reserved
  */
 
+import jakarta.persistence.criteria.AbstractQuery
+import jakarta.persistence.criteria.CriteriaBuilder
 import org.sirius.dorm.model.PropertyDescriptor
 import org.sirius.dorm.persistence.entity.PropertyEntity
 import jakarta.persistence.criteria.Path
@@ -15,10 +17,6 @@ class PropertyPath(parent: ObjectPath, val property: PropertyDescriptor<Any>) : 
         throw Error("ouch")
     }
 
-    override fun path(root: Root<PropertyEntity>) : Path<Any> {
-        return parent!!.path(root).get(property.name)
-    }
-
     override fun attributeName() : String {
         return property.name
     }
@@ -27,21 +25,23 @@ class PropertyPath(parent: ObjectPath, val property: PropertyDescriptor<Any>) : 
         return property.asAttribute().type.baseType
     }
 
-    override fun <T> expression(root: Root<PropertyEntity>): Path<T> {
+    override fun <T> expression(root: Root<PropertyEntity>, builder: CriteriaBuilder, query: AbstractQuery<*>): Path<T> {
+        val parentPath = this.parent?.expression<T>(root, builder, query)!!
+
         return if ( property.name == "id")
-            root.get<String>("entity").get<Int>("id") as Path<T>
+            parentPath.get<String>("entity").get<Int>("id") as Path<T>
 
         else when ( property.asAttribute().type.baseType ) {
-            String::class.javaObjectType -> root.get<String>("stringValue") as Path<T>
-            Short::class.javaObjectType -> root.get<Int>("intValue") as Path<T>
-            Int::class.javaObjectType -> root.get<Int>("intValue") as Path<T>
-            Integer::class.javaObjectType -> root.get<Int>("intValue") as Path<T>
-            Long::class.javaObjectType -> root.get<Int>("intValue") as Path<T>
-            Float::class.javaObjectType -> root.get<Int>("doubleValue") as Path<T>
-            Double::class.javaObjectType -> root.get<Int>("doubleValue") as Path<T>
+            String::class.javaObjectType -> parentPath.get<String>("stringValue") as Path<T>
+            Short::class.javaObjectType -> parentPath.get<Int>("intValue") as Path<T>
+            Int::class.javaObjectType -> parentPath.get<Int>("intValue") as Path<T>
+            Integer::class.javaObjectType -> parentPath.get<Int>("intValue") as Path<T>
+            Long::class.javaObjectType -> parentPath.get<Int>("intValue") as Path<T>
+            Float::class.javaObjectType -> parentPath.get<Int>("doubleValue") as Path<T>
+            Double::class.javaObjectType -> parentPath.get<Int>("doubleValue") as Path<T>
 
             else -> {
-                throw Error("unsupported type")
+                throw Error("unsupported type ${property.asAttribute().type.baseType}")
             }
         }
     }

@@ -5,18 +5,26 @@ package org.sirius.dorm
  * All rights reserved
  */
 
+import org.h2.tools.Server
+import org.junit.jupiter.api.BeforeAll
 import org.sirius.dorm.`object`.DataObject
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
 import org.sirius.common.type.base.*
 import org.sirius.dorm.model.*
 import org.sirius.dorm.`object`.MultiValuedRelation
-import org.sirius.dorm.`object`.Relation
-import org.sirius.dorm.`object`.SingleValuedRelation
-import org.sirius.dorm.query.eq
 import kotlin.test.assertEquals
 
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class RelationTests: AbstractTest() {
+    //@BeforeAll
+    fun setup() {
+        Server.createWebServer("-web", "-webAllowOthers", "-webPort", "8082")
+            .start();
+    }
+
+
     @Test
     fun testOneToOne() {
         var id = 0L
@@ -56,9 +64,9 @@ class RelationTests: AbstractTest() {
     fun testSynchronization() {
         withTransaction {
             objectManager.type("pp")
-                .property(attribute("name").type(string()))
-                .property(relation("children").target("pp").multiplicity(Multiplicity.ZERO_OR_MANY).inverse("father"))
-                .property(relation("father").target("pp").multiplicity(Multiplicity.ZERO_OR_ONE).inverse("children"))
+                .define(attribute("name").type(string()))
+                .define(relation("children").target("pp").multiplicity(Multiplicity.ZERO_OR_MANY).inverse("father").owner())
+                .define(relation("father").target("pp").multiplicity(Multiplicity.ZERO_OR_ONE).inverse("children"))
                 .register()
         }
 
@@ -68,6 +76,8 @@ class RelationTests: AbstractTest() {
 
         var id = 0L
         var childId = 0L
+
+        println("### add child")
 
         withTransaction {
             val person = objectManager.create(descriptor)
@@ -89,6 +99,8 @@ class RelationTests: AbstractTest() {
 
         // reread
 
+        println("### remove child")
+
         withTransaction {
             val child = objectManager.findById(descriptor, childId)!!
 
@@ -107,9 +119,17 @@ class RelationTests: AbstractTest() {
 
         // other way round
 
+        println("### add child")
+
         withTransaction {
+
             val father = objectManager.findById(descriptor, id)!!
             val child = objectManager.findById(descriptor, childId)!!
+
+            val children = father.relation<MultiValuedRelation>("children")
+            val f = child["father"]
+
+            assert( father.relation<MultiValuedRelation>("children").size == 0)
 
             father.relation<MultiValuedRelation>("children").add(child)
 
@@ -121,6 +141,13 @@ class RelationTests: AbstractTest() {
         }
 
         printTables() // expect 1 relation
+
+        withTransaction {
+
+            val father = objectManager.findById(descriptor, id)!!
+
+            assert(father.relation<MultiValuedRelation>("children").size == 1)
+        }
     }
 
     @Test
@@ -129,9 +156,9 @@ class RelationTests: AbstractTest() {
 
         withTransaction {
              objectManager.type("p")
-                .property(attribute("name").type(string()))
-                .property(relation("children").target("p").multiplicity(Multiplicity.ZERO_OR_MANY).inverse("father").owner())
-                .property(relation("father").target("p").multiplicity(Multiplicity.ZERO_OR_ONE).inverse("children"))
+                .define(attribute("name").type(string()))
+                .define(relation("children").target("p").multiplicity(Multiplicity.ZERO_OR_MANY).inverse("father").owner())
+                .define(relation("father").target("p").multiplicity(Multiplicity.ZERO_OR_ONE).inverse("children"))
                 .register()
         }
 
@@ -213,13 +240,13 @@ class RelationTests: AbstractTest() {
 
         withTransaction {
             objectManager.type("product")
-                .property(attribute("name").type(string()))
-                .property(relation("parts").target("part").multiplicity(Multiplicity.ZERO_OR_MANY).inverse("product").cascade(Cascade.DELETE).owner())
+                .define(attribute("name").type(string()))
+                .define(relation("parts").target("part").multiplicity(Multiplicity.ZERO_OR_MANY).inverse("product").cascade(Cascade.DELETE).owner())
                 .register()
 
             objectManager.type("part")
-                .property(attribute("name").type(string()))
-                .property(relation("product").target("product").inverse("parts").multiplicity(Multiplicity.ONE))
+                .define(attribute("name").type(string()))
+                .define(relation("product").target("product").inverse("parts").multiplicity(Multiplicity.ONE))
                 .register()
         }
 
@@ -305,9 +332,9 @@ class RelationTests: AbstractTest() {
 
         withTransaction {
              objectManager.type("p1")
-                .property(attribute("name").type(string()))
-                .property(relation("parent").target("p1").multiplicity(Multiplicity.ZERO_OR_ONE).inverse("children").owner())
-                .property(relation("children").target("p1").multiplicity(Multiplicity.ZERO_OR_MANY).inverse("parent"))
+                .define(attribute("name").type(string()))
+                .define(relation("parent").target("p1").multiplicity(Multiplicity.ZERO_OR_ONE).inverse("children").owner())
+                .define(relation("children").target("p1").multiplicity(Multiplicity.ZERO_OR_MANY).inverse("parent"))
                 .register()
         }
 

@@ -5,11 +5,24 @@ package org.sirius.dorm
  * All rights reserved
  */
 
-import org.sirius.dorm.query.*
+import org.aspectj.lang.annotation.Before
+import org.h2.tools.Server
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
+import org.sirius.dorm.`object`.MultiValuedRelation
+import org.sirius.dorm.query.*
+import java.sql.SQLException
 import kotlin.test.assertEquals
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class CriteriaQueryTests : AbstractTest() {
+    //@BeforeAll
+    fun setup() {
+        Server.createWebServer("-web", "-webAllowOthers", "-webPort", "8082")
+            .start();
+    }
+
     @Test
     fun testReadAll() {
         createPerson("Andi", 58)
@@ -24,6 +37,46 @@ class CriteriaQueryTests : AbstractTest() {
                 .create(Array<Any>::class.java)
                 .select(person)
                 .from(person)
+
+            val result = query.execute().getResultList()
+
+            assertEquals(1, result.size)
+        }
+    }
+
+    @Test
+    fun testJoin() {
+        objectManager.begin()
+        try {
+            val person = objectManager.create(personDescriptor!!)
+
+            person["name"] = "Andi"
+
+            val child = objectManager.create(personDescriptor!!)
+
+            child["name"] = "Nika"
+
+            person.relation<MultiValuedRelation>("children").add(child)
+
+        }
+        finally {
+            objectManager.commit()
+        }
+
+        printTables()
+
+        withTransaction { ->
+            val queryManager = objectManager.queryManager()
+            val person = queryManager.from(personDescriptor!!)
+            val children = person.join("children")
+
+            // no where
+
+            val query = queryManager
+                .create(Array<Any>::class.java)
+                .select(person)
+                .from(person)
+                .where(eq(children.get("name"), "Nika"))
 
             val result = query.execute().getResultList()
 
@@ -51,7 +104,7 @@ class CriteriaQueryTests : AbstractTest() {
 
             assertEquals(1, result.size)
 
-            val p = result[0]
+            val id = result[0].id
 
             // query by id
 
@@ -61,7 +114,7 @@ class CriteriaQueryTests : AbstractTest() {
                 .create()
                 .select(person)
                 .from(person)
-                .where(gt(person.get("id"), 0))
+                .where(eq(person.get("id"), id))
 
             val list = idQuery.execute().getResultList()
 

@@ -57,6 +57,11 @@ class TablePrinter {
         ColumnType("PERSON_ID  ", Long::class.java, "%-10s"),
         ColumnType("HOBBY_ID   ", Long::class.java, "%-10s")
     )
+
+    val friends : Array<ColumnType> = arrayOf(
+        ColumnType("FROM_  ", Long::class.java, "%-10s"),
+        ColumnType("TO_   ", Long::class.java, "%-10s")
+    )
     //
 
     val entity : Array<ColumnType> = arrayOf(
@@ -71,7 +76,13 @@ class TablePrinter {
         ColumnType("TO_ENTITY", Long::class.java, "%9d")
     )
 
+    val relations2 : Array<ColumnType> = arrayOf(
+        ColumnType("FROM_ ", Long::class.java, "%-9d"),
+        ColumnType("TO_   ", Long::class.java, "%-9d")
+    )
+
     val property : Array<ColumnType> = arrayOf(
+        //ColumnType("ID        ", Long::class.java,"%-10d"),
         ColumnType("ENTITY    ", Long::class.java,"%-10d"),
         ColumnType("ATTRIBUTE ", String::class.java, "%-10s"),
         ColumnType("TYPE      ", String::class.java, "%-10s"),
@@ -92,6 +103,7 @@ class TablePrinter {
         print("PERSON", person)
         print("HOBBY", hobby)
         print("PERSON_HOBBY", person2hobby)
+        print("FRIENDS", friends)
     }
 
 
@@ -127,7 +139,7 @@ class AbstractTest {
     @Autowired
     lateinit var objectManager : ObjectManager
     @PersistenceContext
-    private lateinit var entityManager: EntityManager
+    protected lateinit var entityManager: EntityManager
 
     protected var personDescriptor : ObjectDescriptor? = null
 
@@ -172,21 +184,21 @@ class AbstractTest {
                 val intType = int().greaterEqual(0)
 
                 objectManager.type("person")
-                    .property(attribute("name").type(stringType))
-                    .property(attribute("age").type(intType))
+                    .define(attribute("name").type(stringType))
+                    .define(attribute("age").type(intType))
 
                     // relations
 
-                    .property(relation("father").target("person").multiplicity(Multiplicity.ZERO_OR_ONE).inverse("children"))
-                    .property(relation("children").target("person").multiplicity(Multiplicity.ZERO_OR_MANY).inverse("father"))
+                    .define(relation("father").target("person").multiplicity(Multiplicity.ZERO_OR_ONE).inverse("children"))
+                    .define(relation("children").target("person").multiplicity(Multiplicity.ZERO_OR_MANY).inverse("father").owner())
 
-                    .property(attribute("boolean").type(boolean()))
-                    .property(attribute("string").type(string()))
-                    .property(attribute("short").type(short()))
-                    .property(attribute("int").type(int()))
-                    .property(attribute("long").type(long()))
-                    .property(attribute("float").type(float()))
-                    .property(attribute("double").type(double()))
+                    .define(attribute("boolean").type(boolean()))
+                    .define(attribute("string").type(string()))
+                    .define(attribute("short").type(short()))
+                    .define(attribute("int").type(int()))
+                    .define(attribute("long").type(long()))
+                    .define(attribute("float").type(float()))
+                    .define(attribute("double").type(double()))
                     .register()
             }
 

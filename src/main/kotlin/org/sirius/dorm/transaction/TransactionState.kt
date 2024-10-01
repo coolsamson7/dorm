@@ -107,7 +107,7 @@ class TransactionState(val objectManager: ObjectManager, val transactionManager:
 
         // this is the set of deleted objects
 
-        val ids = HashSet<Long>()//objects.map { state -> state.obj.id }.toHashSet()
+        val ids = HashSet<Long>()
 
         val queue : MutableList<Long> = objects.map { state -> state.obj.id}.toMutableList()
         while ( queue.isNotEmpty()) {
@@ -130,7 +130,7 @@ class TransactionState(val objectManager: ObjectManager, val transactionManager:
                                 for (r in relation.relations())
                                     queue.add(r.entity.id)
                             }
-                            else { // TODO prepeared statement?
+                            else { // TODO at least prepared statement
                                 objectManager.jdbcTemplate.query<Long>("SELECT DISTINCT TO_ENTITY FROM RELATIONS WHERE FROM_ENTITY = ${id} AND FROM_ATTR='${property.name}'") { rs, _ ->
                                     rs.getLong("TO_ENTITY")
                                 }.forEach { id -> queue.add(id) }

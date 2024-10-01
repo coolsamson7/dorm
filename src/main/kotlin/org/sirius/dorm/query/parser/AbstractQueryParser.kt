@@ -51,7 +51,7 @@ class SELECT() {
     @JvmField
     var where: BOOLEAN_EXPR? = null
 
-    val alias = HashMap<String,From>()
+    val alias = HashMap<String,AbstractFrom>()
 
     // public
 
@@ -59,7 +59,7 @@ class SELECT() {
         // remember aliases
 
         if ( from != null) {
-            alias[from!!.alias] = From(queryManager.objectManager.getDescriptor(from!!.schema))
+            alias[from!!.alias] = FromRoot(queryManager.objectManager.getDescriptor(from!!.schema))
         }
 
         // create query
@@ -84,7 +84,7 @@ abstract class PATH : EXPR() {
         return PROPERTY(this, property)
     }
 
-    open fun buildPath(alias: HashMap<String,From>) : ObjectPath {
+    open fun buildPath(alias: HashMap<String,AbstractFrom>) : ObjectPath {
         throw Error("abstract")
     }
 }
@@ -92,13 +92,13 @@ abstract class PATH : EXPR() {
 class PATH_ROOT(val schema: String) : PATH() {
 
     // override
-    override fun buildPath(alias: HashMap<String,From>) : ObjectPath {
+    override fun buildPath(alias: HashMap<String,AbstractFrom>) : ObjectPath {
         return alias[schema]!!
     }
 }
 
 class PROPERTY(val root: PATH, val property: String) : PATH() {
-    override fun buildPath(alias: HashMap<String,From>) : ObjectPath {
+    override fun buildPath(alias: HashMap<String,AbstractFrom>) : ObjectPath {
         return root.buildPath(alias).get(property)
     }
 }
@@ -170,9 +170,9 @@ abstract class AbstractQueryParser(input: TokenStream) : Parser(input) {
 
     lateinit var queryManager: QueryManager
     var query: Query<DataObject>? = null
-    protected var from: From? = null
+    protected var from: AbstractFrom? = null
 
-    protected val variables = HashMap<String,From>()
+    protected val variables = HashMap<String,AbstractFrom>()
 
     // public
 

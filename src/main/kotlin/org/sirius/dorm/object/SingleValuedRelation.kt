@@ -81,7 +81,7 @@ class SingleValuedRelation(relation: RelationDescriptor<*>, status: Status, val 
                 if ( rel.size == 1) {
                     val property = rel.first()
                     if (property.entity !== target!!.entity ) {
-                        rel.add(property)
+                        rel.remove(property)
                     }
                 }
 

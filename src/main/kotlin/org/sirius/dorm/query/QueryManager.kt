@@ -23,8 +23,8 @@ class QueryManager(val objectManager: ObjectManager, private val entityManager: 
 
     // Expressions
 
-    fun from(objectDescriptor: ObjectDescriptor) : From {
-        return From(objectDescriptor)
+    fun from(objectDescriptor: ObjectDescriptor) : FromRoot {
+        return FromRoot(objectDescriptor)
     }
 
     fun create() : Query<DataObject> {
@@ -41,15 +41,12 @@ class QueryManager(val objectManager: ObjectManager, private val entityManager: 
 
     // private
 
-    private fun <T : Any> preferJSON(objectQuery: Query<T>) : Boolean {
-        return objectQuery.projection == null
-    }
-
     private fun <T : Any> computeQueryResult(objectQuery: Query<T>, executor: QueryExecutor<T>) : List<T> {
         // flush managed objects that could influence query results
         // currently this is only the root, since we don't support joins yet
+        // TODO
 
-        TransactionState.current().flush(objectQuery.root!!.objectDescriptor)
+        TransactionState.current().flush((objectQuery.root as FromRoot).objectDescriptor)
 
         // create main query
 
@@ -83,11 +80,11 @@ class QueryManager(val objectManager: ObjectManager, private val entityManager: 
 
             if ( objectQuery.where !== null)
                 criteriaQuery.where(
-                    builder.equal(propertyEntity.get<String>("type"), objectQuery.root!!.objectDescriptor.name),
+                    // builder.equal(propertyEntity.get<String>("type"), objectQuery.root!!.objectDescriptor.name),
                     objectQuery.where!!.createWhere(executor as QueryExecutor<Any>, builder, criteriaQuery as CriteriaQuery<Any>, propertyEntity as Root<Any>),
                 )
-            else  criteriaQuery.where(
-                builder.equal(propertyEntity.get<String>("type"), objectQuery.root!!.objectDescriptor.name),
+            else criteriaQuery.where(
+                builder.equal(propertyEntity.get<String>("type"), (objectQuery.root as FromRoot).objectDescriptor.name),
             )
 
             criteriaQuery.orderBy(builder.asc(propertyEntity.get<Int>("entity")))
@@ -103,7 +100,7 @@ class QueryManager(val objectManager: ObjectManager, private val entityManager: 
             return entities.map { entity -> mapper.readFromEntity(state, objectDescriptor, entity) } as List<T>
             */
 
-            return computeObjectResultFromAttributes(objectQuery.root!!.objectDescriptor, TransactionState.current(), entityManager.createQuery(criteriaQuery).resultList  as List<PropertyEntity>) as List<T>
+            return computeObjectResultFromAttributes((objectQuery.root as FromRoot).objectDescriptor, TransactionState.current(), entityManager.createQuery(criteriaQuery).resultList  as List<PropertyEntity>) as List<T>
         }
     }
 

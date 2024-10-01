@@ -20,20 +20,20 @@ data class PropertyId(private val entity: Long = 0L, private val attribute: Stri
         Index(columnList = "STRING_VALUE")
     ]
 )
-//@IdClass(PropertyId::class)
+@IdClass(PropertyId::class)
 data class PropertyEntity(
-    @Column(name = "ID")
+    /*@Column(name = "ID")
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id : Long,
-
+*/
     @ManyToOne(fetch = FetchType.LAZY)
-    //@MapsId
+    @MapsId
     @JoinColumn(name = "ENTITY")
     var entity : EntityEntity,
 
     @Column(name = "ATTRIBUTE")
-    //@Id
+    @Id
     var attribute : String,
 
     @Column(name = "TYPE")
@@ -49,16 +49,16 @@ data class PropertyEntity(
     var doubleValue : Double,
 
     @ManyToMany(fetch = FetchType.LAZY)
-    /*@JoinTable(
+    @JoinTable(
         name = "RELATIONS",
         joinColumns = [JoinColumn(name = "FROM_ATTR"), JoinColumn(name = "FROM_ENTITY")],
         inverseJoinColumns = [JoinColumn(name = "TO_ATTR"), JoinColumn(name = "TO_ENTITY")]
-    )*/
-    @JoinTable(
+    )
+    /*@JoinTable(
         name = "RELATIONS",
         joinColumns = [JoinColumn(name = "FROM_")],
         inverseJoinColumns = [JoinColumn(name = "TO_")]
-    )
+    )*/
     val targets : MutableSet<PropertyEntity> = HashSet(),
 
     //@ManyToMany(fetch = FetchType.LAZY)
@@ -79,17 +79,17 @@ data class PropertyEntity(
     // override Object
 
     override fun toString(): String {
-        return "${type}.${attribute}[${id}]"
+        return "${type}.${attribute}[id]"
     }
 
     override fun equals(other: Any?): Boolean {
         if ( other is PropertyEntity)
-            return this.id == other.id
+            return this === other
         else
             return false
     }
 
     override fun hashCode(): Int {
-        return id.hashCode() + type.hashCode() + attribute.hashCode()
+        return /*id.hashCode() +*/ type.hashCode() + attribute.hashCode()
     }
 }

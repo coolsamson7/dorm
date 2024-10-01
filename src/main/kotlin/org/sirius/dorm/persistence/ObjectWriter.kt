@@ -33,7 +33,7 @@ class ObjectWriter(private val descriptor: ObjectDescriptor) {
         var i = 1
         for ( writer in writer) {
             val propertyDescriptor = descriptor.properties[i]
-            val property = PropertyEntity(0, obj.entity!!, propertyDescriptor.name, descriptor.name, "", 0, 0.0)
+            val property = PropertyEntity(obj.entity!!, propertyDescriptor.name, descriptor.name, "", 0, 0.0)
 
             obj.values[i].property = property
 
