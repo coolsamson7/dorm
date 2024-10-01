@@ -8,6 +8,9 @@ package org.sirius.dorm
 import org.sirius.dorm.`object`.DataObject
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import org.sirius.dorm.`object`.MultiValuedRelation
+import org.sirius.dorm.query.eq
+import kotlin.test.assertEquals
 
 
 class QLQueryTests : AbstractTest() {
@@ -22,6 +25,44 @@ class QLQueryTests : AbstractTest() {
 
             Assertions.assertEquals(1, queryResult.size)
         }
+    }
+
+    @Test
+    fun testJoin() {
+        objectManager.begin()
+        try {
+            val person = objectManager.create(personDescriptor!!)
+
+            person["name"] = "Andi"
+
+            val child = objectManager.create(personDescriptor!!)
+
+            child["name"] = "Nika"
+
+            person.relation<MultiValuedRelation>("children").add(child)
+
+        }
+        finally {
+            objectManager.commit()
+        }
+
+        printTables()
+
+        withTransaction { ->
+            val query = objectManager.query<DataObject>(
+                    "SELECT p " +
+                    "  FROM person AS p " +
+                    "  JOIN p.children child" +
+                    "  WHERE child.name = :name")
+
+            val result = query.executor()
+                .set("name", "Nika")
+                .execute()
+                .getResultList()
+
+            assertEquals(1, result.size)
+        }
+
     }
 
     @Test
@@ -75,7 +116,7 @@ class QLQueryTests : AbstractTest() {
         createPerson("Andi", 58)
 
         withTransaction { ->
-            val query = objectManager.query<DataObject>("SELECT p FROM person AS p WHERE p.age = :age AND p.name = :name")
+            val query = objectManager.query<DataObject>("SELECT p FROM person AS p WHERE xp.age = :age AND p.name = :name")
 
             val queryResult = query.executor()
                 .set("name", "Andi")

@@ -184,21 +184,21 @@ class AbstractTest {
                 val intType = int().greaterEqual(0)
 
                 objectManager.type("person")
-                    .define(attribute("name").type(stringType))
-                    .define(attribute("age").type(intType))
+                    .add(attribute("name").type(stringType))
+                    .add(attribute("age").type(intType))
 
                     // relations
 
-                    .define(relation("father").target("person").multiplicity(Multiplicity.ZERO_OR_ONE).inverse("children"))
-                    .define(relation("children").target("person").multiplicity(Multiplicity.ZERO_OR_MANY).inverse("father").owner())
+                    .add(relation("father").target("person").multiplicity(Multiplicity.ZERO_OR_ONE).inverse("children"))
+                    .add(relation("children").target("person").multiplicity(Multiplicity.ZERO_OR_MANY).inverse("father").owner())
 
-                    .define(attribute("boolean").type(boolean()))
-                    .define(attribute("string").type(string()))
-                    .define(attribute("short").type(short()))
-                    .define(attribute("int").type(int()))
-                    .define(attribute("long").type(long()))
-                    .define(attribute("float").type(float()))
-                    .define(attribute("double").type(double()))
+                    .add(attribute("boolean").type(boolean()))
+                    .add(attribute("string").type(string()))
+                    .add(attribute("short").type(short()))
+                    .add(attribute("int").type(int()))
+                    .add(attribute("long").type(long()))
+                    .add(attribute("float").type(float()))
+                    .add(attribute("double").type(double()))
                     .register()
             }
 

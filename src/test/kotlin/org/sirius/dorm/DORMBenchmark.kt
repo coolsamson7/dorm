@@ -12,7 +12,6 @@ import org.junit.jupiter.api.Test
 import org.sirius.common.type.base.*
 import org.sirius.dorm.model.ObjectDescriptor
 import org.sirius.dorm.model.attribute
-import org.sirius.dorm.persistence.entity.PropertyEntity
 
 internal class DORMBenchmark : AbstractTest() {
     // local
@@ -41,7 +40,7 @@ internal class DORMBenchmark : AbstractTest() {
 
         withTransaction {
             objectManager.type("small-person")
-                .define(attribute("name").type(string()))
+                .add(attribute("name").type(string()))
                 .register()
         }
 

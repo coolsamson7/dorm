@@ -36,35 +36,68 @@ class CONSTANT(value: Any) : VALUE(value) {
     }
 }
 
-class FROM_ALIAS(val schema: String, val alias : String) : EXPR() {
+open class FROM(@JvmField var alias : String) : EXPR() {
+    // public
+}
+
+// person p
+class ROOT(val schema: String, alias : String) : FROM(alias) {
+    // public
+}
+
+// join p.hobbies
+class JOIN(val root: String, val relation: String, alias : String) : FROM(alias) {
     // public
 }
 
 
-class SELECT() {
+open class SELECT() {
     // instance data
 
     @JvmField
     var select : List<PATH> = ArrayList()
     @JvmField
-    var from : FROM_ALIAS? = null
+    val from = HashMap<String,FROM>()
     @JvmField
     var where: BOOLEAN_EXPR? = null
 
     val alias = HashMap<String,AbstractFrom>()
 
+    // protected
+
+    fun addFrom( alias: String, from: FROM) {
+        println("##### add from")
+        from.alias = alias
+
+        if ( !this.from.containsKey(alias))
+            this.from[alias] = from
+        else
+            throw Error("duplicate alias ${alias}")
+    }
+
     // public
 
     fun <T:Any> transform(queryManager: QueryManager) : Query<T> {
+        // find root
+
+        val root = from.values.find { f -> f is ROOT } ?: throw Error("root is missing")
+
         // remember aliases
 
-        if ( from != null) {
-            alias[from!!.alias] = FromRoot(queryManager.objectManager.getDescriptor(from!!.schema))
-        }
+        alias[root.alias] = FromRoot(queryManager.objectManager.getDescriptor((root as ROOT).schema))
+
+        for ( from in from.values)
+            if ( from is JOIN) {
+                val r = alias[from.root]
+                if (r == null)
+                    throw Error("unknown alias ${from.root}")
+
+                alias[root.alias] = JoinFrom(r as FromRoot, from.relation)
+            }
 
         // create query
 
-        val from = alias.get(from!!.alias)
+        val from = alias.get(root.alias)
 
         val query = queryManager
             .create() // object query
@@ -167,18 +200,6 @@ abstract class AbstractQueryParser(input: TokenStream) : Parser(input) {
 
     @JvmField
     var select : SELECT? = null
-
-    lateinit var queryManager: QueryManager
-    var query: Query<DataObject>? = null
-    protected var from: AbstractFrom? = null
-
-    protected val variables = HashMap<String,AbstractFrom>()
-
-    // public
-
-    fun setup(queryManager: QueryManager) {
-        this.queryManager = queryManager
-    }
 
     // protected
 

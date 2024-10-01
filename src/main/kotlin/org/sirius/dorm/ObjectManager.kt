@@ -128,11 +128,10 @@ class ObjectManager() {
 
         val parser = OQLParser(tokenStream)
 
-        parser.setup(queryManager())
         try {
             parser.file()
 
-            return parser.select!!.transform<T>(parser.queryManager)
+            return parser.select!!.transform(queryManager())
         }
         catch (e: RecognitionException) {
             throw IllegalArgumentException(e.message)

@@ -32,7 +32,7 @@ statement
     ;
 
 select_statement @init {select = new SELECT();}
-    : select_clause {select.select = $select_clause.select; } from_clause { select.from = $from_clause.from; } (where_clause {select.where = $where_clause.condition; })?  // (groupby_clause)? (having_clause)? (orderby_clause)?
+    : select_clause {select.select = $select_clause.select; } from_clause (where_clause {select.where = $where_clause.condition; })?  // (groupby_clause)? (having_clause)? (orderby_clause)?
     ;
 
 update_statement
@@ -43,23 +43,23 @@ delete_statement
     : delete_clause (where_clause)?
     ;
 
-from_clause returns[FROM_ALIAS from]
-    : K_FROM identification_variable_declaration { $from = $identification_variable_declaration.from; }
+from_clause
+    : K_FROM identification_variable_declaration
     //(
     //    ',' (identification_variable_declaration | collection_member_declaration)
     //)*
     ;
 
-identification_variable_declaration returns[FROM_ALIAS from]
-    : range_variable_declaration  { $from = $range_variable_declaration.from; }// (join | fetch_join)*
+identification_variable_declaration
+    : range_variable_declaration ( join )* // | fetch_join
     ;
 
-range_variable_declaration returns[FROM_ALIAS from]
-    : abstract_schema_name (K_AS)? IDENTIFICATION_VARIABLE { $from = new FROM_ALIAS($abstract_schema_name.name, $IDENTIFICATION_VARIABLE.text); }
+range_variable_declaration
+    : abstract_schema_name (K_AS)? IDENTIFICATION_VARIABLE { select.addFrom($IDENTIFICATION_VARIABLE.text, new ROOT($abstract_schema_name.name, $IDENTIFICATION_VARIABLE.text)); }
     ;
 
 join
-    : join_spec join_association_path_expression (K_AS)? IDENTIFICATION_VARIABLE
+    : join_spec join_association_path_expression (K_AS)? IDENTIFICATION_VARIABLE { select.addFrom($IDENTIFICATION_VARIABLE.text, $join_association_path_expression.result);}
     ;
 
 fetch_join
@@ -67,20 +67,22 @@ fetch_join
     ;
 
 join_spec
-    : (('LEFT') ('OUTER')? | 'INNER')? 'JOIN'
+    : (('LEFT') ('OUTER')? | 'INNER')? 'JOIN' { System.out.println("JOIN"); }
     ;
 
-join_association_path_expression
-    : join_collection_valued_path_expression
-    | join_single_valued_association_path_expression
+join_association_path_expression returns[JOIN result]
+    :
+    //join_collection_valued_path_expression
+    //|
+    join_single_valued_association_path_expression {$result = $join_single_valued_association_path_expression.result; }
     ;
 
 join_collection_valued_path_expression
     : IDENTIFICATION_VARIABLE '.' collection_valued_association_field
     ;
 
-join_single_valued_association_path_expression
-    : IDENTIFICATION_VARIABLE '.' single_valued_association_field
+join_single_valued_association_path_expression returns[JOIN result]
+    : IDENTIFICATION_VARIABLE '.' single_valued_association_field {$result = new JOIN($IDENTIFICATION_VARIABLE.text, $single_valued_association_field.field, "");}
     ;
 
 collection_member_declaration
@@ -457,8 +459,8 @@ embedded_class_state_field
     :
     ;
 
-single_valued_association_field
-    :
+single_valued_association_field returns[String field]
+    : IDENTIFICATION_VARIABLE { $field = $IDENTIFICATION_VARIABLE.text; }
     ;
 
 collection_valued_association_field

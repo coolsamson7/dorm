@@ -122,12 +122,12 @@ class ObjectDescriptorBuilder(val manager: ObjectManager, val name: String) {
     private val properties = ArrayList<PropertyDescriptor<Any>>()
 
     init {
-        define(id)
+        add(id)
     }
 
     // fluent
 
-    fun define(propertyBuilder: PropertyBuilder) : ObjectDescriptorBuilder {
+    fun add(propertyBuilder: PropertyBuilder) : ObjectDescriptorBuilder {
         properties.add(propertyBuilder.build())
 
         return this

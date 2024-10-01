@@ -9,11 +9,11 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 
-	<groupId>com.quasar</groupId>
+	<groupId>org.sirius</groupId>
 	<artifactId>dorm</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>jpa</name>
-	<description>dynamic object relational mapper</description>
+	<name>dorm</name>
+	<description>a dynamic object relational mapper</description>
 	<url/>
 
 	<licenses>
@@ -136,7 +136,7 @@
                 </executions>
             </plugin>
 
-            <plugin>
+            <!--plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
                 <version>3.5.0</version>
@@ -153,7 +153,7 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
+            </plugin-->
 
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
@@ -178,7 +178,13 @@
 						<plugin>spring</plugin>
 						<plugin>jpa</plugin>
 					</compilerPlugins>
+                    <sourceDirs>
+                        <source>${basedir}/target/generated-sources/antlr4</source>
+                        <source>src/main/kotlin</source>
+                        <source>src/main/resources</source>
+                    </sourceDirs>
 				</configuration>
+
 				<dependencies>
 					<dependency>
 						<groupId>org.jetbrains.kotlin</groupId>
