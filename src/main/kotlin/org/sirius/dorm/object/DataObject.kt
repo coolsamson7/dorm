@@ -56,20 +56,20 @@ class DataObject(val type: ObjectDescriptor, status: Status, var state : ObjectS
 
     // public operators
 
-    fun <T:Any> value(index: Int) : T {
-        return values[index].get(objectManager) as T
+    fun <T:Any> value(index: Int) : T? {
+        return values[index].get(objectManager)
     }
 
-    fun <T:Any> value(name: String) : T {
-        return values[property(name).index].get(objectManager) as T
+    fun <T:Any> value(name: String) : T? {
+        return values[property(name).index].get(objectManager)
     }
 
-    fun <T: Relation>relation(name: String) : T {
-        return (values[property(name).index] as Relation).get(objectManager) as T
+    fun relation(name: String) : MultiValuedRelation {
+        return values[property(name).index].get(objectManager)!!
     }
 
-    fun <T: Relation>relation(index: Int) : T {
-        return (values[index] as Relation).get(objectManager) as T
+    fun relation(index: Int) : MultiValuedRelation {
+        return values[index].get(objectManager)!!
     }
 
     operator fun get(name: String) : Any? {
@@ -92,10 +92,10 @@ class DataObject(val type: ObjectDescriptor, status: Status, var state : ObjectS
     // override Object
 
     override fun equals(other: Any?): Boolean {
-        if ( other is DataObject)
-            return id == other.id && this.type === other.type
+        return if ( other is DataObject)
+            id == other.id && this.type === other.type
         else
-            return false
+            false
     }
 
     override fun hashCode(): Int {

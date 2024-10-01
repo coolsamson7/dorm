@@ -39,7 +39,7 @@ class QLQueryTests : AbstractTest() {
 
             child["name"] = "Nika"
 
-            person.relation<MultiValuedRelation>("children").add(child)
+            person.relation("children").add(child)
 
         }
         finally {

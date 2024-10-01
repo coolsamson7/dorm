@@ -16,6 +16,7 @@ import com.fasterxml.jackson.databind.module.SimpleSerializers
 import com.fasterxml.jackson.databind.ser.std.StdSerializer
 import org.sirius.dorm.transaction.Status
 import java.io.IOException
+import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
 // read
@@ -77,7 +78,7 @@ class JSONReader(private val objectDescriptor: ObjectDescriptor) {
                     }
 
                     else -> {
-                        throw Error("unsupported type")
+                        throw Error("unsupported type ${property.asAttribute().type.baseType}")
                     }
                 }
             else return { node: JsonNode, obj: DataObject -> // TODO: relation
@@ -113,7 +114,47 @@ open class ObjectDeserializer() : StdDeserializer<DataObject>(DataObject::class.
 
 // write
 
-typealias JSONPropertyWriter = (jsonGenerator: JsonGenerator, obj: DataObject) -> Unit
+typealias JSONPropertyWriter = (serializer : ObjectSerializer, jsonGenerator: JsonGenerator, obj: DataObject,  context: JSONWriteContext) -> Unit
+
+class JSONWriteContext {
+    // instance data
+
+    var currentPath = ""
+    val path : Queue<String> = LinkedList()
+    val objects = IdentityHashMap<DataObject, String>()
+
+    init {
+        pushPath("/")
+    }
+
+    // public
+
+    fun pushPath(path: String) {
+        val nextPath = currentPath + path
+
+        this.path.add(nextPath)
+
+        currentPath = nextPath
+    }
+
+    fun popPath() {
+        path.remove()
+        currentPath = path.peek()
+    }
+
+    fun isKnown(obj: DataObject) : Boolean {
+        return objects.containsKey(obj)
+    }
+
+    fun ref(obj: DataObject) : String {
+        return objects[obj]!!
+    }
+
+
+    fun remember(obj: DataObject, path: String) {
+        objects[obj] = path
+    }
+}
 
 class JSONWriter(private val objectDescriptor: ObjectDescriptor) {
     // instance data
@@ -122,15 +163,21 @@ class JSONWriter(private val objectDescriptor: ObjectDescriptor) {
 
     // public
 
-    fun write(obj: DataObject, jsonGenerator: JsonGenerator) {
-        jsonGenerator.writeStartObject()
+    fun write(serializer : ObjectSerializer, obj: DataObject, jsonGenerator: JsonGenerator, context: JSONWriteContext) {
+        //jsonGenerator.writeStartObject()
+        if (context.isKnown(obj)) {
+            jsonGenerator.writeStringField("@ref", context.ref(obj))
+        }
+        else {
+            context.remember(obj, context.currentPath)
 
-        jsonGenerator.writeStringField("@type", objectDescriptor.name)
+            jsonGenerator.writeStringField("@type", objectDescriptor.name)
 
-        for ( writer in writers)
-            writer(jsonGenerator, obj)
+            for ( writer in writers)
+                writer(serializer, jsonGenerator, obj, context)
+        }
 
-        jsonGenerator.writeEndObject()
+        //jsonGenerator.writeEndObject()
     }
 
     // companion
@@ -139,51 +186,81 @@ class JSONWriter(private val objectDescriptor: ObjectDescriptor) {
         fun writer4(property: PropertyDescriptor<Any>): JSONPropertyWriter {
             if ( property.isAttribute())
                 return when (property.asAttribute().type.baseType) {
-                    Boolean::class.javaObjectType -> {jsonGenerator, obj -> jsonGenerator.writeBooleanField(property.name, obj.value<Boolean>(property.index)) }
+                    Boolean::class.javaObjectType -> {serializer, jsonGenerator, obj, context -> jsonGenerator.writeBooleanField(property.name, obj.value<Boolean>(property.index)!!) }
 
-                    String::class.javaObjectType -> {jsonGenerator, obj ->
-                        jsonGenerator.writeStringField(property.name, obj.value<String>(property.index))
+                    String::class.javaObjectType -> {serializer, jsonGenerator, obj, context ->
+                        jsonGenerator.writeStringField(property.name, obj.value(property.index))
                     }
 
-                    Short::class.javaObjectType -> {jsonGenerator, obj ->
-                        jsonGenerator.writeNumberField(property.name, obj.value<Short>(property.index))
+                    Short::class.javaObjectType -> {serializer, jsonGenerator, obj, context ->
+                        jsonGenerator.writeNumberField(property.name, obj.value<Short>(property.index)!!)
                     }
 
-                    Int::class.javaObjectType -> {jsonGenerator, obj ->
-                        jsonGenerator.writeNumberField(property.name, obj.value<Int>(property.index))
+                    Int::class.javaObjectType -> {serializer, jsonGenerator, obj, context ->
+                        jsonGenerator.writeNumberField(property.name, obj.value<Int>(property.index)!!)
                     }
 
-                    Integer::class.javaObjectType -> {jsonGenerator, obj ->
-                        jsonGenerator.writeNumberField(property.name, obj.value<Integer>(property.index).toInt())
+                    Integer::class.javaObjectType -> {serializer, jsonGenerator, obj, context ->
+                        jsonGenerator.writeNumberField(property.name, obj.value<Integer>(property.index)!!.toInt())
                     }
 
-                    Long::class.javaObjectType -> {jsonGenerator, obj ->
-                        jsonGenerator.writeNumberField(property.name, obj.value<Long>(property.index))
+                    Long::class.javaObjectType -> {serializer, jsonGenerator, obj, context ->
+                        jsonGenerator.writeNumberField(property.name, obj.value<Long>(property.index)!!)
                     }
 
-                    Float::class.javaObjectType -> {jsonGenerator, obj ->
-                        jsonGenerator.writeNumberField(property.name, obj.value<Float>(property.index))
+                    Float::class.javaObjectType -> {serializer, jsonGenerator, obj, context ->
+                        jsonGenerator.writeNumberField(property.name, obj.value<Float>(property.index)!!)
                     }
 
-                    Double::class.javaObjectType -> {jsonGenerator, obj ->
-                        jsonGenerator.writeNumberField(property.name, obj.value<Double>(property.index))
+                    Double::class.javaObjectType -> {serializer, jsonGenerator, obj, context ->
+                        jsonGenerator.writeNumberField(property.name, obj.value<Double>(property.index)!!)
                     }
 
                     else -> {
-                        throw Error("unsupported type")
+                        throw Error("unsupported type ${property.asAttribute().type.baseType}")
                     }
                 }
                 else {
                     if ( property.asRelation().multiplicity.mutliValued) {
-                        return { jsonGenerator, obj ->
-                            // TODO
+                        return { serializer, jsonGenerator, obj, context ->
+                            val value = obj.relation(property.index)
+
+                            jsonGenerator.writeArrayFieldStart(property.name)
+
+                            var i = 0
+                            for ( element in value) {
+                                try {
+                                    context.pushPath(property.name + "[${i++}]")
+                                    jsonGenerator.writeStartObject()
+                                    serializer.writer4(element.type).write(serializer, element, jsonGenerator, context)
+                                    jsonGenerator.writeEndObject()
+                                }
+                                finally {
+                                    context.popPath()
+                                }
+                            }
+
+                            jsonGenerator.writeEndArray()
                         }
                     }
                     else // single valued
-                        return { jsonGenerator, obj -> // TODO RELATION
-                            //if (obj.value<DataObject>(property.index) !== null)
-                            //    jsonGenerator.writeNullField(property.name)//jsonGenerator.writeNumberField(property.name, (obj.values[property.index] as DataObject).id)
-                            //else
+                        return { serializer, jsonGenerator, obj, context ->
+                            val value = obj.value<DataObject>(property.index)
+
+                            if (value !== null) {
+                                context.pushPath(property.name)
+                                try {
+                                    jsonGenerator.writeObjectFieldStart(property.name)
+
+                                    serializer.writer4(value.type).write(serializer, value, jsonGenerator, context)
+
+                                    jsonGenerator.writeEndObject()
+                                }
+                                finally {
+                                    context.popPath()
+                                }
+                            }
+                            else
                                 jsonGenerator.writeNullField(property.name)
                         }
                 }
@@ -196,9 +273,9 @@ open class ObjectSerializer : StdSerializer<DataObject>(DataObject::class.java) 
 
    private val writer = ConcurrentHashMap<String, JSONWriter>()
 
-    // private
+    // public
 
-    private fun writer4(objectDescriptor: ObjectDescriptor) : JSONWriter {
+    fun writer4(objectDescriptor: ObjectDescriptor) : JSONWriter {
         return writer.getOrPut(objectDescriptor.name) { -> JSONWriter(objectDescriptor) }
     }
 
@@ -206,7 +283,11 @@ open class ObjectSerializer : StdSerializer<DataObject>(DataObject::class.java) 
 
     @Throws(IOException::class)
     override fun serialize(obj: DataObject, jsonGenerator: JsonGenerator, serializerProvider: SerializerProvider) {
-        writer4(obj.type).write(obj, jsonGenerator)
+        jsonGenerator.writeStartObject()
+
+        writer4(obj.type).write(this, obj, jsonGenerator, JSONWriteContext())
+
+        jsonGenerator.writeEndObject()
     }
 }
 

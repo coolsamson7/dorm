@@ -60,11 +60,11 @@ class MultiValuedRelation(relation: RelationDescriptor<*>, status: Status, val o
 
     // implement  Property
 
-    override fun get(objectManager: ObjectManager) : Any? {
+    override fun <T:Any>  get(objectManager: ObjectManager) : T? {
         if ( !isLoaded())
             load(objectManager)
 
-        return this
+        return this as T
     }
 
     override fun set(propertyDescriptor: PropertyDescriptor<Any>, value: Any?,  objectManager: ObjectManager) : Boolean  {

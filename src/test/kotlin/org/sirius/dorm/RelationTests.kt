@@ -91,7 +91,7 @@ class RelationTests: AbstractTest() {
 
             childId = child.id
 
-            person.relation<MultiValuedRelation>("children").add(child)
+            person.relation("children").add(child)
         }
 
         printTables() // expect 1 relation
@@ -111,7 +111,7 @@ class RelationTests: AbstractTest() {
 
             val father = objectManager.findById(descriptor, id)!!
 
-            assertEquals(0, father.relation<MultiValuedRelation>("children").size)
+            assertEquals(0, father.relation("children").size)
         }
 
         printTables() // expect empty relation
@@ -125,12 +125,12 @@ class RelationTests: AbstractTest() {
             val father = objectManager.findById(descriptor, id)!!
             val child = objectManager.findById(descriptor, childId)!!
 
-            val children = father.relation<MultiValuedRelation>("children")
+            val children = father.relation("children")
             val f = child["father"]
 
-            assert( father.relation<MultiValuedRelation>("children").size == 0)
+            assert( father.relation("children").size == 0)
 
-            father.relation<MultiValuedRelation>("children").add(child)
+            father.relation("children").add(child)
 
             // load father and check if the relation is empty
 
@@ -145,7 +145,7 @@ class RelationTests: AbstractTest() {
 
             val father = objectManager.findById(descriptor, id)!!
 
-            assert(father.relation<MultiValuedRelation>("children").size == 1)
+            assert(father.relation("children").size == 1)
         }
     }
 
@@ -198,7 +198,7 @@ class RelationTests: AbstractTest() {
 
             // person children
 
-            val children = person.relation<MultiValuedRelation>("children")
+            val children = person.relation("children")
 
             // should have synchronized in memory already
 
@@ -356,8 +356,8 @@ class RelationTests: AbstractTest() {
 
             // add as child
 
-            person.value<MultiValuedRelation>("children").add(child)
-            person.relation<MultiValuedRelation>("children").add(child)
+            person.relation("children").add(child)
+            person.relation("children").add(child)
         }
 
         printTables()

@@ -6,8 +6,8 @@ import org.sirius.dorm.model.PropertyDescriptor
 import org.sirius.dorm.persistence.entity.PropertyEntity
 
 class Attribute(property: PropertyEntity?, var value: Any) : Property(property) {
-    override fun get(objectManager: ObjectManager) : Any? {
-        return value
+    override fun <T:Any>  get(objectManager: ObjectManager) : T? {
+        return value as T
     }
 
     override fun init(propertyDescriptor: PropertyDescriptor<Any>, value: Any?,  objectManager: ObjectManager) {

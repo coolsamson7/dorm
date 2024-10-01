@@ -124,7 +124,7 @@ class TransactionState(val objectManager: ObjectManager, val transactionManager:
                     var i = 0
                     for (property in obj.type.properties) {
                         if (!property.isAttribute() && property.asRelation().cascade == Cascade.DELETE) {
-                            val relation = obj.relation<Relation>(i)
+                            val relation = obj.relation(i)
 
                             if (relation.isLoaded()) {
                                 for (r in relation.relations())

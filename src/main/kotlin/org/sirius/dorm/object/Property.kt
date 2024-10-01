@@ -11,7 +11,7 @@ import org.sirius.dorm.model.PropertyDescriptor
 import org.sirius.dorm.persistence.entity.PropertyEntity
 
 abstract class Property(var property: PropertyEntity?) {
-    abstract fun get(objectManager: ObjectManager) : Any?
+    abstract fun <T:Any>  get(objectManager: ObjectManager) : T?
 
     abstract fun set(propertyDescriptor: PropertyDescriptor<Any>, value: Any?, objectManager: ObjectManager) : Boolean
 

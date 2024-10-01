@@ -92,11 +92,11 @@ class SingleValuedRelation(relation: RelationDescriptor<*>, status: Status, val 
             }
         }
     }
-    override fun get(objectManager: ObjectManager) : Any? {
+    override fun <T: Any>get(objectManager: ObjectManager) : T? {
         if ( !isLoaded())
             load(objectManager)
 
-        return target
+        return target as T?
     }
 
     override fun set(propertyDescriptor: PropertyDescriptor<Any>, value: Any?,  objectManager: ObjectManager) : Boolean {

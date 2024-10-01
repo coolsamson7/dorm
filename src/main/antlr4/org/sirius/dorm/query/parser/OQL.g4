@@ -67,7 +67,7 @@ fetch_join
     ;
 
 join_spec
-    : (('LEFT') ('OUTER')? | 'INNER')? 'JOIN' { System.out.println("JOIN"); }
+    : (('LEFT') ('OUTER')? | 'INNER')? 'JOIN'
     ;
 
 join_association_path_expression returns[JOIN result]
