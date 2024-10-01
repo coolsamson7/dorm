@@ -116,7 +116,7 @@ class QLQueryTests : AbstractTest() {
         createPerson("Andi", 58)
 
         withTransaction { ->
-            val query = objectManager.query<DataObject>("SELECT p FROM person AS p WHERE xp.age = :age AND p.name = :name")
+            val query = objectManager.query<DataObject>("SELECT p FROM person AS p WHERE p.age = :age AND p.name = :name")
 
             val queryResult = query.executor()
                 .set("name", "Andi")

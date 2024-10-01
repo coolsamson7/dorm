@@ -66,7 +66,6 @@ open class SELECT() {
     // protected
 
     fun addFrom( alias: String, from: FROM) {
-        println("##### add from")
         from.alias = alias
 
         if ( !this.from.containsKey(alias))
@@ -92,7 +91,7 @@ open class SELECT() {
                 if (r == null)
                     throw Error("unknown alias ${from.root}")
 
-                alias[root.alias] = JoinFrom(r as FromRoot, from.relation)
+                alias[from.alias] = JoinFrom(r as FromRoot, from.relation)
             }
 
         // create query
@@ -126,7 +125,9 @@ class PATH_ROOT(val schema: String) : PATH() {
 
     // override
     override fun buildPath(alias: HashMap<String,AbstractFrom>) : ObjectPath {
-        return alias[schema]!!
+        if ( alias.containsKey(schema))
+            return alias[schema]!!
+        else throw Error("unknown alias ${schema}")
     }
 }
 

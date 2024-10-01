@@ -44,7 +44,7 @@ delete_statement
     ;
 
 from_clause
-    : K_FROM identification_variable_declaration
+    : 'FROM' identification_variable_declaration
     //(
     //    ',' (identification_variable_declaration | collection_member_declaration)
     //)*
@@ -55,11 +55,11 @@ identification_variable_declaration
     ;
 
 range_variable_declaration
-    : abstract_schema_name (K_AS)? IDENTIFICATION_VARIABLE { select.addFrom($IDENTIFICATION_VARIABLE.text, new ROOT($abstract_schema_name.name, $IDENTIFICATION_VARIABLE.text)); }
+    : abstract_schema_name ('AS')? IDENTIFICATION_VARIABLE { select.addFrom($IDENTIFICATION_VARIABLE.text, new ROOT($abstract_schema_name.name, $IDENTIFICATION_VARIABLE.text)); }
     ;
 
 join
-    : join_spec join_association_path_expression (K_AS)? IDENTIFICATION_VARIABLE { select.addFrom($IDENTIFICATION_VARIABLE.text, $join_association_path_expression.result);}
+    : join_spec join_association_path_expression ('AS')? IDENTIFICATION_VARIABLE { select.addFrom($IDENTIFICATION_VARIABLE.text, $join_association_path_expression.result);}
     ;
 
 fetch_join
@@ -135,7 +135,7 @@ delete_clause
     ;
 
 select_clause returns[List<PATH> select] @init{ $select = new ArrayList<PATH>();  }
-    : K_SELECT ('DISTINCT')? select_expression { $select.add($select_expression.select); } (',' select_expression {$select.add($select_expression.select);} )*
+    : 'SELECT' ('DISTINCT')? select_expression { $select.add($select_expression.select); } (',' select_expression {$select.add($select_expression.select);} )*
     ;
 
 select_expression  returns[PATH select]
@@ -165,7 +165,7 @@ aggregate_expression
     ;
 
 where_clause returns[BOOLEAN_EXPR condition]
-    : K_WHERE conditional_expression { $condition = $conditional_expression.expression; }
+    : 'WHERE' conditional_expression { $condition = $conditional_expression.expression; }
     ;
 
 groupby_clause
@@ -201,7 +201,7 @@ subquery_from_clause
 
 subselect_identification_variable_declaration
     : identification_variable_declaration
-    | association_path_expression (K_AS)? IDENTIFICATION_VARIABLE
+    | association_path_expression ('AS')? IDENTIFICATION_VARIABLE
     | collection_member_declaration
     ;
 
@@ -211,7 +211,7 @@ association_path_expression
     ;
 
 simple_select_clause
-    : K_SELECT (K_DISTINCT)? simple_select_expression
+    : 'SELECT' ('DISTINCT')? simple_select_expression
     ;
 
 simple_select_expression
@@ -221,12 +221,12 @@ simple_select_expression
     ;
 
 conditional_expression returns[BOOLEAN_EXPR expression]
-    : (conditional_term {$expression = $conditional_term.expression; }) (K_OR conditional_term {$expression = new OR($expression, $conditional_term.expression); })*
+    : (conditional_term {$expression = $conditional_term.expression; }) ('OR' conditional_term {$expression = new OR($expression, $conditional_term.expression); })*
     | conditional_term {$expression = $conditional_term.expression; }
     ;
 
 conditional_term  returns[BOOLEAN_EXPR expression]
-    : (conditional_factor {$expression = $conditional_factor.expression; }) (K_AND conditional_factor {$expression = new AND($expression, $conditional_factor.expression); })*
+    : (conditional_factor {$expression = $conditional_factor.expression; }) ('AND' conditional_factor {$expression = new AND($expression, $conditional_factor.expression); })*
     | conditional_factor  {$expression = $conditional_factor.expression; }
     ;
 
