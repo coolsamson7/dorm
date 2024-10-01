@@ -37,8 +37,9 @@ class MultiValuedRelation(relation: RelationDescriptor<*>, status: Status, val o
     }
 
     private fun markDirty() {
-        if ( obj.state!!.snapshot == null)
-            obj.state!!.takeSnapshot(obj)
+        if ( obj.state !== null)
+            if ( obj.state?.snapshot == null)
+                obj.state?.takeSnapshot(obj)
     }
 
     // implement Relation

@@ -66,7 +66,7 @@ class DataObjectMapper() {
         writer4(obj.type).write(state, obj, entityManager) // will create the attribute entities
     }
 
-
+/*
     fun readFromEntity(state: TransactionState, objectDescriptor: ObjectDescriptor, entity: EntityEntity) : DataObject {
         return state.retrieve(entity.id) {
             // read json
@@ -81,7 +81,7 @@ class DataObjectMapper() {
 
             return@retrieve obj
         }
-    }
+    }*/
 
     fun read(state: TransactionState, objectDescriptor: ObjectDescriptor, entity: EntityEntity): DataObject {
         return state.retrieve(entity.id) {
