@@ -223,21 +223,6 @@ The results ( avg time per object in ms ) are based on a H2 database ( on my old
 | Filter & Project | 0.007  | 0.426   |  0.183   |
 | Update           | 0.357  | 1.024   |  0.6755  |
 
-
-
-
-
-## Optimizations
-
-The `ENTITY` table already stores a json object covering all attributes.
-
-Reading objects given an id is already based on the json value and does not need to reread attributes.
-
-Still every attribute is present as a row, since we we need tp specify queries on attributes.
-An optimization not yet implemented could be to mark specific attributes as "searchable" which would allow us to store
-single attribute values only for this subset.
-
-
 ## Reference
 
-TODO
+Check the ![Wiki]([https://github.com/coolsamson7/dorm/actions/workflows/maven.yml/badge.svg](https://github.com/coolsamson7/dorm/wiki)) for detailed information.
