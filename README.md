@@ -225,4 +225,4 @@ The results ( avg time per object in ms ) are based on a H2 database ( on my old
 
 ## Reference
 
-Check the ![Wiki]([https://github.com/coolsamson7/dorm/actions/workflows/maven.yml/badge.svg](https://github.com/coolsamson7/dorm/wiki)) for detailed information.
+Check the [Wiki](https://github.com/coolsamson7/dorm/wiki) for detailed information.
