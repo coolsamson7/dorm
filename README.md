@@ -9,8 +9,7 @@ dynamic entities on a database based on a couple of technical tables only.
 
 Before we describe the solution, let's figure out what the problem is....
 
-Typical applications use the normal ORMs that persist entities on table structures that are known at compile time and 
-relie on predefined tables. 
+Typical applications use the normal ORMs that persist entities on table structures that are known at compile time predefined in the underlying dbms. 
 While this is fine for most cases, there are some situations, where we need to configure entities dynamically.
 Think of a custom workflow definition ( e.g. with Camunda ) that wants to persist some complex internal state, which is not known upfront.
 
@@ -25,24 +24,39 @@ specify an entity by defining the attributes including type and type constraint 
 
 ```Kotlin
 personDescriptor = manager.type("person")
-   .attribute("name", string().length(100)) // string with length constraint
-   .attribute("age", int())
+   .add(attribute("name").type(string().length(100))) // string with length constraint
+   .add(attribute("age")type(int().greaterThan(0)))
+   .add(relation("parents").target("person").multiplicity(Multiplicity.ONE_OR_MANY).inverse("children"))
+   .add(relation("children").target("person").multiplicity(Multiplicity.ZERO_OR_MANY).inverse("parents"))
+
    ...
    .register()
 ``` 
 
-With this structural information - which is alos persisted in the database - we can create and access `DataObject` instances, that carry the payload information
+With this structural information - which is also persisted in the database - we can create and access `DataObject` instances, that carry the payload information
 
         
 ```Kotlin
 manager.begin()
 try {
-    val person = manager.create(personDescriptor)
+    val parent = manager.create(personDescriptor)
 
     // set some values by the custom get and set operators
     
     person["name"] = "Andi"
     person["age"] = 58
+
+   val child = manager.create(personDescriptor)
+
+    // set some values by the custom get and set operators
+    
+    child["name"] = "Nika"
+    child["age"] = 14
+
+    // add relation
+
+    parent.relation("children").add(child)
+
 }
 finally {
     manager.commit() // will create!
@@ -61,13 +75,13 @@ try {
         .select(person)
         .from(person)
 
-    val queryResult = query.execute().getResultList() // we know, just one so far!
+    val queryResult = query.execute().getResultList()
 
     val name = queryResult[0]["name"]
 
     // let's modify values
 
-    queryResult[0]["name"] = name + "X"
+    queryResult[0]["age"] = 30 // better!
 }
 finally {
     manager.commit() // will update all dirty objects
@@ -84,12 +98,13 @@ val queryManager = manager.queryManager()
 manager.begin()
 try {
     val person = queryManager.from(personDescriptor)
+    val children = person.join("children")
     val query = queryManager
         .create()
         .select(person.get("age"), person.get("name")
-        .from(person)
+        .where(eq(children.get("name"), "Nika"))
 
-    val tupleResult = query.execute().getResultList() // we know, just one so far!
+    val tupleResult = query.execute().getResultList()
 
     val name = tupleResult[0][1]
 }
@@ -105,11 +120,10 @@ val queryManager = manager.queryManager()
 
 manager.begin()
 try {
-    val query = manager.query<DataObject>("SELECT p.name FROM person AS p WHERE p.age = :age AND p.name = :name")
+    val query = manager.query<DataObject>("SELECT p.name FROM person AS p JOIN p.children as children WHERE children.name = :name")
 
     val queryResult = query.executor()
-        .set("age", 58)
-        .set("name", "Andi")
+        .set("name", "NIka")
         .execute()
         .getResultList()
 
@@ -123,18 +137,20 @@ finally {
 
 The solution is pretty straight forward. Entities are stored as a combination of two technical tables
 * `ENTITY` a table referencing the entity definition and a generated primary key
-* `ATTRIBUTE` a table that will store all attributes of an entity
+* `PROPERTY` a table that will store single attributes of an entity
 
-The attribute table defines the columns
+The property table defines the columns
 
 * `TYPE` the id of the entity structure
 * `ENTITY` the id of the corresponding entity
-* `ATTRIBUTE` the attribute name
+* `PROPERTY` the property name
 
 and a number of columns that are able to store payload data with respect to the supported low-level data types
 * `STRING_VALUE` a string value
 * `INT_VALUE` a int value ( stores boolean values well )
 * `DOUBLE_VALUE` a floating point value
+
+In order to model relations, the property table has a reflexive relation that expresses relationships stpored in a bridge table.
 
 As the definition of an entity is known, the engine will know which attributes are stored in which columns.
 
@@ -142,16 +158,16 @@ Let's look at a simple query, that will read a single person.
 
 ```Sql
   select
-        ae1_0.ATTRIBUTE,
-        ae1_0.ENTITY,
-        ae1_0.DOUBLE_VALUE,
-        ae1_0.INT_VALUE,
-        ae1_0.STRING_VALUE,
-        ae1_0.TYPE 
+        p.PROPERTY,
+        p.ENTITY,
+        p.DOUBLE_VALUE,
+        p.INT_VALUE,
+        p.STRING_VALUE,
+        p.TYPE 
     from
-        ATTRIBUTE ae1_0 
+        PROPERTY p 
     where
-        ae1_0.ENTITY=?
+        p.ENTITY=?
 ```
 
 After reading the result set, the engine will create the appropriate `DataObject` instance and store the appropriate values in the correct places.
@@ -159,24 +175,24 @@ After reading the result set, the engine will create the appropriate `DataObject
 If we talk about queries, that code gets a little bit more complicated. Querying for an integer attribute "age" with the operator "=" will result in something like
 ```Sql
 select
-        ae1_0.ATTRIBUTE,
-        ae1_0.ENTITY,
-        ae1_0.DOUBLE_VALUE,
-        ae1_0.INT_VALUE,
-        ae1_0.STRING_VALUE,
-        ae1_0.TYPE 
+        p1_0.ATTRIBUTE,
+        p1_0.ENTITY,
+        p1_0.DOUBLE_VALUE,
+        p1_0.INT_VALUE,
+        p1_0.STRING_VALUE,
+        p1_0.TYPE 
     from
-        ATTRIBUTE ae1_0 
+        PROPERTY p1_0 
     where
-        ae1_0.ENTITY in (
-            (select distinct ae2_0.ENTITY 
-               from ATTRIBUTE ae2_0 
+        p1_0.ENTITY in (
+            (select distinct p2_0.ENTITY 
+               from PROPERTY p2_0 
               where
-                    ae2_0.TYPE=? 
-                    and ae2_0.ATTRIBUTE=? 
-                    and ae2_0.INT_VALUE=?)) 
+                    p2_0.TYPE=? 
+                    and p2_0.ATTRIBUTE=? 
+                    and p2_0.INT_VALUE=?)) 
     order by
-        ae1_0.ENTITY
+        p1_0.ENTITY
 ```
 
 ## Performance
@@ -186,9 +202,21 @@ Of course, the performance and storage requirements are not as good as if we wou
 * indexes are much bigger
 * we require a subselect for every condition
 
-Let's look at some benchmarks:
+Let's look at a simple benchmark, that
+* creates objects
+* rereads all objects
+* filters objects ( that will match all objects )
+* filters and projects to a single attribute
+* updates a single property flushing all objects
 
-TODO
+The test was repeated with 2 scenarios
+* JPA entity with 10 properties
+* DORM object with 1 properties
+* DORM object with 10 properties
+
+The result based on a H2 database ( on my old macbook :-) ) 
+
+
 
 ## Optimizations
 
