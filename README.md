@@ -214,7 +214,16 @@ The test was repeated with 2 scenarios
 * DORM object with 1 properties
 * DORM object with 10 properties
 
-The result based on a H2 database ( on my old macbook :-) ) 
+The results ( avg time per object in ms ) are based on a H2 database ( on my old macbook :-) ). 
+|Test              |   JPA  | DORM(1) | DORM(10) |
+|------------------|--------|---------|----------|
+| Create           | 0.6525 | 0.6735  |   2.2275 |
+| Read             | 0.1885 | 0.644   |  0.7285  |
+| Filter           | 0.1    | 0.66    |  0.558   |
+| Filter & Project | 0.007  | 0.426   |  0.183   |
+| Update           | 0.357  | 1.024   |  0.6755  |
+
+
 
 
 
