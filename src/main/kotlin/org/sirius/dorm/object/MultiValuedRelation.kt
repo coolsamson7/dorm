@@ -6,6 +6,7 @@ package org.sirius.dorm.`object`
  */
 
 import org.sirius.dorm.ObjectManager
+import org.sirius.dorm.model.Cascade
 import org.sirius.dorm.model.ObjectDescriptor
 import org.sirius.dorm.model.PropertyDescriptor
 import org.sirius.dorm.model.RelationDescriptor
@@ -102,6 +103,11 @@ class MultiValuedRelation(relation: RelationDescriptor<*>, status: Status, val o
 
             for (deleted in targetMap.values) {
                 relations.remove(deleted)
+
+                if ( relation.cascade == Cascade.DELETE) {
+                    // TODO: check cascading
+                    deleted.entity.id
+                }
 
                 if ( !this.relation.owner) {
                     deleted.targets.remove(this.property)

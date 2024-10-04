@@ -36,7 +36,7 @@ internal class DORMBenchmark : AbstractTest() {
 
     @Test
     fun tes() {
-        var person : ObjectDescriptor?
+        var personD : ObjectDescriptor?
 
         withTransaction {
             objectManager.type("small-person")
@@ -49,12 +49,79 @@ internal class DORMBenchmark : AbstractTest() {
         // create
 
         measure("create ${objects} objects ", objects) {
-            person = objectManager.findDescriptor("small-person")
+            personD = objectManager.findDescriptor("small-person")
             for (i in 1..objects) {
-                val person1 = objectManager.create(person!!)
+                val person1 = objectManager.create(personD!!)
 
                 person1["name"] = "Andi"
             }
+        }
+
+        measure("read ${objects} objects ", objects) {
+            personD = objectManager.findDescriptor("small-person")
+            val queryManager = objectManager.queryManager()
+            val person = queryManager.from(personD!!)
+
+            // no where
+
+            val query = queryManager
+                .create()
+                .select(person)
+                .from(person)
+
+            query.execute().getResultList()
+        }
+
+        // filter
+
+        measure("filter ${objects} objects ", objects) {
+            personD = objectManager.findDescriptor("small-person")
+            val queryManager = objectManager.queryManager()
+            val person = queryManager.from(personD!!)
+
+            // no where
+
+            val query = queryManager
+                .create()
+                .select(person)
+                .from(person)
+                .where(eq(person.get("name"), "Andi"))
+
+            query.execute().getResultList()
+        }
+
+        // filter & projection
+
+        measure("filter & project ${objects} objects ", objects) {
+            personD = objectManager.findDescriptor("small-person")
+            val queryManager = objectManager.queryManager()
+            val person = queryManager.from(personD!!)
+
+            // no where
+
+            val query = queryManager
+                .create()
+                .select(person.get("name"))
+                .from(person)
+                .where(eq(person.get("name"), "Andi"))
+
+            query.execute().getResultList()
+        }
+
+        measure("update ${objects} objects ", objects) {
+            personD = objectManager.findDescriptor("small-person")
+            val queryManager = objectManager.queryManager()
+            val person = queryManager.from(personD!!)
+
+            // no where
+
+            val query = queryManager
+                .create()
+                .select(person)
+                .from(person)
+
+            for (person in query.execute().getResultList())
+                person["name"] = "Changed"
         }
     }
 

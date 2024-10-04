@@ -55,6 +55,8 @@ class JSONReaderContext {
     }
 }
 class JSONReader(private val objectDescriptor: ObjectDescriptor) {
+    val objectManager = objectDescriptor.objectManager!!
+
     // instance data
 
     private val readers = objectDescriptor.properties.map { property -> reader4(property) }.toTypedArray()
@@ -66,7 +68,9 @@ class JSONReader(private val objectDescriptor: ObjectDescriptor) {
             return context.obj(node.get("@ref").asText())
         }
         else {
-            val obj = objectDescriptor.create(Status.MANAGED)
+            val read =  objectManager.findById(objectDescriptor, node.get("id").asText().toLong())
+
+            val obj = if ( read !== null ) read else objectManager.create(objectDescriptor)
 
             context.remember(context.currentPath, obj)
 
@@ -129,7 +133,8 @@ class JSONReader(private val objectDescriptor: ObjectDescriptor) {
 
                     context.pushPath(property.name)
                     try {
-                        for ( i in 0..<node.size()) {
+                        obj.relation(property.name).clear()
+                        for ( i in 0..<array.size()) {
                             val element = array[i]
 
                             obj.relation(property.name).add(deserializer.reader4(target).read(element, deserializer, context))

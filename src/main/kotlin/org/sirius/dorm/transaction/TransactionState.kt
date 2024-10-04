@@ -130,7 +130,7 @@ class TransactionState(val objectManager: ObjectManager, val transactionManager:
                                 for (r in relation.relations())
                                     queue.add(r.entity.id)
                             }
-                            else { // TODO at least prepared statement
+                            else {
                                 objectManager.jdbcTemplate.query<Long>("SELECT DISTINCT TO_ENTITY FROM RELATIONS WHERE FROM_ENTITY = ${id} AND FROM_ATTR='${property.name}'") { rs, _ ->
                                     rs.getLong("TO_ENTITY")
                                 }.forEach { id -> queue.add(id) }

@@ -99,17 +99,11 @@
 			<scope>test</scope>
 		</dependency>
 
-        <!--dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.13.2</version>
-            <scope>test</scope>
-        </dependency-->
-
         <dependency>
             <groupId>org.junit.platform</groupId>
             <artifactId>junit-platform-suite-engine</artifactId>
             <version>1.11.0</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
@@ -123,10 +117,12 @@
                 <groupId>org.antlr</groupId>
                 <artifactId>antlr4-maven-plugin</artifactId>
                 <version>4.13.1</version>
+
                 <configuration>
                     <listener>false</listener>
                     <visitor>false</visitor>
                 </configuration>
+
                 <executions>
                     <execution>
                         <goals>
@@ -135,25 +131,6 @@
                     </execution>
                 </executions>
             </plugin>
-
-            <!--plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>build-helper-maven-plugin</artifactId>
-                <version>3.5.0</version>
-                <executions>
-                    <execution>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>add-source</goal>
-                        </goals>
-                        <configuration>
-                            <sources>
-                                <source>${basedir}/target/generated-sources/antlr4</source>
-                            </sources>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin-->
 
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
@@ -167,6 +144,7 @@
 					</excludes>
 				</configuration>
 			</plugin>
+
 			<plugin>
 				<groupId>org.jetbrains.kotlin</groupId>
 				<artifactId>kotlin-maven-plugin</artifactId>
@@ -174,10 +152,12 @@
 					<args>
 						<arg>-Xjsr305=strict</arg>
 					</args>
+
 					<compilerPlugins>
 						<plugin>spring</plugin>
 						<plugin>jpa</plugin>
 					</compilerPlugins>
+
                     <sourceDirs>
                         <source>${basedir}/target/generated-sources/antlr4</source>
                         <source>src/main/kotlin</source>
@@ -191,6 +171,7 @@
 						<artifactId>kotlin-maven-allopen</artifactId>
 						<version>${kotlin.version}</version>
 					</dependency>
+
 					<dependency>
 						<groupId>org.jetbrains.kotlin</groupId>
 						<artifactId>kotlin-maven-noarg</artifactId>

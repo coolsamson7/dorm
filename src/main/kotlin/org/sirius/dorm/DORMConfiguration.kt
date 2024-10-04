@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import org.sirius.dorm.model.json.ObjectDescriptorModule
 import org.sirius.common.type.json.TypeModule
 import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.boot.autoconfigure.domain.EntityScan
 import org.springframework.boot.runApplication
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.ComponentScan
@@ -18,6 +19,7 @@ import org.springframework.context.annotation.Primary
 
 @Configuration
 @ComponentScan
+@EntityScan
 class DORMConfiguration {
     @Bean
     @Primary
@@ -31,7 +33,7 @@ class DORMConfiguration {
 
 }
 
-// TODO....if we remove it, spring will not boot....
+/* TODO....if we remove it, spring will not boot....
 
 @SpringBootApplication
 class DemoApplication
@@ -39,3 +41,4 @@ class DemoApplication
 fun main(args: Array<String>) {
     runApplication<DemoApplication>(*args)
 }
+*/
