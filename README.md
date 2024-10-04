@@ -25,10 +25,9 @@ specify an entity by defining the attributes including type and type constraint 
 ```Kotlin
 personDescriptor = manager.type("person")
    .add(attribute("name").type(string().length(100))) // string with length constraint
-   .add(attribute("age")type(int().greaterThan(0)))
+   .add(attribute("age").type(int().greaterThan(0)))
    .add(relation("parents").target("person").multiplicity(Multiplicity.ONE_OR_MANY).inverse("children"))
    .add(relation("children").target("person").multiplicity(Multiplicity.ZERO_OR_MANY).inverse("parents"))
-
    ...
    .register()
 ``` 
@@ -135,9 +134,10 @@ finally {
 ```
 ## Solution design
 
-The solution is pretty straight forward. Entities are stored as a combination of two technical tables
+The solution is pretty straight forward. Entities are stored as a combination of three technical tables
 * `ENTITY` a table referencing the entity definition and a generated primary key
 * `PROPERTY` a table that will store single attributes of an entity
+* `RELATION` a bridge table expressing object relations
 
 The property table defines the columns
 
@@ -172,7 +172,7 @@ Let's look at a simple query, that will read a single person.
 
 After reading the result set, the engine will create the appropriate `DataObject` instance and store the appropriate values in the correct places.
 
-If we talk about queries, that code gets a little bit more complicated. Querying for an integer attribute "age" with the operator "=" will result in something like
+If we talk about queries, that code gets a little bit more complicated. Querying for an integer attribute "age" with the operator "=" and value 58 will result in something like
 ```Sql
 select
         p1_0.ATTRIBUTE,
@@ -188,9 +188,9 @@ select
             (select distinct p2_0.ENTITY 
                from PROPERTY p2_0 
               where
-                    p2_0.TYPE=? 
-                    and p2_0.ATTRIBUTE=? 
-                    and p2_0.INT_VALUE=?)) 
+                    p2_0.TYPE="person" 
+                    and p2_0.ATTRIBUTE="age" 
+                    and p2_0.INT_VALUE=58)) 
     order by
         p1_0.ENTITY
 ```
@@ -209,7 +209,7 @@ Let's look at a simple benchmark, that
 * filters and projects to a single attribute
 * updates a single property flushing all objects
 
-The test was repeated with 2 scenarios
+The test was repeated with 2 scenarios executing 2000 times each.
 * JPA entity with 10 properties
 * DORM object with 1 properties
 * DORM object with 10 properties
@@ -217,11 +217,17 @@ The test was repeated with 2 scenarios
 The results ( avg time per object in ms ) are based on a H2 database ( on my old macbook :-) ). 
 |Test              |   JPA  | DORM(1) | DORM(10) |
 |------------------|--------|---------|----------|
-| Create           | 0.6525 | 0.6735  |   2.2275 |
+| Create           | 0.6525 | 0.6735  |  2.2275  |
 | Read             | 0.1885 | 0.644   |  0.7285  |
 | Filter           | 0.1    | 0.66    |  0.558   |
 | Filter & Project | 0.007  | 0.426   |  0.183   |
 | Update           | 0.357  | 1.024   |  0.6755  |
+
+As you can see, the biggest difference is the create test, since it has to create a row per property.
+Reading is surpisingly fast, even though a lot of rows need to be read and processed.
+Update is almost even, since only a single property was changed. The difference would grow again, the more properties are touched.
+
+Still, not bad, huh?
 
 ## Reference
 
