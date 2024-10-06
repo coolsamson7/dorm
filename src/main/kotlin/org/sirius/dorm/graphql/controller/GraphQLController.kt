@@ -1,4 +1,4 @@
-package org.sirius.dorm.graphql
+package org.sirius.dorm.graphql.controller
 /*
  * @COPYRIGHT (C) 2023 Andreas Ernst
  *
