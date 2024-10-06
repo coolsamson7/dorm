@@ -29,7 +29,7 @@ class DORMService {
     @Autowired
     lateinit var objectMapper: ObjectMapper
 
-    @PostConstruct
+    //@PostConstruct
     fun setup() {
         withTransaction {
             objectManager.type("person")

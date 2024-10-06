@@ -76,6 +76,10 @@ class ObjectManager() {
         return descriptor
     }
 
+    fun descriptors() :Collection<ObjectDescriptor> {
+        return descriptors.values
+    }
+
     fun getDescriptor(name: String) : ObjectDescriptor {
         val descriptor = findDescriptor(name)
 

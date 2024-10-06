@@ -33,7 +33,7 @@ class DORMConfiguration {
 
 }
 
-/* TODO....if we remove it, spring will not boot....
+// TODO....if we remove it, spring will not boot....
 
 @SpringBootApplication
 class DemoApplication
@@ -41,4 +41,3 @@ class DemoApplication
 fun main(args: Array<String>) {
     runApplication<DemoApplication>(*args)
 }
-*/

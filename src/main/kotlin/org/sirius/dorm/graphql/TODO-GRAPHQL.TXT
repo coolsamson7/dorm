@@ -1,0 +1,22 @@
+=== TODO
+
+=== LATER
+
+- überlegen syntax select?
+
+=== NOW
+
+- Spring einbinden
+- Browser Test?
+
+=== DONE
+
+- argument
+- resolver?????
+- TEST
+- Schema selber machen
+- Transaktionsklammer
+- Spring
+- @Components
+- beispiel java klasse
+- hello world
