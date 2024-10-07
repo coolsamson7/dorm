@@ -34,12 +34,12 @@ class ObjectMutator(val objectManager: ObjectManager) {
         if ( !targetType.isAssignableFrom( value.javaClass)) {
             val argument = value as Number
             if (Number::class.java.isAssignableFrom(targetType)) {
-                when ( targetType ) {
-                    Short::class.java -> argument.toShort()
-                    Int::class.java -> argument.toInt()
-                    Long::class.java -> argument.toLong()
-                    Float::class.java -> argument.toFloat()
-                    Double::class.java -> argument.toDouble()
+                return when ( targetType ) {
+                    Short::class.javaObjectType -> argument.toShort()
+                    Int::class.javaObjectType -> argument.toInt()
+                    Long::class.javaObjectType -> argument.toLong()
+                    Float::class.javaObjectType -> argument.toFloat()
+                    Double::class.javaObjectType -> argument.toDouble()
 
                     else -> {
                         throw Error("no coercion possible")

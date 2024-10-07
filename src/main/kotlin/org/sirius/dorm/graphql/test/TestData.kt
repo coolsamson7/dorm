@@ -6,8 +6,7 @@ package org.sirius.dorm.graphql.test
  */
 
 import jakarta.annotation.PostConstruct
-import org.sirius.common.type.base.int
-import org.sirius.common.type.base.string
+import org.sirius.common.type.base.*
 import org.sirius.dorm.ObjectManager
 import org.sirius.dorm.model.Multiplicity
 import org.sirius.dorm.model.attribute
@@ -52,6 +51,11 @@ class TestData {
                 .add(attribute("firstName").type(string()))
                 .add(attribute("name").type(string()))
                 .add(attribute("age").type(int()))
+
+                .add(attribute("short").type(short()))
+                .add(attribute("long").type(long()))
+                .add(attribute("float").type(float()))
+                .add(attribute("double").type(double()))
 
                 // relations
 

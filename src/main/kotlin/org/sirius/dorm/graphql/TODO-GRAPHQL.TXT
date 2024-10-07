@@ -12,13 +12,11 @@ angular :-) mit builder simple
 
 === NOW
 
--
-
-- updatePerson -> [Person]n
 - date?
 
 === DONE
 
+- updatePerson -> [Person]n
 - restliche filter
 - fix create relation
 - mehrwertige relation
