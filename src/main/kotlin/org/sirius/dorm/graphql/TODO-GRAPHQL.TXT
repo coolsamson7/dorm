@@ -12,6 +12,9 @@ angular :-) mit builder simple
 
 === NOW
 
+- kopieren nach service :-)
+- entity status
+- version counter
 - date?
 
 === DONE

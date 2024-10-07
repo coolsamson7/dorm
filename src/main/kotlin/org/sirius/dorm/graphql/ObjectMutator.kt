@@ -8,15 +8,13 @@ package org.sirius.dorm.graphql
 import org.sirius.dorm.ObjectManager
 import org.sirius.dorm.model.AttributeDescriptor
 import org.sirius.dorm.model.ObjectDescriptor
-import org.sirius.dorm.model.PropertyDescriptor
 import org.sirius.dorm.`object`.DataObject
-import kotlin.reflect.full.isSuperclassOf
 
 
 class ObjectMutator(val objectManager: ObjectManager) {
     // bulk update
 
-    fun bulkUpdate(descriptor: ObjectDescriptor,  results: List<DataObject>, input: Map<String,Any>) : Array<DataObject> {
+    fun bulkUpdate(results: List<DataObject>, input: Map<String,Any>) : Array<DataObject> {
         for ( obj in results)
             writeProperties(obj, input)
 
