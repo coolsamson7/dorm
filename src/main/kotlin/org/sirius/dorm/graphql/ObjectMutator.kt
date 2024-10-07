@@ -13,6 +13,25 @@ import org.sirius.dorm.`object`.DataObject
 
 
 class ObjectMutator(val objectManager: ObjectManager) {
+    // bulk update
+    fun bulkUpdate(descriptor: ObjectDescriptor,  results: List<DataObject>, input: Map<String,Any>) : Int {
+        for ( obj in results) {
+            // iterate over properties
+
+            for (key in input.keys) {
+                if (key == "id")
+                    continue
+
+                val property = descriptor.property(key)
+
+                if (property.isAttribute())
+                    obj[key] = coerce(input[key]!!, property.asAttribute())
+            }
+        }
+
+        return results.size
+    }
+
     // update
 
     fun update(descriptor: ObjectDescriptor, input: Map<String,Any>) : DataObject {

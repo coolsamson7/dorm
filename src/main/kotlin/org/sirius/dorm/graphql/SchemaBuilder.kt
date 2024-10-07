@@ -187,6 +187,31 @@ class SchemaBuilder(val objectManager: ObjectManager) {
                     }
                     .type(GraphQLTypeReference.typeRef(descriptor.name))
             )
+
+            // bulk update
+
+            mutation.field(
+                GraphQLFieldDefinition.newFieldDefinition()
+                    .name("update${descriptor.name}s")
+                    .argument(GraphQLArgument.newArgument().name("where").type(GraphQLTypeReference.typeRef("${descriptor.name}Filter")).build())
+                    .argument(GraphQLArgument.newArgument().name("input").type(GraphQLTypeReference.typeRef("${descriptor.name}Input")).build())
+                    .dataFetcher {
+                        executeBulkUpdate(descriptor, it)
+                    }
+                    .type(Scalars.GraphQLInt)
+            )
+
+            // delete
+
+            mutation.field(
+                GraphQLFieldDefinition.newFieldDefinition()
+                    .name("delete${descriptor.name}s")
+                    .argument(GraphQLArgument.newArgument().name("where").type(GraphQLTypeReference.typeRef("${descriptor.name}Filter")).build())
+                    .dataFetcher {
+                        executeDelete(descriptor, it)
+                    }
+                    .type(Scalars.GraphQLInt)
+            )
         } // for
 
         // create schema
@@ -214,6 +239,22 @@ class SchemaBuilder(val objectManager: ObjectManager) {
 
     private fun executeUpdate(descriptor: ObjectDescriptor, environment: DataFetchingEnvironment) : DataObject {
         return mutator.update(descriptor, environment.getArgument<Any>("input") as Map<String,Any>)
+    }
+
+    private fun executeBulkUpdate(descriptor: ObjectDescriptor, environment: DataFetchingEnvironment) : Int {
+        val where = environment.getArgument<Any>("where") as Map<String,Any>
+        val input = environment.getArgument<Any>("input") as Map<String,Any>
+
+        return mutator.bulkUpdate(descriptor, queryBuilder.buildQuery(descriptor, where).execute().getResultList(), input)
+    }
+
+    private fun executeDelete(descriptor: ObjectDescriptor, environment: DataFetchingEnvironment) : Int {
+        val result = queryBuilder.buildQuery(descriptor,  environment.getArgument<Any>("where") as Map<String,Any>).execute().getResultList()
+
+        for ( value in result)
+            objectManager.delete(value)
+
+        return result.size
     }
 
     private fun stringFilter() : GraphQLInputObjectType {
