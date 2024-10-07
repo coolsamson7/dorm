@@ -25,6 +25,8 @@ class SchemaBuilder(val objectManager: ObjectManager) {
 
         val stringFilter = stringFilter()
         val intFilter = intFilter()
+        val floatFilter = floatFilter()
+        val booleanFilter = booleanFilter()
 
         // result type for bulk operations
 
@@ -142,10 +144,13 @@ class SchemaBuilder(val objectManager: ObjectManager) {
                         GraphQLInputObjectField.newInputObjectField()
                             .name(property.name)
                             .type(when ( property.asAttribute().baseType()) {
+                                String::class.javaObjectType -> booleanFilter
                                 String::class.javaObjectType -> stringFilter
                                 Short::class.javaObjectType -> intFilter
                                 Int::class.javaObjectType -> intFilter
                                 Long::class.javaObjectType -> intFilter
+                                Double::class.javaObjectType -> floatFilter
+                                Float::class.javaObjectType -> floatFilter
                                 else -> {
                                     throw Error("unsupported type ${property.asAttribute().baseType()}")
                                 }
@@ -219,7 +224,7 @@ class SchemaBuilder(val objectManager: ObjectManager) {
                     .dataFetcher {
                         executeBulkUpdate(descriptor, it)
                     }
-                    .type(GraphQLTypeReference.typeRef("OperationResult"))
+                    .type(GraphQLList.list(GraphQLTypeReference.typeRef("${descriptor.name}")))
             )
 
             // delete
@@ -262,7 +267,7 @@ class SchemaBuilder(val objectManager: ObjectManager) {
         return mutator.update(descriptor, environment.getArgument<Any>("input") as Map<String,Any>)
     }
 
-    private fun executeBulkUpdate(descriptor: ObjectDescriptor, environment: DataFetchingEnvironment) : Int {
+    private fun executeBulkUpdate(descriptor: ObjectDescriptor, environment: DataFetchingEnvironment) : Array<DataObject> {
         val where = environment.getArgument<Any>("where") as Map<String,Any>
         val input = environment.getArgument<Any>("input") as Map<String,Any>
 
@@ -290,6 +295,22 @@ class SchemaBuilder(val objectManager: ObjectManager) {
                 GraphQLInputObjectField.newInputObjectField()
                     .name("ne")
                     .type(Scalars.GraphQLString)
+            )
+            .build()
+    }
+
+    private fun booleanFilter() : GraphQLInputObjectType {
+        return GraphQLInputObjectType.newInputObject()
+            .name("BooleanFilter")
+            .field(
+                GraphQLInputObjectField.newInputObjectField()
+                    .name("eq")
+                    .type(Scalars.GraphQLBoolean)
+            )
+            .field(
+                GraphQLInputObjectField.newInputObjectField()
+                    .name("ne")
+                    .type(Scalars.GraphQLBoolean)
             )
             .build()
     }
@@ -326,6 +347,42 @@ class SchemaBuilder(val objectManager: ObjectManager) {
                 GraphQLInputObjectField.newInputObjectField()
                     .name("ne")
                     .type(Scalars.GraphQLInt)
+            )
+            .build()
+    }
+
+    private fun floatFilter() : GraphQLInputObjectType {
+        return GraphQLInputObjectType.newInputObject()
+            .name("FloatFilter")
+            .field(
+                GraphQLInputObjectField.newInputObjectField()
+                    .name("lt")
+                    .type(Scalars.GraphQLFloat)
+            )
+            .field(
+                GraphQLInputObjectField.newInputObjectField()
+                    .name("le")
+                    .type(Scalars.GraphQLFloat)
+            )
+            .field(
+                GraphQLInputObjectField.newInputObjectField()
+                    .name("gt")
+                    .type(Scalars.GraphQLFloat)
+            )
+            .field(
+                GraphQLInputObjectField.newInputObjectField()
+                    .name("ge")
+                    .type(Scalars.GraphQLFloat)
+            )
+            .field(
+                GraphQLInputObjectField.newInputObjectField()
+                    .name("eq")
+                    .type(Scalars.GraphQLInt)
+            )
+            .field(
+                GraphQLInputObjectField.newInputObjectField()
+                    .name("ne")
+                    .type(Scalars.GraphQLFloat)
             )
             .build()
     }

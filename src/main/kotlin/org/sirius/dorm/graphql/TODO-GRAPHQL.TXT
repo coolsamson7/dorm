@@ -12,10 +12,15 @@ angular :-) mit builder simple
 
 === NOW
 
-- fix create relation
+-
+
+- updatePerson -> [Person]n
+- date?
 
 === DONE
 
+- restliche filter
+- fix create relation
 - mehrwertige relation
 - create + realtion?
 - mutation relations?

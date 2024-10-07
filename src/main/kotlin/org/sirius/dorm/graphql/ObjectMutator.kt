@@ -16,11 +16,11 @@ import kotlin.reflect.full.isSuperclassOf
 class ObjectMutator(val objectManager: ObjectManager) {
     // bulk update
 
-    fun bulkUpdate(descriptor: ObjectDescriptor,  results: List<DataObject>, input: Map<String,Any>) : Int {
+    fun bulkUpdate(descriptor: ObjectDescriptor,  results: List<DataObject>, input: Map<String,Any>) : Array<DataObject> {
         for ( obj in results)
             writeProperties(obj, input)
 
-        return results.size
+        return results.toTypedArray()
     }
 
     // update
@@ -92,6 +92,8 @@ class ObjectMutator(val objectManager: ObjectManager) {
                         objectManager.create(descriptor)
 
                     writeProperties(target, values)
+
+                    obj[key] = target
                 }
             }
         }
