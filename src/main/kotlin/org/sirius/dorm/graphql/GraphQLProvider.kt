@@ -57,6 +57,7 @@ class GraphQLProvider {
     fun setup() {
         graphQL= GraphQL.newGraphQL(withTransaction { SchemaBuilder(objectManager).createSchema() })
             .queryExecutionStrategy(TransactionalExecutionStrategy(objectManager, SimpleDataFetcherExceptionHandler()))
+            .mutationExecutionStrategy(TransactionalExecutionStrategy(objectManager, SimpleDataFetcherExceptionHandler()))
             .build()
 
         queryBuilder = QueryBuilder(objectManager)
