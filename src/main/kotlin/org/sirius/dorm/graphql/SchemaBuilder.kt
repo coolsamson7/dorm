@@ -26,6 +26,18 @@ class SchemaBuilder(val objectManager: ObjectManager) {
         val stringFilter = stringFilter()
         val intFilter = intFilter()
 
+        // result type for bulk operations
+
+        types.add(GraphQLObjectType.newObject().name("OperationResult")
+            .field(GraphQLFieldDefinition.newFieldDefinition()
+                .name("count")
+                .dataFetcher {
+                    it.getSource<Int>()
+                }
+                .type(Scalars.GraphQLInt)
+                )
+            .build())
+
         // iterate over object definitions
 
         for ( descriptor in objectManager.descriptors()) {
@@ -207,7 +219,7 @@ class SchemaBuilder(val objectManager: ObjectManager) {
                     .dataFetcher {
                         executeBulkUpdate(descriptor, it)
                     }
-                    .type(Scalars.GraphQLInt)
+                    .type(GraphQLTypeReference.typeRef("OperationResult"))
             )
 
             // delete
@@ -219,7 +231,7 @@ class SchemaBuilder(val objectManager: ObjectManager) {
                     .dataFetcher {
                         executeDelete(descriptor, it)
                     }
-                    .type(Scalars.GraphQLInt)
+                    .type(GraphQLTypeReference.typeRef("OperationResult"))
             )
         } // for
 

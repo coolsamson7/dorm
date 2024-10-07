@@ -24,8 +24,6 @@ query sampleQuery { Person (filter:
 === TODO
 
 - create + realtion?
-
-- query + select
 - mutation relations?
 
 - applikation
@@ -38,7 +36,6 @@ query sampleQuery { Person (filter:
 angular :-) mit builder simple
 
 === NOW
-
 
 === DONE
 

@@ -69,29 +69,29 @@ class QueryBuilder(val objectManager: ObjectManager) {
 
             if ( property.isAttribute()) {
                 when (property.asAttribute().baseType()) {
-                    Short::class.java -> return buildNumericPredicate(
+                    Short::class.javaObjectType -> return buildNumericPredicate(
                         root.get(key),
                         filter.get(key) as Map<String, Any>
                     )
 
-                    Int::class.java -> return buildNumericPredicate(root.get(key), filter.get(key) as Map<String, Any>)
-                    Integer::class.java -> return buildNumericPredicate(
+                    Int::class.javaObjectType -> return buildNumericPredicate(root.get(key), filter.get(key) as Map<String, Any>)
+                    Integer::class.javaObjectType -> return buildNumericPredicate(
                         root.get(key),
                         filter.get(key) as Map<String, Any>
                     )
 
-                    Long::class.java -> return buildNumericPredicate(root.get(key), filter.get(key) as Map<String, Any>)
-                    Float::class.java -> return buildNumericPredicate(
+                    Long::class.javaObjectType -> return buildNumericPredicate(root.get(key), filter.get(key) as Map<String, Any>)
+                    Float::class.javaObjectType -> return buildNumericPredicate(
                         root.get(key),
                         filter.get(key) as Map<String, Any>
                     )
 
-                    Double::class.java -> return buildNumericPredicate(
+                    Double::class.javaObjectType -> return buildNumericPredicate(
                         root.get(key),
                         filter.get(key) as Map<String, Any>
                     )
 
-                    String::class.java -> return buildStringPredicate(
+                    String::class.javaObjectType -> return buildStringPredicate(
                         root.get(key),
                         filter.get(key) as Map<String, Any>
                     )
