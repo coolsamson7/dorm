@@ -23,7 +23,7 @@ query sampleQuery { Person (filter:
 
 === TODO
 
-- verate + realtion?
+- create + realtion?
 
 - query + select
 - mutation relations?
@@ -39,10 +39,10 @@ angular :-) mit builder simple
 
 === NOW
 
-query + einwertige relation :-)
 
 === DONE
 
+- join für winwertige...
 - bulk update
 - delete-person
 - mutation: create/update

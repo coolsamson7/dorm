@@ -21,6 +21,8 @@ abstract class AbstractFrom(parent : ObjectPath? = null) : ObjectPath(parent) {
         return root as Path<T>
     }*/
 
+    abstract fun descriptor() : ObjectDescriptor
+
     override fun type(): Class<Any> {
         return ObjectDescriptor::class as Class<Any>
     }
@@ -29,8 +31,15 @@ abstract class AbstractFrom(parent : ObjectPath? = null) : ObjectPath(parent) {
 class FromRoot(val objectDescriptor: ObjectDescriptor) : AbstractFrom(null) {
     // fluent
 
+    override fun descriptor() : ObjectDescriptor {
+        return objectDescriptor
+    }
+
     override fun get(property: String): ObjectPath {
-        return PropertyPath(this, objectDescriptor.property(property))
+        if ( objectDescriptor.property(property).isAttribute())
+            return PropertyPath(this, objectDescriptor.property(property))
+        else
+            return join(property)
     }
 
     // internal
@@ -56,6 +65,10 @@ class JoinFrom(root: FromRoot, val property: String) : AbstractFrom(root) {
     val relationship = root.objectDescriptor.property(property) as RelationDescriptor
 
     // override
+
+    override fun descriptor() : ObjectDescriptor {
+        return relationship.targetDescriptor!!
+    }
 
     override fun get(property: String): ObjectPath {
         return PropertyPath(this, relationship.targetDescriptor!!.property(property))

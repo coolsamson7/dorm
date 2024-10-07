@@ -11,7 +11,7 @@ import org.sirius.dorm.`object`.DataObject
 import org.sirius.dorm.query.*
 
 class QueryBuilder(val objectManager: ObjectManager) {
-    val queryManager = objectManager.queryManager()
+    private val queryManager = objectManager.queryManager()
 
     // public
 
@@ -31,7 +31,9 @@ class QueryBuilder(val objectManager: ObjectManager) {
 
     // private
 
-    private fun buildExpression(root: FromRoot, filter: Map<String,Any>) : ObjectExpression {
+    private fun buildExpression(root: AbstractFrom, filter: Map<String,Any>) : ObjectExpression {
+        // and
+
         if ( filter.containsKey("and")) {
             val expressions = filter.get("and") as List<Any>
 
@@ -42,6 +44,8 @@ class QueryBuilder(val objectManager: ObjectManager) {
                 ) as BooleanExpression
             }.toTypedArray())
         }
+
+        // from
 
         else if ( filter.containsKey("or")) {
             val expressions = filter.get("or") as List<Any>
@@ -54,24 +58,55 @@ class QueryBuilder(val objectManager: ObjectManager) {
             }.toTypedArray())
         }
 
-        else {
-            // must be one of the different
+        // property
 
+        else {
             val key = filter.keys.iterator().next()
 
-            val property = root.objectDescriptor.property(key)
+            val property = root.descriptor().property(key)
 
-            when ( property.asAttribute().baseType()) {
-                Short::class.java -> return buildNumericPredicate(root.get(key), filter.get(key) as Map<String,Any> )
-                Int::class.java -> return buildNumericPredicate(root.get(key), filter.get(key) as Map<String,Any>)
-                Integer::class.java -> return buildNumericPredicate(root.get(key), filter.get(key) as Map<String,Any>)
-                Long::class.java -> return buildNumericPredicate(root.get(key), filter.get(key) as Map<String,Any>)
-                Float::class.java -> return buildNumericPredicate(root.get(key), filter.get(key) as Map<String,Any>)
-                Double::class.java -> return buildNumericPredicate(root.get(key), filter.get(key) as Map<String,Any>)
-                String::class.java -> return buildStringPredicate(root.get(key), filter.get(key) as Map<String,Any>)
-                else -> {
-                    throw Error("unsupported type ${property.asAttribute().baseType()}")
+            // either attribute or relation
+
+            if ( property.isAttribute()) {
+                when (property.asAttribute().baseType()) {
+                    Short::class.java -> return buildNumericPredicate(
+                        root.get(key),
+                        filter.get(key) as Map<String, Any>
+                    )
+
+                    Int::class.java -> return buildNumericPredicate(root.get(key), filter.get(key) as Map<String, Any>)
+                    Integer::class.java -> return buildNumericPredicate(
+                        root.get(key),
+                        filter.get(key) as Map<String, Any>
+                    )
+
+                    Long::class.java -> return buildNumericPredicate(root.get(key), filter.get(key) as Map<String, Any>)
+                    Float::class.java -> return buildNumericPredicate(
+                        root.get(key),
+                        filter.get(key) as Map<String, Any>
+                    )
+
+                    Double::class.java -> return buildNumericPredicate(
+                        root.get(key),
+                        filter.get(key) as Map<String, Any>
+                    )
+
+                    String::class.java -> return buildStringPredicate(
+                        root.get(key),
+                        filter.get(key) as Map<String, Any>
+                    )
+
+                    else -> {
+                        throw Error("unsupported type ${property.asAttribute().baseType()}")
+                    }
                 }
+            }
+            else {
+                if (!property.asRelation().multiplicity.mutliValued) {
+                    return buildExpression(root.get(property.name) as AbstractFrom, filter.get(key) as Map<String, Any>)
+                }
+                else
+                    throw Error("NYS")
             }
         }
     }

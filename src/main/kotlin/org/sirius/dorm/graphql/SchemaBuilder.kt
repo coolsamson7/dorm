@@ -140,6 +140,15 @@ class SchemaBuilder(val objectManager: ObjectManager) {
                             })
                     )
                 }
+                else {
+                    if ( !property.asRelation().multiplicity.mutliValued) {
+                        filterBuilder.field(
+                            GraphQLInputObjectField.newInputObjectField()
+                                .name(property.name)
+                                .type(GraphQLTypeReference.typeRef("${property.asRelation().target}Filter"))
+                        )
+                    }
+                }
             }
 
             // done
