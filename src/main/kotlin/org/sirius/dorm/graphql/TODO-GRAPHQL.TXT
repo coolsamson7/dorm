@@ -1,30 +1,5 @@
-===
-
-query sampleQuery { Person (filter:
-                            {or: [
-                            // einwertig
-                              {father: {age: {gt: 0}}},
-                              // megrwertig
-                              {children: {??}}
-                              {age: {gt: 1}}
-                            ]}
-                          ) {
-                              id
-                              firstName
-                              name
-                              father {
-                                 firstName
-                                 name
-                              }
-                           }
-                       }
-
-
-
 === TODO
 
-- create + realtion?
-- mutation relations?
 
 - applikation
 - maven submodule
@@ -37,9 +12,14 @@ angular :-) mit builder simple
 
 === NOW
 
+- fix create relation
+
 === DONE
 
-- join für winwertige...
+- mehrwertige relation
+- create + realtion?
+- mutation relations?
+- join für einwertige...
 - bulk update
 - delete-person
 - mutation: create/update

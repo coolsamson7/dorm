@@ -92,22 +92,22 @@ class SchemaBuilder(val objectManager: ObjectManager) {
                             .name(field.name)
                             .type(inputType4(field.asAttribute().baseType()))
                     )
-                /* TODO else {
+                else {
                     if ( field.asRelation().multiplicity.mutliValued) {
                         inputObject.field(
-                            GraphQLFieldDefinition.newFieldDefinition()
+                            GraphQLInputObjectField.newInputObjectField()
                                 .name(field.name)
-                                .type(GraphQLList.list((GraphQLTypeReference.typeRef(field.asRelation().target))))
+                                .type(GraphQLList.list((GraphQLTypeReference.typeRef("${field.asRelation().target}Input"))))
                         )
                     }
                     else {
                         inputObject.field(
-                            GraphQLFieldDefinition.newFieldDefinition()
+                            GraphQLInputObjectField.newInputObjectField()
                                 .name(field.name)
-                                .type(GraphQLTypeReference.typeRef(field.asRelation().target))
+                                .type(GraphQLTypeReference.typeRef("${field.asRelation().target}Input"))
                         )
                     }
-                }*/
+                }
             } // for property
 
             types.add(inputObject.build())
