@@ -1,16 +1,32 @@
 === TODO
 
-=== LATER
+- query + select
+- create-person
+- mutation
+   update-person
+   delete-person
 
-- überlegen syntax select?
+- applikation
+- maven submodule
+- admin service ausplitten + finalisieren
+-. angular test
+
+=== LATER
 
 === NOW
 
-- Spring einbinden
 - Browser Test?
+
+=== QUERY
+
+	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63) ~[tomcat-embed-core-10.1.28.jar:10.1.28]
+
 
 === DONE
 
+- restliche prädikate
+- Spring einbinden
+- überlegen syntax select?
 - argument
 - resolver?????
 - TEST

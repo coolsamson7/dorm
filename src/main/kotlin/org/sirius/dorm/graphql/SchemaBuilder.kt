@@ -112,7 +112,7 @@ class SchemaBuilder(val objectManager: ObjectManager) {
 
             val filter = filterBuilder.build()
 
-            // ...
+            // add filter to query
 
             query.field(
                 GraphQLFieldDefinition.newFieldDefinition()
@@ -168,7 +168,27 @@ class SchemaBuilder(val objectManager: ObjectManager) {
             )
             .field(
                 GraphQLInputObjectField.newInputObjectField()
+                    .name("le")
+                    .type(Scalars.GraphQLInt)
+            )
+            .field(
+                GraphQLInputObjectField.newInputObjectField()
                     .name("gt")
+                    .type(Scalars.GraphQLInt)
+            )
+            .field(
+                GraphQLInputObjectField.newInputObjectField()
+                    .name("ge")
+                    .type(Scalars.GraphQLInt)
+            )
+            .field(
+                GraphQLInputObjectField.newInputObjectField()
+                    .name("eq")
+                    .type(Scalars.GraphQLInt)
+            )
+            .field(
+                GraphQLInputObjectField.newInputObjectField()
+                    .name("ne")
                     .type(Scalars.GraphQLInt)
             )
             .build()

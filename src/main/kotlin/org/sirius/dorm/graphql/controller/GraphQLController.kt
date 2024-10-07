@@ -15,9 +15,7 @@ import org.springframework.web.bind.annotation.*
 import java.io.IOException
 
 
-class TRe : TypeReference<Map<String?, Any?>>(){
-
-}
+class RecordType : TypeReference<Map<String?, Any?>>()
 
 @RestController
 class GraphQLController @Autowired constructor(private val graphql: GraphQL, private val objectMapper: ObjectMapper) {
@@ -32,7 +30,7 @@ class GraphQLController @Autowired constructor(private val graphql: GraphQL, pri
         @RequestParam("variables") variablesJson: String?): Map<String, Any> {
         var variables: Map<String?, Any?> = LinkedHashMap()
         if (variablesJson != null)
-            variables = objectMapper.readValue(variablesJson, TRe())
+            variables = objectMapper.readValue(variablesJson, RecordType())
 
         return executeGraphqlQuery(query, operationName, variables)
     }

@@ -8,12 +8,8 @@ package org.sirius.dorm.graphql
 import graphql.GraphQL
 import graphql.execution.SimpleDataFetcherExceptionHandler
 import jakarta.annotation.PostConstruct
-import org.sirius.common.type.base.int
-import org.sirius.common.type.base.string
 import org.sirius.dorm.ObjectManager
-import org.sirius.dorm.model.Multiplicity
-import org.sirius.dorm.model.attribute
-import org.sirius.dorm.model.relation
+import org.sirius.dorm.graphql.test.TestData
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.stereotype.Component
@@ -21,6 +17,9 @@ import org.springframework.stereotype.Component
 @Component
 class GraphQLProvider {
     // instance data
+
+    @Autowired
+    lateinit var test : TestData
 
     @Autowired
     lateinit var objectManager : ObjectManager
@@ -49,72 +48,6 @@ class GraphQLProvider {
         }
     }
 
-    fun setupData() {
-        withTransaction {
-            // create type
-
-            objectManager.type("Person")
-                .add(attribute("firstName").type(string()))
-                .add(attribute("name").type(string()))
-                .add(attribute("age").type(int()))
-
-                // relations
-
-                .add(relation("father").target("Person").multiplicity(Multiplicity.ZERO_OR_ONE).inverse("children"))
-                .add(relation("children").target("Person").multiplicity(Multiplicity.ZERO_OR_MANY).inverse("father").owner())
-
-                // done
-
-                .register()
-
-            // create data
-
-            val personDescriptor = objectManager.getDescriptor("Person")
-
-            val andi = objectManager.create(personDescriptor)
-
-            andi["firstName"] = "Andi"
-            andi["name"] = "Ernst"
-            andi["age"] = 58
-
-            // child
-
-            val child = objectManager.create(personDescriptor)
-
-            child["firstName"] = "Nika"
-            child["name"] = "Martinez"
-            child["age"] = 14
-
-            // link
-
-            child["father"] = andi
-        }
-    }
-
-    fun query() {
-        val executionResult = graphQL.execute(
-            "query sampleQuery { " +
-                    "   Person (filter: " +
-                    "        {or: [ " +
-                    "          {age: {gt: 0}}, " +
-                    "          {age: {gt: 1}}" +
-                    "        ]}" +
-                    "      ) {\n" +
-                    //"   Person (request: {select: \"SELECT p FROM Person p WHERE p.age > 0\"}) {\n" +
-                    "          id\n" +
-                    "          firstName" +
-                    "          name" +
-                    "          father {" +
-                    "             firstName" +
-                    "             name" +
-                    "          }" +
-                    "       }" +
-                    "   }" +
-                    "")
-
-        println(executionResult.getData<Any>().toString())
-    }
-
     @Bean
     fun graphQL(): GraphQL {
         return graphQL
@@ -122,16 +55,10 @@ class GraphQLProvider {
 
     @PostConstruct
     fun setup() {
-        setupData()
-
         graphQL= GraphQL.newGraphQL(withTransaction { SchemaBuilder(objectManager).createSchema() })
             .queryExecutionStrategy(TransactionalExecutionStrategy(objectManager, SimpleDataFetcherExceptionHandler()))
             .build()
 
         queryBuilder = QueryBuilder(objectManager)
-
-        // test
-
-        query()
     }
 }
