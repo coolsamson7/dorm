@@ -311,8 +311,12 @@ type Mutation {
 A query - already showing a join - will look like:
 
 ```GraphQL
-query sampleQuery { Person (where: {
-   father: {name: {eq: "Andi"}}}) {    
+query sampleQuery {
+   Person (
+      where: {
+         father: {name: {eq: "Andi"}}
+      }
+    ) {    
       id
       name
       father {
