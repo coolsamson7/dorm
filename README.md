@@ -234,9 +234,8 @@ Still, not bad, huh?
 In addition to the supplied Kotlin API a GraphQL server is available giving access to all CRUD and Query possibilities. 
 The internal schema is created dynamically based on the internal registry.
 
-For the already mentioned `Person` object, it will create the following schema.
+For the already mentioned `Person` object, it will create a schema based on the following technical types and inputs
 
-Based on this fixed technical types and inputs:
 ```GraphQL
 type OperationResult {
   count: Int
@@ -264,11 +263,14 @@ input StringFilter {
   eq: String
   ne: String
 }
+
+input BooleanFilter {
+  eq: Boolean
+  ne: Boolean
+}
 ```
-the schema will look like:
+resulting in
 ```GraphQL
-
-
 type Person {
   id: Int
   name: String
@@ -285,17 +287,6 @@ input PersonInput {
   father: PersonInput
 }
 
-type Query {
-  Person(filter: PersonFilter): [Person]
-}
-
-type Mutation {
-  createPerson(input: PersonInput): Person
-  deletePersons(where: PersonFilter): OperationResult
-  updatePerson(input: PersonInput): Person
-  updatePersons(input: PersonInput, where: PersonFilter): [Person]
-}
-
 input PersonFilter {
   age: IntFilter
   and: [PersonFilter]
@@ -304,18 +295,28 @@ input PersonFilter {
   name: StringFilter
   or: [PersonFilter]
 }
+
+type Query {
+  Person(where: PersonFilter): [Person]
+}
+
+type Mutation {
+  createPerson(input: PersonInput): Person
+  deletePersons(where: PersonFilter): OperationResult
+  updatePerson(input: PersonInput): Person
+  updatePersons(input: PersonInput, where: PersonFilter): [Person]
+}
 ```
 
 A query - already showing a join - will look like:
 
 ```GraphQL
-query sampleQuery { Person (filter: {
+query sampleQuery { Person (where: {
    father: {name: {eq: "Andi"}}}) {    
       id
-      firstName
       name
       father {
-         firstName
+         id
          name
       }
    }
@@ -332,7 +333,6 @@ mutation {
       input: { age: 59, name: "Andi" }) {
         id
         name
-        firstName
     }
 }
 ```
