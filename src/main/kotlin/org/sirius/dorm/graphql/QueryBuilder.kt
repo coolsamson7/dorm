@@ -69,6 +69,11 @@ class QueryBuilder(val objectManager: ObjectManager) {
 
             if ( property.isAttribute()) {
                 when (property.asAttribute().baseType()) {
+                    Boolean::class.javaObjectType -> return buildBooleanPredicate(
+                        root.get(key),
+                        filter.get(key) as Map<String, Any>
+                    )
+
                     Short::class.javaObjectType -> return buildNumericPredicate(
                         root.get(key),
                         filter.get(key) as Map<String, Any>
@@ -130,6 +135,16 @@ class QueryBuilder(val objectManager: ObjectManager) {
             "ne" -> ne(path, filter.get(predicate)!!)
             else -> {
              throw Error("ouch")
+            }
+        }
+    }
+
+    private fun buildBooleanPredicate(path: ObjectPath, filter: Map<String,Any>): ObjectExpression {
+        return when (val predicate = filter.keys.iterator().next()) {
+            "eq" -> eq(path, filter.get(predicate)!!)
+            "ne" -> ne(path, filter.get(predicate)!!)
+            else -> {
+                throw Error("ouch")
             }
         }
     }

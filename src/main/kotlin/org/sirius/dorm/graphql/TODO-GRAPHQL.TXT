@@ -6,19 +6,26 @@
 - admin service ausplitten + finalisieren
 - angular test
 
+- doku
+- fehler join?
+- benchmark?
+- kopieren nach service :-)
+- entity status
+- version counter
+- date?
+
 === LATER
 
 angular :-) mit builder simple
 
 === NOW
 
-- kopieren nach service :-)
-- entity status
-- version counter
-- date?
+
+
 
 === DONE
 
+- boolean expression
 - updatePerson -> [Person]n
 - restliche filter
 - fix create relation
