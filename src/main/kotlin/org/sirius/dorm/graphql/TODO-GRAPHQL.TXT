@@ -20,64 +20,18 @@ angular :-) mit builder simple
 
 === NOW
 
+- string + like ( oder startsWith, endsWith, contains, like )
+- join?
 - describe
-- projektion mit id???
-
-- relation fehler?
+- projektion mit id  geht nicht weil kein join!
 - session überlegen
-- modifed != me
-- version counter
-
-
-=== DENK NACH
-
-id,         type versionCOunter, ...
-
-entity(id), type attribute x_value
-
-id, type [attribute] super_attribut_values
-
-
-
-fast identisch
-
-
-
-properties ( val propergyEntity: PropertyEntity)
-   -> attribute(val value)
-   -> relation(val set)
-
-Reader sieht aus  (obj: DataObject, attribute: PropertyEntity)
-   -> obj.values[property.index] = ...
-
-for ( property in ...)
-   (reader for property).read(propery)
-
-Writer (state: TransactionState, obj: DataObject, index: Int, attribute: PropertyEntity )
-   ->  attribute.intValue = ...
-
-PROBLEM:
-
-   wir haben properties UND
-   wir haben eine einige Entity??
-
-   Person {
-      id             -> Entity
-      status {       -> Entity
-         created...
-      }
-      name            -> Property
-   }
-
-UNNU???
-
-Beim erzeugen werden Propertues mit Entita verknüpft
-
-
-ÜBRUGENS: wir brauchen keinen snpashot: die entity ist snapshot!!
+- date -> generell & status, etc.
+- TODO in MVR
 
 === DONE
 
+- status
+- version counter
 - boolean expression
 - updatePerson -> [Person]n
 - restliche filter

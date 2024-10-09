@@ -101,7 +101,7 @@ abstract class ComparisonExpression(val path: ObjectPath) : BooleanExpression() 
     ): Predicate
 
     fun constructWhere(builder: CriteriaBuilder, query: AbstractQuery<*>, property: Root<PropertyEntity>, predicate: Predicate) : Predicate {
-        return if (path.attributeName() != "id")
+        return if (path.attributeName() != "id") // TODO ID
             builder.and(
                 builder.equal(path.parent!!.expression<Any>(property, builder, query).get<String>("attribute"), path.attributeName()),
                 predicate
@@ -122,7 +122,7 @@ abstract class ComparisonExpression(val path: ObjectPath) : BooleanExpression() 
 
         // id is the id of the entity...
 
-        if (attributeName == "id")
+        if (attributeName == "id") // TODO ID
             subQuery
                 .select(property.get<EntityEntity>("entity").get("id"))
                 .distinct(true)
@@ -138,10 +138,6 @@ abstract class ComparisonExpression(val path: ObjectPath) : BooleanExpression() 
                         property.get<String>("type"),
                         (executor.query.root as FromRoot).objectDescriptor.name
                     ),*/
-
-                    // the attribute
-
-                    //already added in where(...)builder.equal(property.get<String>("attribute"), attributeName),
 
                     // where
 

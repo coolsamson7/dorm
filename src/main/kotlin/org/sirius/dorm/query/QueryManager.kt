@@ -56,15 +56,16 @@ class QueryManager(val objectManager: ObjectManager, private val entityManager: 
 
             criteriaQuery.select(propertyEntity)
 
-            //TODO builder.equal(attributeEntity.get<String>("type"), objectQuery.root!!.objectDescriptor.name),
             if ( objectQuery.where != null)
                 criteriaQuery.where(
+                    builder.equal(propertyEntity.get<String>("type"), objectQuery.root!!.descriptor().name), // TODO?
                     objectQuery.where!!.createWhere(executor as QueryExecutor<Any>, builder, criteriaQuery as CriteriaQuery<Any>, propertyEntity as Root<Any>),
                     builder.or(*objectQuery.projection!!.map { objectPath: ObjectPath -> builder.equal(propertyEntity.get<String>("attribute"), objectPath.attributeName()) }.toTypedArray())
                 )
 
             else
                 criteriaQuery.where(
+                    builder.equal(propertyEntity.get<String>("type"), objectQuery.root!!.descriptor().name), // TODO
                     builder.or(*objectQuery.projection!!.map { objectPath: ObjectPath -> builder.equal(propertyEntity.get<String>("attribute"), objectPath.attributeName()) }.toTypedArray())
                 )
 
@@ -80,25 +81,15 @@ class QueryManager(val objectManager: ObjectManager, private val entityManager: 
 
             if ( objectQuery.where !== null)
                 criteriaQuery.where(
-                    // builder.equal(propertyEntity.get<String>("type"), objectQuery.root!!.objectDescriptor.name),
+                    builder.equal(propertyEntity.get<String>("type"), objectQuery.root!!.descriptor().name), //TODO?
+
                     objectQuery.where!!.createWhere(executor as QueryExecutor<Any>, builder, criteriaQuery as CriteriaQuery<Any>, propertyEntity as Root<Any>),
                 )
             else criteriaQuery.where(
-                builder.equal(propertyEntity.get<String>("type"), (objectQuery.root as FromRoot).objectDescriptor.name),
+                builder.equal(propertyEntity.get<String>("type"), objectQuery.root!!.descriptor().name), // TODO
             )
 
             criteriaQuery.orderBy(builder.asc(propertyEntity.get<Int>("entity")))
-
-            /*
-            val entities = entityManager.createQuery(criteriaQuery).resultList
-
-            // compute result
-
-            val state = TransactionState.transactionState()
-            val objectDescriptor = objectQuery.root!!.objectDescriptor
-
-            return entities.map { entity -> mapper.readFromEntity(state, objectDescriptor, entity) } as List<T>
-            */
 
             return computeObjectResultFromAttributes((objectQuery.root as FromRoot).objectDescriptor, TransactionState.current(), entityManager.createQuery(criteriaQuery).resultList  as List<PropertyEntity>) as List<T>
         }

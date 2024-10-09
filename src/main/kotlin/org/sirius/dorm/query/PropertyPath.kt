@@ -28,20 +28,24 @@ class PropertyPath(parent: ObjectPath, val property: PropertyDescriptor<Any>) : 
     override fun <T> expression(root: Root<PropertyEntity>, builder: CriteriaBuilder, query: AbstractQuery<*>): Path<T> {
         val parentPath = this.parent?.expression<T>(root, builder, query)!!
 
-        return if ( property.name == "id")  // TODO ID
-            parentPath.get<String>("entity").get<Int>("id") as Path<T>
-
-        else when ( property.asAttribute().type.baseType ) {
-            String::class.javaObjectType -> parentPath.get<String>("stringValue") as Path<T>
-            Short::class.javaObjectType -> parentPath.get<Int>("intValue") as Path<T>
-            Int::class.javaObjectType -> parentPath.get<Int>("intValue") as Path<T>
-            Integer::class.javaObjectType -> parentPath.get<Int>("intValue") as Path<T>
-            Long::class.javaObjectType -> parentPath.get<Int>("intValue") as Path<T>
-            Float::class.javaObjectType -> parentPath.get<Int>("doubleValue") as Path<T>
-            Double::class.javaObjectType -> parentPath.get<Int>("doubleValue") as Path<T>
-
+        return when ( property.name ) {
+            "id"-> parentPath.get<String>("entity").get<Int>("id") as Path<T>
+            "versionCounter"-> parentPath.get<String>("entity").get<Long>("versionCounter") as Path<T>
+            // TODO status?
             else -> {
-                throw Error("unsupported type ${property.asAttribute().type.baseType}")
+                when ( property.asAttribute().type.baseType ) {
+                    String::class.javaObjectType -> parentPath.get<String>("stringValue") as Path<T>
+                    Short::class.javaObjectType -> parentPath.get<Int>("intValue") as Path<T>
+                    Int::class.javaObjectType -> parentPath.get<Int>("intValue") as Path<T>
+                    Integer::class.javaObjectType -> parentPath.get<Int>("intValue") as Path<T>
+                    Long::class.javaObjectType -> parentPath.get<Int>("intValue") as Path<T>
+                    Float::class.javaObjectType -> parentPath.get<Int>("doubleValue") as Path<T>
+                    Double::class.javaObjectType -> parentPath.get<Int>("doubleValue") as Path<T>
+
+                    else -> {
+                        throw Error("unsupported type ${property.asAttribute().type.baseType}")
+                    }
+                }
             }
         }
     }
