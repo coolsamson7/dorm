@@ -7,8 +7,10 @@ package org.sirius.dorm.graphql
 
 import graphql.GraphQL
 import graphql.execution.SimpleDataFetcherExceptionHandler
+import graphql.schema.idl.RuntimeWiring
 import jakarta.annotation.PostConstruct
 import org.sirius.dorm.ObjectManager
+import org.sirius.dorm.graphql.scalars.LocalDateTimeScalar
 import org.sirius.dorm.graphql.test.TestData
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
@@ -55,6 +57,8 @@ class GraphQLProvider {
 
     @PostConstruct
     fun setup() {
+        RuntimeWiring.newRuntimeWiring().scalar(LocalDateTimeScalar.INSTANCE)
+
         graphQL= GraphQL.newGraphQL(withTransaction { SchemaBuilder(objectManager).createSchema() })
             .queryExecutionStrategy(TransactionalExecutionStrategy(objectManager, SimpleDataFetcherExceptionHandler()))
             .mutationExecutionStrategy(TransactionalExecutionStrategy(objectManager, SimpleDataFetcherExceptionHandler()))

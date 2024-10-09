@@ -7,7 +7,6 @@ package org.sirius.dorm.persistence.entity
 
 import jakarta.persistence.*
 import org.sirius.dorm.transaction.TransactionState
-import java.sql.Timestamp
 import java.time.LocalDateTime
 import java.util.ArrayList
 

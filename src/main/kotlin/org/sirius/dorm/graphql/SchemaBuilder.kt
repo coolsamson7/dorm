@@ -9,6 +9,7 @@ import graphql.Scalars
 import graphql.schema.*
 import graphql.schema.idl.SchemaPrinter
 import org.sirius.dorm.ObjectManager
+import org.sirius.dorm.graphql.scalars.LocalDateTimeScalar
 import org.sirius.dorm.model.ObjectDescriptor
 import org.sirius.dorm.`object`.DataObject
 import org.sirius.dorm.persistence.entity.EntityStatus
@@ -29,6 +30,8 @@ class SchemaBuilder(val objectManager: ObjectManager) {
         val floatFilter = floatFilter()
         val booleanFilter = booleanFilter()
 
+        types.add(LocalDateTimeScalar.INSTANCE)
+
         // result type for bulk operations
 
         types.add(GraphQLObjectType.newObject().name("OperationResult")
@@ -40,6 +43,19 @@ class SchemaBuilder(val objectManager: ObjectManager) {
                 .type(Scalars.GraphQLInt)
                 )
             .build())
+
+        /* Entity Status
+
+        types.add(GraphQLObjectType.newObject().name("EntityStatus")
+            .field(GraphQLFieldDefinition.newFieldDefinition()
+                .name("created")
+                /*.dataFetcher {
+                    it.getSource<Int>()
+                }*/
+                .type(ExtendedScalars.DateTime))
+            )
+            .build()*/
+
 
         // iterate over object definitions
 
@@ -396,8 +412,14 @@ class SchemaBuilder(val objectManager: ObjectManager) {
                 if ( input )
                     GraphQLInputObjectType.newInputObject().name("EntityStatusInput")
                         .field(GraphQLInputObjectField.newInputObjectField()
+                            .name("created")
+                            .type(LocalDateTimeScalar.INSTANCE))
+                        .field(GraphQLInputObjectField.newInputObjectField()
                                 .name("createdBy")
                                 .type(Scalars.GraphQLString))
+                        .field(GraphQLInputObjectField.newInputObjectField()
+                            .name("modified")
+                            .type(LocalDateTimeScalar.INSTANCE))
                         .field(GraphQLInputObjectField.newInputObjectField()
                             .name("modifiedBy")
                             .type(Scalars.GraphQLString))
@@ -405,8 +427,14 @@ class SchemaBuilder(val objectManager: ObjectManager) {
                 else
                     GraphQLObjectType.newObject().name("EntityStatus")
                         .field(GraphQLFieldDefinition.newFieldDefinition()
+                            .name("created")
+                            .type(LocalDateTimeScalar.INSTANCE))
+                        .field(GraphQLFieldDefinition.newFieldDefinition()
                             .name("createdBy")
                             .type(Scalars.GraphQLString))
+                        .field(GraphQLFieldDefinition.newFieldDefinition()
+                            .name("modified")
+                            .type(LocalDateTimeScalar.INSTANCE))
                         .field(GraphQLFieldDefinition.newFieldDefinition()
                             .name("modifiedBy")
                             .type(Scalars.GraphQLString))

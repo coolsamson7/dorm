@@ -5,25 +5,11 @@ package org.sirius.dorm.session
  * All rights reserved
  */
 
-import org.springframework.stereotype.Component
-
 interface SessionContextProvider {
     fun getUser() : String
 }
 
-class DefaultSessionContextProvider : SessionContextProvider {
-    override fun getUser(): String {
-        return "me"
-    }
-
-}
-
-// TODO...
-
-@Component
-class SessionContext : SessionContextProvider{
-    val provider = DefaultSessionContextProvider()
-
+class SessionContext(val provider: SessionContextProvider) : SessionContextProvider {
     // implement
 
     override fun getUser(): String {
