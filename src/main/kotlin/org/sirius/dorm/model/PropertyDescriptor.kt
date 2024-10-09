@@ -10,7 +10,7 @@ import org.sirius.dorm.persistence.entity.PropertyEntity
 import org.sirius.dorm.`object`.*
 import org.sirius.dorm.transaction.Status
 
-abstract class PropertyDescriptor<T:Any>(val name: String) {
+abstract class PropertyDescriptor<T:Any>(val name: String, val readOnly: Boolean) {
     var index = 0
 
     abstract fun createProperty(obj: DataObject, status: Status, entity: PropertyEntity?) : Property

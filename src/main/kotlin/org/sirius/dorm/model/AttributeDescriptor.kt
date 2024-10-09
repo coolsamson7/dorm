@@ -12,7 +12,7 @@ import org.sirius.dorm.`object`.Property
 import org.sirius.dorm.persistence.entity.PropertyEntity
 import org.sirius.dorm.transaction.Status
 
-class AttributeDescriptor<T:Any>(name: String, val type: Type<*>, val isPrimaryKey : Boolean = false) : PropertyDescriptor<T>(name) {
+class AttributeDescriptor<T:Any>(name: String, val type: Type<*>, readOnly: Boolean) : PropertyDescriptor<T>(name, readOnly) {
     // public
 
     fun baseType() : Class<*> {

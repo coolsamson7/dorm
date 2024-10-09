@@ -12,11 +12,13 @@ import org.sirius.dorm.query.*
 import org.sirius.dorm.transaction.Status
 import org.sirius.dorm.transaction.TransactionState
 import jakarta.persistence.EntityManager
+import jakarta.persistence.LockModeType
 import jakarta.persistence.PersistenceContext
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.RecognitionException
 import org.sirius.dorm.query.parser.OQLParser
+import org.sirius.dorm.session.SessionContext
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Component
@@ -37,6 +39,9 @@ class ObjectManager() {
     lateinit var mapper: DataObjectMapper
     @Autowired
     lateinit var jdbcTemplate: JdbcTemplate
+
+    @Autowired
+    lateinit var sessionContext: SessionContext
 
     @Autowired
     private lateinit var objectDescriptorStorage: ObjectDescriptorStorage
@@ -143,7 +148,7 @@ class ObjectManager() {
     }
 
     fun findById(descriptor: ObjectDescriptor, id: Long) : DataObject? {
-        val entity = entityManager.find(EntityEntity::class.java, id)
+        val entity = entityManager.find(EntityEntity::class.java, id, LockModeType.OPTIMISTIC)
 
         return if ( entity !== null)
             mapper.read(TransactionState.current(), descriptor, entity)

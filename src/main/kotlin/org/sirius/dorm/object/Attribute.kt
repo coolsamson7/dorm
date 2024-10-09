@@ -1,11 +1,16 @@
 package org.sirius.dorm.`object`
+/*
+* @COPYRIGHT (C) 2023 Andreas Ernst
+*
+* All rights reserved
+*/
 
 import org.sirius.dorm.ObjectManager
 import org.sirius.dorm.ObjectManagerError
 import org.sirius.dorm.model.PropertyDescriptor
 import org.sirius.dorm.persistence.entity.PropertyEntity
 
-class Attribute(property: PropertyEntity?, var value: Any) : Property(property) {
+class Attribute(property: PropertyEntity?, var value: Any) : Property(property) { // TODO ? ??
     override fun <T:Any>  get(objectManager: ObjectManager) : T? {
         return value as T
     }

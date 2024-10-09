@@ -134,7 +134,7 @@ class QueryManager(val objectManager: ObjectManager, private val entityManager: 
         return result
     }
 
-    private fun computeProjectionResultFromAttributes(projection: Array<out ObjectPath>, attributes: List<PropertyEntity>) : List<Array<Any?>> {
+    private fun computeProjectionResultFromAttributes(projection: Array<out ObjectPath>, properties: List<PropertyEntity>) : List<Array<Any?>> {
         // setup mapping
 
         val name2Index = HashMap<String,Int>()
@@ -151,11 +151,11 @@ class QueryManager(val objectManager: ObjectManager, private val entityManager: 
             val tuple = arrayOfNulls<Any>(projection.size)
 
             for (ai in start..end) {
-                val attr = attributes[ai]
+                val property = properties[ai]
 
-                val resultIndex = name2Index[attr.attribute]!!
+                val resultIndex = name2Index[property.attribute]!!
 
-                tuple[resultIndex] = reader[resultIndex](attr)
+                tuple[resultIndex] = reader[resultIndex](property, property.entity)
             } // for
 
             return tuple
@@ -168,7 +168,7 @@ class QueryManager(val objectManager: ObjectManager, private val entityManager: 
         var entity = -1L
         var start = -1
         var index = 0
-        for (attribute in attributes) {
+        for (attribute in properties) {
             if (attribute.entity.id != entity) {
                 entity = attribute.entity.id
 

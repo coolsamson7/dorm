@@ -26,6 +26,35 @@ class CreateUpdateDeleteTests: AbstractTest() {
     }
 
     @Test
+    fun testStatus() {
+        val id = createPerson("Andi", 58)
+
+        printTables()
+
+        withTransaction {
+            val person = objectManager.findById(personDescriptor!!, id)!!
+
+            val versionCounter = person["versionCounter"]
+            val status = person["status"]
+
+            assertEquals("Andi", person["name"])
+            assertEquals(58, person["age"])
+
+            person["age"] =  (person["age"] as Int) + 1
+        }
+
+        printTables()
+
+        withTransaction {
+            val person = objectManager.findById(personDescriptor!!, id)!!
+
+            val versionCounter = person["versionCounter"]
+            val status = person["status"]
+            println()
+        }
+    }
+
+    @Test
     fun testValidation() {
         var caughtError = false
         try {
@@ -45,8 +74,8 @@ class CreateUpdateDeleteTests: AbstractTest() {
 
     @Test
     fun testCreate() {
-        val andiId = createPerson("Andi", 58)
-        val sandraId = createPerson("Sandra", 52)
+        createPerson("Andi", 58)
+        createPerson("Sandra", 52)
 
         // update
 
@@ -61,6 +90,7 @@ class CreateUpdateDeleteTests: AbstractTest() {
     fun testFind() {
         createPerson("Andi", 58)
 
+        printTables()
         // update
 
         withTransaction {
@@ -83,6 +113,8 @@ class CreateUpdateDeleteTests: AbstractTest() {
     fun testUpdate() {
         createPerson("Andi", 58)
 
+        printTables()
+
         // update
 
         withTransaction {
@@ -92,6 +124,8 @@ class CreateUpdateDeleteTests: AbstractTest() {
 
             persons[0]["name"] = "Changed"
         }
+
+        printTables()
 
         // reread
 

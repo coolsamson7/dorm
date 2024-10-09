@@ -11,6 +11,7 @@ import graphql.schema.idl.SchemaPrinter
 import org.sirius.dorm.ObjectManager
 import org.sirius.dorm.model.ObjectDescriptor
 import org.sirius.dorm.`object`.DataObject
+import org.sirius.dorm.persistence.entity.EntityStatus
 
 class SchemaBuilder(val objectManager: ObjectManager) {
     private val queryBuilder = QueryBuilder(objectManager)
@@ -55,7 +56,7 @@ class SchemaBuilder(val objectManager: ObjectManager) {
                             .dataFetcher {
                                 it.getSource<DataObject>()!!.get(it.field.name)
                             }
-                            .type(type4<GraphQLOutputType>(field.asAttribute().baseType()))
+                            .type(type4<GraphQLOutputType>(field.asAttribute().baseType(), false))
                     )
                 else {
                     if ( field.asRelation().multiplicity.mutliValued) {
@@ -92,7 +93,7 @@ class SchemaBuilder(val objectManager: ObjectManager) {
                     inputObject.field(
                         GraphQLInputObjectField.newInputObjectField()
                             .name(field.name)
-                            .type(type4<GraphQLInputType>(field.asAttribute().baseType()))
+                            .type(type4<GraphQLInputType>(field.asAttribute().baseType(), true))
                     )
                 else {
                     if ( field.asRelation().multiplicity.mutliValued) {
@@ -140,6 +141,7 @@ class SchemaBuilder(val objectManager: ObjectManager) {
 
             for ( property in descriptor.properties) {
                 if ( property.isAttribute()) {
+                    if (property.asAttribute().name !== "status")
                     filterBuilder.field(
                         GraphQLInputObjectField.newInputObjectField()
                             .name(property.name)
@@ -381,7 +383,7 @@ class SchemaBuilder(val objectManager: ObjectManager) {
             .build()
     }
 
-    private fun <T:GraphQLType>type4(clazz : Class<*>) : T {
+    private fun <T:GraphQLType>type4(clazz : Class<*>, input: Boolean) : T {
         return when ( clazz ) {
             Boolean::class.javaObjectType  -> Scalars.GraphQLBoolean
             Int::class.javaObjectType  -> Scalars.GraphQLInt
@@ -390,6 +392,26 @@ class SchemaBuilder(val objectManager: ObjectManager) {
             Float::class.javaObjectType -> Scalars.GraphQLFloat
             Double::class.javaObjectType -> Scalars.GraphQLFloat
             String::class.javaObjectType  -> Scalars.GraphQLString
+            EntityStatus::class.javaObjectType  ->
+                if ( input )
+                    GraphQLInputObjectType.newInputObject().name("EntityStatusInput")
+                        .field(GraphQLInputObjectField.newInputObjectField()
+                                .name("createdBy")
+                                .type(Scalars.GraphQLString))
+                        .field(GraphQLInputObjectField.newInputObjectField()
+                            .name("modifiedBy")
+                            .type(Scalars.GraphQLString))
+                        .build()
+                else
+                    GraphQLObjectType.newObject().name("EntityStatus")
+                        .field(GraphQLFieldDefinition.newFieldDefinition()
+                            .name("createdBy")
+                            .type(Scalars.GraphQLString))
+                        .field(GraphQLFieldDefinition.newFieldDefinition()
+                            .name("modifiedBy")
+                            .type(Scalars.GraphQLString))
+                        .build()
+
             else -> {
                 throw Error("unsupported type ${clazz}")
             }

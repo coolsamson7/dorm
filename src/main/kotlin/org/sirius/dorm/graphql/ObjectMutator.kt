@@ -54,7 +54,7 @@ class ObjectMutator(val objectManager: ObjectManager) {
         val descriptor = obj.type
 
         for ( key in input.keys) {
-            if (key == "id")
+            if (key == "id") // TODO ID
                 continue
 
             val property = descriptor.property(key)

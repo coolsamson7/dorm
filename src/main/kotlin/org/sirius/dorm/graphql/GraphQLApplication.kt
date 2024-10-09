@@ -18,19 +18,6 @@ import org.springframework.context.annotation.Import
 class GraphQLApplicationConfiguration {
 }
 
-
-/*@Configuration
-class GraphiQlConfiguration {
-    @Bean
-    @Order(0)
-    fun graphiQlRouterFunction(): RouterFunction<ServerResponse> {
-        var builder = RouterFunctions.route()
-        val graphiQlPage = ClassPathResource("graphiql/index.html")
-        val graphiQLHandler = GraphiQlHandler("/graphql", "", graphiQlPage)
-        builder = builder.GET("/graphiql", graphiQLHandler::handleRequest)
-        return builder.build()
-    }
-}*/
 @SpringBootApplication
 @Slf4j
 class GraphQLApplication {

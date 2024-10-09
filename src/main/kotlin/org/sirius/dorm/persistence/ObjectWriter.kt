@@ -12,48 +12,25 @@ import org.sirius.dorm.`object`.DataObject
 import org.sirius.dorm.`object`.Relation
 import org.sirius.dorm.persistence.entity.PropertyEntity
 import org.sirius.dorm.transaction.TransactionState
-import jakarta.persistence.EntityManager
 
-typealias PropertyWriter = (state: TransactionState, obj: DataObject, property: Int, attribute: PropertyEntity) -> Unit
-
-class ObjectWriter(private val descriptor: ObjectDescriptor) {
+open class ObjectWriter(protected val descriptor: ObjectDescriptor) {
     // instance data
 
-    private val writer: Array<PropertyWriter> = descriptor.properties
-        .filter { property -> property.name !== "id" }
+    protected val writer: Array<PropertyWriter> = descriptor.properties
         .map { property -> writer4(property, descriptor.objectManager!!)}.toTypedArray()
-
-    // public
-
-    fun update(state: TransactionState, obj: DataObject, property: Int, attribute: PropertyEntity) {
-        writer[property-1](state, obj, property, attribute)
-    }
-
-    fun write(state: TransactionState, obj: DataObject, entityManager: EntityManager) {
-        var i = 1
-        for ( writer in writer) {
-            val propertyDescriptor = descriptor.properties[i]
-            val property = PropertyEntity(obj.entity!!, propertyDescriptor.name, descriptor.name, "", 0, 0.0)
-
-            obj.values[i].property = property
-
-            writer(state, obj, i++, property)
-
-            entityManager.persist(property)
-
-            //obj.entity!!.properties.add(attribute)
-        }
-    }
-
-    // companion
 
     companion object {
         fun writer4(property: PropertyDescriptor<Any>, objectManager: ObjectManager) : PropertyWriter {
             if ( !property.isAttribute()) {
                 return { state: TransactionState, obj: DataObject, index: Int, attribute: PropertyEntity ->
+                    //(obj.values[index] as Relation).flush()
                     state.addOperation(AdjustRelation(obj.values[index] as Relation))
                 }
             }
+            else if (property.readOnly)
+                return { state: TransactionState, obj: DataObject, index: Int, attribute: PropertyEntity ->
+                    // noop
+                }
             else
                 return when (property.asAttribute().baseType()) {
                     Boolean::class.javaObjectType -> { state: TransactionState, obj: DataObject, index: Int, attribute: PropertyEntity ->

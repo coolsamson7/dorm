@@ -125,7 +125,7 @@ internal class DORMBenchmark : AbstractTest() {
         }
     }
 
-    //@Test
+    /*@Test
     fun Foo() {
         // warm up
 
@@ -245,7 +245,7 @@ internal class DORMBenchmark : AbstractTest() {
                 person.name = "Changed"
         }
     }
-
+*/
     @Test
     fun test() {
         println("### DORM")

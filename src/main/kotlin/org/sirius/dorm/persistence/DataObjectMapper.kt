@@ -10,15 +10,15 @@ import org.sirius.dorm.model.ObjectDescriptor
 import org.sirius.dorm.persistence.entity.PropertyEntity
 import org.sirius.dorm.persistence.entity.EntityEntity
 import org.sirius.dorm.transaction.TransactionState
-import com.fasterxml.jackson.databind.ObjectMapper
 import org.sirius.common.tracer.TraceLevel
 import org.sirius.common.tracer.Tracer
 import org.sirius.dorm.`object`.DataObject
 import jakarta.persistence.EntityManager
+import jakarta.persistence.LockModeType
 import jakarta.persistence.PersistenceContext
 import org.sirius.dorm.ObjectManager
+import org.sirius.dorm.persistence.entity.EntityStatus
 import org.sirius.dorm.transaction.Status
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import java.util.concurrent.ConcurrentHashMap
 
@@ -29,12 +29,9 @@ class DataObjectMapper() {
     @PersistenceContext
     private lateinit var entityManager: EntityManager
 
-    @Autowired
-    private lateinit var mapper: ObjectMapper
-
     private val reader = ConcurrentHashMap<String, ObjectReader>()
     private val jsonReader = ConcurrentHashMap<String, JSONReader>()
-    private val writer = ConcurrentHashMap<String, ObjectWriter>()
+    private val writer = ConcurrentHashMap<String, ObjectCreator>()
     private val updater = ConcurrentHashMap<String, ObjectUpdater>()
 
     // public
@@ -45,9 +42,12 @@ class DataObjectMapper() {
 
         updater4(obj.type).update(state, obj)
 
-         // update entity
+         // touch entity!
 
-        obj.entity!!.json = ""//TODO ? mapper.writeValueAsString(obj)
+        obj.entity!!.status!!.modified = state.timestamp
+        //obj.entity!!.status!!.modifiedBy = state.timestamp
+
+        //obj.entity!!.status = EntityStatus.from(obj.entity!!.status!!)
     }
 
     fun delete(state: TransactionState, obj: DataObject) {
@@ -63,25 +63,8 @@ class DataObjectMapper() {
         if ( Tracer.ENABLED)
             Tracer.trace("com.sirius.dorm", TraceLevel.HIGH, "create %s[%d]", obj.type.name, obj.entity!!.id)
 
-        writer4(obj.type).write(state, obj, entityManager) // will create the attribute entities
+        writer4(obj.type).create(state, obj, entityManager) // will create the attribute entities
     }
-
-/*
-    fun readFromEntity(state: TransactionState, objectDescriptor: ObjectDescriptor, entity: EntityEntity) : DataObject {
-        return state.retrieve(entity.id) {
-            // read json
-
-            val node = mapper.readTree(entity.json)
-
-            val obj = jsonReader4(objectDescriptor).read(node)
-
-            obj.id = entity.id
-
-            // done
-
-            return@retrieve obj
-        }
-    }*/
 
     fun read(state: TransactionState, objectDescriptor: ObjectDescriptor, entity: EntityEntity): DataObject {
         return state.retrieve(entity.id) {
@@ -90,14 +73,20 @@ class DataObjectMapper() {
 
             val obj = objectDescriptor.create(Status.MANAGED)
 
-            val id =  entity.id
+            entityManager.lock(entity, LockModeType.OPTIMISTIC)
+
             obj.entity = entity
-            obj["id"] = id
 
             val reader = reader4(objectDescriptor, state.objectManager)
 
-            for ( attribute in entity.properties)
-                reader.read(obj, objectDescriptor.property(attribute.attribute), attribute)
+            // read from entity
+
+            reader.readEntity(obj, entity)
+
+            // read from properties
+
+            for ( property in entity.properties)
+                reader.read(obj, objectDescriptor.property(property.attribute), property, entity)
 
             // done
 
@@ -105,24 +94,32 @@ class DataObjectMapper() {
         }
     }
 
-    fun read(state: TransactionState, objectDescriptor: ObjectDescriptor, attributes: List<PropertyEntity>, start: Int, end: Int) : DataObject {
-        return state.retrieve(attributes[start].entity.id) {
+    fun read(state: TransactionState, objectDescriptor: ObjectDescriptor, properties: List<PropertyEntity>, start: Int, end: Int) : DataObject {
+        return state.retrieve(properties[start].entity.id) {
             if ( Tracer.ENABLED)
-                Tracer.trace("com.sirius.dorm", TraceLevel.HIGH, "read %s[%d]", objectDescriptor.name,  attributes[start].entity.id)
+                Tracer.trace("com.sirius.dorm", TraceLevel.HIGH, "read %s[%d]", objectDescriptor.name,  properties[start].entity.id)
 
             val obj = objectDescriptor.create(Status.MANAGED)
 
-            obj.entity = attributes[start].entity
-            val id =  obj.entity!!.id
+            val entity = properties[start].entity
+            obj.entity = entity
 
-            obj.id = id
+            // lock optimistically
+
+            entityManager.lock(entity, LockModeType.OPTIMISTIC)
 
             val reader = reader4(objectDescriptor, state.objectManager)
 
-            for ( i in start..end) {
-                val attribute = attributes[i]
+            // read stuff from entity
 
-                reader.read(obj, objectDescriptor.property(attribute.attribute), attribute)
+            reader.readEntity(obj, entity)
+
+            // read properties
+
+            for ( i in start..end) {
+                val property = properties[i]
+
+                reader.read(obj, objectDescriptor.property(property.attribute), property, entity)
             }
 
             // done
@@ -141,14 +138,13 @@ class DataObjectMapper() {
         return jsonReader.getOrPut(objectDescriptor.name) { -> JSONReader(objectDescriptor) }
     }
 
-    private fun writer4(objectDescriptor: ObjectDescriptor) : ObjectWriter {
-        return writer.getOrPut(objectDescriptor.name) { -> ObjectWriter(objectDescriptor) }
+    private fun writer4(objectDescriptor: ObjectDescriptor) : ObjectCreator {
+        return writer.getOrPut(objectDescriptor.name) { -> ObjectCreator(objectDescriptor) }
     }
 
     private fun updater4(objectDescriptor: ObjectDescriptor) : ObjectUpdater {
         return updater.getOrPut(objectDescriptor.name) { ObjectUpdater(objectDescriptor) }
     }
-
 
     fun clear() {
         updater.clear()

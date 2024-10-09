@@ -16,7 +16,7 @@ abstract class Property(var property: PropertyEntity?) {
     abstract fun set(propertyDescriptor: PropertyDescriptor<Any>, value: Any?, objectManager: ObjectManager) : Boolean
 
     open fun init(propertyDescriptor: PropertyDescriptor<Any>, value: Any?,  objectManager: ObjectManager) {
-        this.set(propertyDescriptor, value,  objectManager)
+        this.set(propertyDescriptor, value, objectManager)
     }
 
     // snapshot stuff

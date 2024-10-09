@@ -26,6 +26,7 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Import
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Component
+import java.time.LocalDateTime
 
 
 @Configuration()
@@ -66,7 +67,12 @@ class TablePrinter {
 
     val entity : Array<ColumnType> = arrayOf(
         ColumnType("ID  ", Long::class.java, "%-4d"),
-        ColumnType("TYPE      ", String::class.java, "%-10s")
+        ColumnType("TYPE      ", String::class.java, "%-10s"),
+        ColumnType("VERSION_COUNTER ", Long::class.java, "%-16d"),
+        ColumnType("created                   ", String::class.java, "%-26s"),
+        ColumnType("createdBy      ",  String::class.java, "%-15s"),
+        ColumnType("modified                  ", String::class.java, "%-26s"),
+        ColumnType("modifiedBy     ", String::class.java, "%-15s"),
     )
 
     val relations : Array<ColumnType> = arrayOf(

@@ -28,7 +28,7 @@ class PropertyPath(parent: ObjectPath, val property: PropertyDescriptor<Any>) : 
     override fun <T> expression(root: Root<PropertyEntity>, builder: CriteriaBuilder, query: AbstractQuery<*>): Path<T> {
         val parentPath = this.parent?.expression<T>(root, builder, query)!!
 
-        return if ( property.name == "id")
+        return if ( property.name == "id")  // TODO ID
             parentPath.get<String>("entity").get<Int>("id") as Path<T>
 
         else when ( property.asAttribute().type.baseType ) {

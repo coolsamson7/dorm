@@ -6,7 +6,27 @@ package org.sirius.dorm.persistence.entity
  */
 
 import jakarta.persistence.*
+import org.sirius.dorm.transaction.TransactionState
+import java.sql.Timestamp
+import java.time.LocalDateTime
 import java.util.ArrayList
+
+@Embeddable
+data class EntityStatus(var created: LocalDateTime, var createdBy: String, var modified: LocalDateTime, var modifiedBy: String) {
+    companion object {
+        val NEW = EntityStatus( LocalDateTime.now(), "",  LocalDateTime.now(),"")
+
+        fun from(status: EntityStatus) : EntityStatus {
+            return EntityStatus(
+                status.created,
+                status.createdBy,
+                status.modified,
+                status.modifiedBy,
+            )
+        }
+    }
+}
+
 
 @Entity
 @Table(name="ENTITY")
@@ -19,12 +39,28 @@ data class EntityEntity(
     @Column(name = "TYPE")
     var type : String,
 
-    @Column(name = "JSON")
-    var json : String,
+    @Version
+    @Column(name = "VERSION_COUNTER")
+    var versionCounter : Long,
+
+    @Embedded
+    var status: EntityStatus? = null,
 
     @OneToMany(mappedBy = "entity", cascade = [CascadeType.ALL], orphanRemoval = true)
     var properties : MutableList<PropertyEntity> = ArrayList()
 ) {
+    // listeners
+
+    @PrePersist
+    fun prePersist() {
+        TransactionState.current().onPrePersist(this)
+    }
+
+    @PreUpdate
+    fun preUpdate() {
+        TransactionState.current().onPreUpdate(this)
+    }
+
     // override Object
 
     override fun toString(): String {

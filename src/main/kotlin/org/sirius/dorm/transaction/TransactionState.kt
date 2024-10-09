@@ -12,10 +12,13 @@ import org.sirius.dorm.`object`.DataObject
 import org.sirius.dorm.`object`.Relation
 import org.sirius.dorm.persistence.DataObjectMapper
 import org.sirius.dorm.persistence.entity.EntityEntity
+import org.sirius.dorm.persistence.entity.EntityStatus
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.TransactionDefinition
 import org.springframework.transaction.TransactionStatus
 import org.springframework.transaction.support.DefaultTransactionDefinition
+import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
@@ -64,6 +67,7 @@ class TransactionState(val objectManager: ObjectManager, val transactionManager:
 
     private val pendingOperations = ArrayList<Operation>()
     private val redos = HashMap<RedoKey, Redo> ()
+    val timestamp = LocalDateTime.now()
 
     init {
         val def = DefaultTransactionDefinition()
@@ -215,10 +219,18 @@ class TransactionState(val objectManager: ObjectManager, val transactionManager:
         states.put(state.obj.id, state)
     }
 
+    private fun createState() : EntityStatus {
+        return EntityStatus(
+            timestamp,
+            objectManager.sessionContext.getUser(),
+            timestamp,
+        "")
+    }
+
     fun create(obj: DataObject) : DataObject {
         val state = ObjectState(obj, Status.CREATED)
 
-        obj.entity = EntityEntity(0, obj.type.name, "{}", ArrayList())
+        obj.entity = EntityEntity(0, obj.type.name, 0, createState(), ArrayList())
 
         this.objectManager.entityManager.persist(obj.entity)
 
@@ -244,6 +256,22 @@ class TransactionState(val objectManager: ObjectManager, val transactionManager:
         } // for
 
         executeOperations()
+    }
+
+    // callbacks
+
+    fun onPrePersist(entityEntity: EntityEntity) {
+        val status = entityEntity.status!!
+
+        status.created = timestamp
+        status.createdBy = objectManager.sessionContext.getUser()
+    }
+
+    fun onPreUpdate(entityEntity: EntityEntity) {
+        val status = entityEntity.status!!
+
+        status.modified = timestamp
+        status.modifiedBy = objectManager.sessionContext.getUser()
     }
 
     companion object {

@@ -8,6 +8,7 @@ package org.sirius.dorm.model
 import org.sirius.common.type.Type
 import org.sirius.common.type.base.long
 import org.sirius.dorm.ObjectManager
+import org.sirius.dorm.persistence.entity.EntityStatus
 
 
 abstract class PropertyBuilder() {
@@ -23,6 +24,7 @@ class AttributeBuilder() : PropertyBuilder() {
     // instance data
 
     private var primaryKey = false
+    private var readOnly = false
     private var type: Type<*>? = null
 
     // fluent
@@ -45,12 +47,18 @@ class AttributeBuilder() : PropertyBuilder() {
         return this
     }
 
+    fun readOnly() : AttributeBuilder {
+        this.readOnly = true
+
+        return this
+    }
+
     // public
 
     override fun build() : AttributeDescriptor<Any> {
         // done
 
-        return AttributeDescriptor(name, type!!, primaryKey)
+        return AttributeDescriptor(name, type!!, readOnly)
     }
 }
 
@@ -116,6 +124,8 @@ fun relation(name: String) : RelationBuilder {
     return RelationBuilder().name(name)
 }
 
+class StatusType : Type<EntityStatus>(EntityStatus::class.javaObjectType)
+
 class ObjectDescriptorBuilder(val manager: ObjectManager, val name: String) {
     // instance data
 
@@ -123,6 +133,8 @@ class ObjectDescriptorBuilder(val manager: ObjectManager, val name: String) {
 
     init {
         add(id)
+        add(versionCounter)
+        add(status)
     }
 
     // fluent
@@ -140,6 +152,8 @@ class ObjectDescriptorBuilder(val manager: ObjectManager, val name: String) {
     }
 
     companion object {
-        val id = attribute("id").type(long()).primaryKey()
+        val id = attribute("id").type(long()).readOnly().primaryKey()
+        val versionCounter = attribute("versionCounter").type(long()).readOnly()
+        val status = attribute("status").type(StatusType()).readOnly()
     }
 }

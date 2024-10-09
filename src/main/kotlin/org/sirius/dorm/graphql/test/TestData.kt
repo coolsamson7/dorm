@@ -47,7 +47,7 @@ class TestData {
         withTransaction {
             // create type
 
-            objectManager.type("Person")
+            objectManager.type("Human")
                 .add(attribute("firstName").type(string()))
                 .add(attribute("name").type(string()))
                 .add(attribute("age").type(int()))
@@ -59,8 +59,8 @@ class TestData {
 
                 // relations
 
-                .add(relation("father").target("Person").multiplicity(Multiplicity.ZERO_OR_ONE).inverse("children"))
-                .add(relation("children").target("Person").multiplicity(Multiplicity.ZERO_OR_MANY).inverse("father").owner())
+                .add(relation("father").target("Human").multiplicity(Multiplicity.ZERO_OR_ONE).inverse("children"))
+                .add(relation("children").target("Human").multiplicity(Multiplicity.ZERO_OR_MANY).inverse("father").owner())
 
                 // done
 
@@ -68,7 +68,7 @@ class TestData {
 
             // create data
 
-            val personDescriptor = objectManager.getDescriptor("Person")
+            val personDescriptor = objectManager.getDescriptor("Human")
 
             val andi = objectManager.create(personDescriptor)
 
