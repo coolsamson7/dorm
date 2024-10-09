@@ -3,7 +3,7 @@
 # dORM
 
 _dOrm_ is a complete dynamic orm ( Object Relational Mapper ), that doesn't require to setup custom table structures per entity but is able to map
-dynamic entities on a database based on a couple of technical tables only.
+dynamic entities on a database based on a couple of technical tables only. In addition to the server side api a GraphQL interface has been implemented with identical scope.
 
 ## What's the problem anyway...
 
@@ -228,6 +228,118 @@ Reading is surpisingly fast, even though a lot of rows need to be read and proce
 Update is almost even, since only a single property was changed. The difference would grow again, the more properties are touched.
 
 Still, not bad, huh?
+
+## GraphQL
+
+In addition to the supplied Kotlin API a GraphQL server is available giving access to all CRUD and Query possibilities. 
+The internal schema is created dynamically based on the internal registry.
+
+For the already mentioned `Person` object, it will create a schema based on the following technical types and inputs
+
+```GraphQL
+type OperationResult {
+  count: Int
+}
+
+input FloatFilter {
+  eq: Float
+  ge: Float
+  gt: Float
+  le: Float
+  lt: Float
+  ne: Float
+}
+
+input IntFilter {
+  eq: Int
+  ge: Int
+  gt: Int
+  le: Int
+  lt: Int
+  ne: Int
+}
+
+input StringFilter {
+  eq: String
+  ne: String
+}
+
+input BooleanFilter {
+  eq: Boolean
+  ne: Boolean
+}
+```
+resulting in
+```GraphQL
+type Person {
+  id: Int
+  name: String
+  age: Int
+  children: [Person]
+  father: Person
+}
+
+input PersonInput {
+  id: Int
+  name: String
+  age: Int
+  children: [PersonInput]
+  father: PersonInput
+}
+
+input PersonFilter {
+  age: IntFilter
+  and: [PersonFilter]
+  father: PersonFilter
+  id: IntFilter
+  name: StringFilter
+  or: [PersonFilter]
+}
+
+type Query {
+  Person(where: PersonFilter): [Person]
+}
+
+type Mutation {
+  createPerson(input: PersonInput): Person
+  deletePersons(where: PersonFilter): OperationResult
+  updatePerson(input: PersonInput): Person
+  updatePersons(input: PersonInput, where: PersonFilter): [Person]
+}
+```
+
+A query - already showing a join - will look like:
+
+```GraphQL
+query sampleQuery {
+   Person (
+      where: {
+         father: {name: {eq: "Andi"}}
+      }
+    ) {    
+      id
+      name
+      father {
+         id
+         name
+      }
+   }
+}
+```
+
+An bulk update:
+```GraphQL
+mutation {
+    updatePersons(
+      where: {
+        id: {eq: 1}
+      },
+      input: { age: 59, name: "Andi" }) {
+        id
+        name
+    }
+}
+```
 
 ## Reference
 
