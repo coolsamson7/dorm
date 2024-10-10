@@ -20,12 +20,17 @@ import org.sirius.dorm.model.ObjectDescriptor
 import org.sirius.dorm.model.attribute
 import org.sirius.dorm.model.relation
 import org.sirius.dorm.`object`.DataObject
+import org.sirius.dorm.session.DummySessionContextProvider
+import org.sirius.dorm.session.SessionContext
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Import
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Component
+
+@Component
+class DummySessionContext : SessionContext(DummySessionContextProvider("me")) {}
 
 
 @Configuration()
@@ -214,6 +219,7 @@ abstract class AbstractTest {
 
                     .add(relation("father").target("other-person").multiplicity(Multiplicity.ZERO_OR_ONE).inverse("children"))
                     .add(relation("children").target("other-person").multiplicity(Multiplicity.ZERO_OR_MANY).inverse("father").owner())
+                    .register()
 
             }
 
