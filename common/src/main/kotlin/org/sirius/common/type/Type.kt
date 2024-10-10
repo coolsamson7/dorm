@@ -5,39 +5,19 @@ package org.sirius.common.type
  * All rights reserved
  */
 
-//TODOimport org.sirius.dorm.persistence.entity.EntityStatus
-
-
-
 typealias Check<T> = (obj: T) -> Boolean
 
 typealias DefaultValue<T> = () -> T
 
-open class Type<T:Any>(val baseType: Class<T>) {
+abstract class Type<T:Any>(val baseType: Class<T>) {
     // instance data
 
     val tests = ArrayList<Test<Any>>()
     var sealed = false
 
-    val defaultValue : DefaultValue<T> = computeDefaultValue(baseType)
+    val defaultValue : DefaultValue<T> = computeDefaultValue()
 
-    private fun <T> computeDefaultValue(type: Class<T>) : DefaultValue<T> {
-        return when (type) {
-            String::class.javaObjectType -> { -> "" as T }
-            Short::class.javaObjectType -> { -> 0.toShort() as  T }
-            Integer::class.javaObjectType -> { -> 0 as T }
-            Int::class.javaObjectType -> { -> 0 as T }
-            Long::class.javaObjectType -> { -> 0L as T }
-            Float::class.javaObjectType -> { -> 0.0f as T }
-            Double::class.javaObjectType -> { -> 0.0  as T }
-            Boolean::class.javaObjectType -> { -> false as T }
-            Char::class.javaObjectType -> { -> ' ' as T }
-            //EntityStatus::class.javaObjectType -> { -> EntityStatus.NEW as T }
-            else -> {
-                throw Error("unsupported type ${type.simpleName}")
-            }
-        }
-    }
+     abstract fun computeDefaultValue() : DefaultValue<T>
 
     // init
 

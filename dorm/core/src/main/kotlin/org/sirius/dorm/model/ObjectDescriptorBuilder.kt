@@ -5,10 +5,12 @@ package org.sirius.dorm.model
  * All rights reserved
  */
 
+import org.sirius.common.type.DefaultValue
 import org.sirius.common.type.Type
 import org.sirius.common.type.base.long
 import org.sirius.dorm.ObjectManager
 import org.sirius.dorm.persistence.entity.EntityStatus
+import java.time.LocalDateTime
 
 
 abstract class PropertyBuilder() {
@@ -124,7 +126,13 @@ fun relation(name: String) : RelationBuilder {
     return RelationBuilder().name(name)
 }
 
-class StatusType : Type<EntityStatus>(EntityStatus::class.javaObjectType)
+class StatusType : Type<EntityStatus>(EntityStatus::class.javaObjectType) {
+    // override Type
+
+    override fun computeDefaultValue() : DefaultValue<EntityStatus> {
+        return { -> EntityStatus(LocalDateTime.now(), "", LocalDateTime.now(), "") }
+    }
+}
 
 class ObjectDescriptorBuilder(val manager: ObjectManager, val name: String) {
     // instance data

@@ -1,16 +1,10 @@
 === TODO
 
-- applikation
-- maven submodule
 - admin service ausplitten + finalisieren
-- angular test
 
 - sql sieht komisch aus
 - doku
 - fehler join graphql?
-- benchmark?
-- kopieren nach service :-)
-
 - string + like ( oder startsWith, endsWith, contains, like )
 - join?
 - describe
@@ -21,12 +15,18 @@
 
 === LATER
 
-angular :-) mit builder simple
+- graphql benchmark?
+- kopieren nach service :-)
+- angular :-) mit builder simple
 
 === NOW
 
+- default value
+
 === DONE
 
+- applikation
+- maven submodule
 - date support in graphql ( scalar )
 - session überlegen
 - status

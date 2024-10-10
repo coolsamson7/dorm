@@ -1,4 +1,4 @@
-package org.sirius.dorm
+package org.sirius.common
 /*
  * @COPYRIGHT (C) 2023 Andreas Ernst
  *
