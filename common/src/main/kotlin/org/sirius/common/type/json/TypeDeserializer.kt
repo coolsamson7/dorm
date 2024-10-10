@@ -6,18 +6,19 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer
 import org.sirius.common.type.base.*
 import org.sirius.common.type.Type
+import java.util.*
 
 open class TypeDeserializer() : StdDeserializer<Type<*>>(Type::class.java) {
     // override
 
     override fun deserialize(jsonParser: JsonParser, context: DeserializationContext): Type<*> {
-        val node: JsonNode = jsonParser.codec.readTree(jsonParser)
+        val tree: JsonNode = jsonParser.codec.readTree(jsonParser)
 
-        val type = node.get("type").asText()
+        val type = tree.get("type").asText()
 
         // create base instance
 
-        val result = when (type.toLowerCase()) {
+        val result = when (type.lowercase(Locale.getDefault())) {
             "short" -> ShortType()
             "integer" -> IntType()
             "long" -> LongType()
@@ -34,9 +35,9 @@ open class TypeDeserializer() : StdDeserializer<Type<*>>(Type::class.java) {
 
         // check arguments
 
-        for ( field in node.fieldNames())
+        for ( field in tree.fieldNames())
             if ( field != "type"){
-                val node = node[field]
+                val node = tree[field]
 
                 val method = clazz.declaredMethods.first() { method -> method.name == field}!!
 

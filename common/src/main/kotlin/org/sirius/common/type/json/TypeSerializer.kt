@@ -1,4 +1,9 @@
 package org.sirius.common.type.json
+/*
+ * @COPYRIGHT (C) 2023 Andreas Ernst
+ *
+ * All rights reserved
+ */
 
 import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.databind.SerializerProvider
@@ -7,10 +12,6 @@ import org.sirius.common.type.Type
 import java.io.IOException
 
 open class TypeSerializer : StdSerializer<Type<*>>(Type::class.java) {
-    // instance data
-
-    // private
-
     // override
 
     @Throws(IOException::class)
@@ -21,7 +22,7 @@ open class TypeSerializer : StdSerializer<Type<*>>(Type::class.java) {
             if ( test.parameter != null) {
                 when ( test.parameter.javaClass) {
                     Short::class.java -> jsonGenerator.writeNumberField(test.name, (test.parameter as Short).toInt())
-                    Integer::class.java -> jsonGenerator.writeNumberField(test.name, (test.parameter as Integer).toInt())
+                    Int::class.java -> jsonGenerator.writeNumberField(test.name, (test.parameter as Int).toInt())
                     Long::class.java -> jsonGenerator.writeNumberField(test.name, (test.parameter as Long).toInt())
                     Float::class.java -> jsonGenerator.writeNumberField(test.name, (test.parameter as Float).toFloat())
                     Double::class.java -> jsonGenerator.writeNumberField(test.name, (test.parameter as Double).toDouble())

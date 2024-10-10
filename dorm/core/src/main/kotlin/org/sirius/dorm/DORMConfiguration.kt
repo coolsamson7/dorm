@@ -9,9 +9,6 @@ import org.sirius.dorm.json.ObjectModule
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.sirius.dorm.model.json.ObjectDescriptorModule
 import org.sirius.common.type.json.TypeModule
-import org.sirius.dorm.session.DummySessionContextProvider
-import org.sirius.dorm.session.SessionContext
-import org.sirius.dorm.session.SessionContextProvider
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.autoconfigure.domain.EntityScan
 import org.springframework.boot.runApplication
@@ -22,12 +19,6 @@ import org.springframework.context.annotation.*
 @ComponentScan
 @EntityScan
 class DORMConfiguration {
-    //@Bean
-    //@Primary
-    fun session() : SessionContext {
-        return SessionContext(DummySessionContextProvider("me"))
-    }
-
     @Bean
     @Primary
     fun objectMapper(): ObjectMapper {
@@ -43,4 +34,8 @@ class DORMConfiguration {
 // TODO....if we remove it, spring will not boot....
 
 @SpringBootApplication
-class DemoApplication
+class DemoApplication {
+    fun main(args: Array<String>) {
+        //runApplication<DemoApplication>(*args)
+    }
+}
