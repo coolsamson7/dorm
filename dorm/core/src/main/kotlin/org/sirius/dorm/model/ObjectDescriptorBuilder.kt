@@ -155,8 +155,10 @@ class ObjectDescriptorBuilder(val manager: ObjectManager, val name: String) {
 
     // public
 
-    fun register() {
+    fun register() : ObjectManager {
         manager.register(ObjectDescriptor(name, properties.toTypedArray()))
+
+        return manager
     }
 
     companion object {

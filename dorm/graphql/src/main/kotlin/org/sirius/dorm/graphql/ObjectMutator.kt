@@ -72,13 +72,13 @@ class ObjectMutator(val objectManager: ObjectManager) {
                     val relation = obj.relation(key)
 
                     relation.clear()
-                    for (obj in array) {
-                        val target = if (obj.containsKey("id"))
-                            objectManager.findById(descriptor, (obj["id"] as Number).toLong())!!
+                    for (element in array) {
+                        val target = if (element.containsKey("id"))
+                            objectManager.findById(descriptor, (element["id"] as Number).toLong())!!
                         else
                             objectManager.create(descriptor)
 
-                        relation.add(writeProperties(target, obj))
+                        relation.add(writeProperties(target, element))
                     }
                 }
                 else {

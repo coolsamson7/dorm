@@ -98,6 +98,10 @@ class ObjectManager() {
         return TransactionState.current().create(objectDescriptor.create(Status.CREATED))
     }
 
+    fun create(objectDescriptor: String) : DataObject {
+        return TransactionState.current().create(getDescriptor(objectDescriptor).create(Status.CREATED))
+    }
+
     fun delete(obj: DataObject) {
         obj.delete()
     }

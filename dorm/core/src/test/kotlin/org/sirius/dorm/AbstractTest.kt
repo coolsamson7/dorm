@@ -206,9 +206,32 @@ abstract class AbstractTest {
                     .add(attribute("float").type(float()))
                     .add(attribute("double").type(double()))
                     .register()
+
+                    .type("other-person")
+                    .add(attribute("name").type(stringType))
+
+                    // relations
+
+                    .add(relation("father").target("other-person").multiplicity(Multiplicity.ZERO_OR_ONE).inverse("children"))
+                    .add(relation("children").target("other-person").multiplicity(Multiplicity.ZERO_OR_MANY).inverse("father").owner())
+
             }
 
             personDescriptor = objectManager.getDescriptor("person")
+
+            val father = objectManager.create("other-person")
+
+            father["name"] = "Andi"
+
+            // child
+
+            val child = objectManager.create("other-person")
+
+            child["name"] = "Nika"
+
+            // link
+
+            child["father"] = father
         }
     }
 

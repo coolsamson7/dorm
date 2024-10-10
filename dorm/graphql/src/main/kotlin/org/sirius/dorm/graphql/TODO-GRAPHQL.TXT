@@ -21,10 +21,12 @@
 
 === NOW
 
-- default value
+
 
 === DONE
 
+- test data?
+- default value
 - applikation
 - maven submodule
 - date support in graphql ( scalar )

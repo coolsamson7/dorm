@@ -11,7 +11,7 @@ import graphql.schema.idl.RuntimeWiring
 import jakarta.annotation.PostConstruct
 import org.sirius.dorm.ObjectManager
 import org.sirius.dorm.graphql.scalars.LocalDateTimeScalar
-import org.sirius.dorm.graphql.test.TestData
+//TODO import org.sirius.dorm.graphql.test.TestData
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.stereotype.Component
@@ -20,8 +20,8 @@ import org.springframework.stereotype.Component
 class GraphQLProvider {
     // instance data
 
-    @Autowired
-    lateinit var test : TestData
+    //@Autowired
+    //lateinit var test : TestData
 
     @Autowired
     lateinit var objectManager : ObjectManager

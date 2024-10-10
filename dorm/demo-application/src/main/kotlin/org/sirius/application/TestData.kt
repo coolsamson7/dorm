@@ -15,14 +15,14 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 
 
-@Component
-class TestData {
-    @Autowired
-    lateinit var objectManager: ObjectManager
+class TestData(val objectManager: ObjectManager) {
+    init {
+        setupData()
+    }
 
-    // protected
+    // private
 
-    protected fun <T> withTransaction(doIt: () -> T) : T {
+    private fun <T> withTransaction(doIt: () -> T) : T {
         objectManager.begin()
         var committed = false
 
@@ -42,7 +42,6 @@ class TestData {
         }
     }
 
-    @PostConstruct
     fun setupData() {
         withTransaction {
             // create type

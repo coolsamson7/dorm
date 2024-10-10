@@ -9,7 +9,7 @@ interface SessionContextProvider {
     fun getUser() : String
 }
 
-class SessionContext(val provider: SessionContextProvider) : SessionContextProvider {
+open class SessionContext(val provider: SessionContextProvider) : SessionContextProvider {
     // implement
 
     override fun getUser(): String {

@@ -69,9 +69,6 @@
     </dependencies>
 
     <build>
-        <testSourceDirectory>src/test/kotlin</testSourceDirectory>
-
-
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
@@ -133,7 +130,6 @@
                     </compilerPlugins>
 
                     <sourceDirs>
-                        <source>${basedir}/target/generated-sources/antlr4</source>
                         <source>src/main/kotlin</source>
                         <source>src/main/resources</source>
                     </sourceDirs>

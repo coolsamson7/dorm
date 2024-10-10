@@ -5,32 +5,36 @@ package org.sirius.application
  * All rights reserved
  */
 
-//import lombok.extern.slf4j.Slf4j
+import jakarta.annotation.PostConstruct
 import org.sirius.dorm.DORMConfiguration
+import org.sirius.dorm.ObjectManager
+import org.sirius.dorm.graphql.test.TestData
+import org.sirius.dorm.session.DummySessionContextProvider
 import org.sirius.dorm.session.SessionContext
 import org.sirius.dorm.session.SessionContextProvider
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.context.annotation.*
+import org.springframework.stereotype.Component
 
+@Component
+class DummySessionContext : SessionContext(DummySessionContextProvider("me")) {}
 
-class DefaultSessionContextProvider : SessionContextProvider {
-    override fun getUser(): String {
-        return "me"
-    }
-}
 @Configuration()
+@ComponentScan
 @Import(DORMConfiguration::class)
 class ApplicationConfiguration {
-    @Bean
-    @Primary
-    fun session() : SessionContext {
-        return SessionContext(DefaultSessionContextProvider())
+    @Autowired
+    lateinit var objectManager: ObjectManager
+
+    @PostConstruct
+    fun createData() {
+        TestData(objectManager)
     }
 }
 
 @SpringBootApplication
-//@Slf4j
 class DORMApplication {
     companion object {
         @JvmStatic
