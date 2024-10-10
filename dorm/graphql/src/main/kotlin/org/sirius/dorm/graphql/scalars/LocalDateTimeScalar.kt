@@ -20,7 +20,7 @@ import java.util.function.Function
 class LocalDateTimeScalar : Coercing<LocalDateTime, String> {
     // instance data
 
-    var formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
+    var formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm") // TODO s?
 
     // implement
 
@@ -29,9 +29,6 @@ class LocalDateTimeScalar : Coercing<LocalDateTime, String> {
         val offsetDateTime: LocalDateTime = if (input is LocalDateTime) {
             input
         }
-        //else if (input is ZonedDateTime) {
-        //    input.toOffsetDateTime()
-        //}
         else if (input is String) {
             parse(input.toString()) { message: String? ->
                 CoercingSerializeException(message)
@@ -53,9 +50,6 @@ class LocalDateTimeScalar : Coercing<LocalDateTime, String> {
         val offsetDateTime: LocalDateTime = if (input is LocalDateTime) {
             input
         }
-        //else if (input is ZonedDateTime) {
-        //    input.toOffsetDateTime()
-        //}
         else if (input is String) {
             parse(input.toString()) { message: String? ->
                 CoercingParseValueException(message)
@@ -90,11 +84,6 @@ class LocalDateTimeScalar : Coercing<LocalDateTime, String> {
     private fun parse(s: String, exceptionMaker: Function<String, RuntimeException>): LocalDateTime {
         return try {
             LocalDateTime.parse(s, formatter)
-            //val parse = OffsetDateTime.parse(s, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-            //if (parse[ChronoField.OFFSET_SECONDS] == 0 && s.endsWith("-00:00")) {
-            //    throw exceptionMaker.apply("Invalid value : '$s'. Negative zero offset is not allowed")
-            //}
-           //parse
         }
         catch (e: DateTimeParseException) {
             throw exceptionMaker.apply("Invalid RFC3339 value : '" + s + "'. because of : '" + e.message + "'")

@@ -21,7 +21,8 @@
 
 === NOW
 
-
+- grapgql?
+- doku
 
 === DONE
 
