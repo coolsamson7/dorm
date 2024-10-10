@@ -7,16 +7,83 @@ package org.sirius.dorm
 
 import org.sirius.dorm.query.eq
 import jakarta.persistence.*
+import jakarta.persistence.criteria.CriteriaBuilder
+import org.junit.jupiter.api.Order
+import org.junit.jupiter.api.RepeatedTest
 import org.junit.jupiter.api.Test
 import org.sirius.common.type.base.*
 import org.sirius.dorm.model.ObjectDescriptor
 import org.sirius.dorm.model.attribute
 
+@Entity
+@Table(name="HOBBY")
+data class HobbyEntity(
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    var id : Int,
+
+    @Column(name = "NAME")
+    var name : String,
+
+    @ManyToMany(mappedBy = "hobbies")
+    val persons : MutableSet<PersonEntity>) {
+    override fun hashCode(): Int {
+        return id.hashCode()
+    }
+}
+
+@Entity
+@Table(name="PERSON")
+data class PersonEntity(
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    var id : Int,
+
+    @Column(name = "NAME")
+    var name : String,
+
+    @Column(name = "AGE")
+    var age : Int,
+
+    @Column(name = "BOOL")
+    var bool : Boolean,
+
+    @Column(name = "STRING")
+    var string : String,
+
+    @Column(name = "SHORT")
+    var short : Short,
+
+    @Column(name = "INT")
+    var int : Int,
+
+    @Column(name = "LONG")
+    var long : Long,
+
+    @Column(name = "FLOAT")
+    var float : Float,
+
+    @Column(name = "DOUBLE")
+    var double : Double,
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "person_hobby",
+        joinColumns = [JoinColumn(name = "person_id")],
+        inverseJoinColumns = [JoinColumn(name = "hobby_id")]
+    )
+    val hobbies : MutableSet<HobbyEntity>
+) {
+    override fun hashCode(): Int {
+        return id.hashCode()
+    }
+}
+
 internal class DORMBenchmark : AbstractTest() {
     // local
 
     protected fun measure(test: String, n: Int, doIt: () -> Unit) {
-        println("### start " + test)
+        println("> $test")
         val start = System.currentTimeMillis()
 
         objectManager.begin()
@@ -29,21 +96,23 @@ internal class DORMBenchmark : AbstractTest() {
             val ms = System.currentTimeMillis() - start
             val avg = ms.toFloat() / n
 
-            println("executed ${test} in ${ms}ms, avg: ${avg}")
+            println("< ${ms}ms, avg: ${avg}")
         }
     }
 
-    @Test
-    fun tes() {
+    @Order(3)
+    @RepeatedTest(3)
+    fun benchmarkDORM1() {
         var personD : ObjectDescriptor?
 
         withTransaction {
-            objectManager.type("small-person")
-                .add(attribute("name").type(string()))
-                .register()
+            if ( objectManager.findDescriptor("small-person") == null)
+                objectManager.type("small-person")
+                    .add(attribute("name").type(string()))
+                    .register()
         }
 
-        val objects = 2000
+        val objects = loops
 
         // create
 
@@ -124,12 +193,13 @@ internal class DORMBenchmark : AbstractTest() {
         }
     }
 
-    /*@Test
-    fun Foo() {
+    @Order(1)
+    @Test
+    fun warmupJPA() {
         // warm up
 
         withTransaction {
-            val person = PersonEntity(0,"Andi", 58, false, "strung", 1, 1, 1, 1.0f, 1.0, mutableSetOf(), mutableSetOf(), mutableSetOf())
+            val person = PersonEntity(0,"Andi", 58, false, "strung", 1, 1, 1, 1.0f, 1.0, mutableSetOf())
             val hobby = HobbyEntity(0, "angeln", mutableSetOf())
 
             entityManager.persist(hobby)
@@ -140,14 +210,13 @@ internal class DORMBenchmark : AbstractTest() {
         }
     }
 
-    @Test
-    fun testJPA() {
-        println("### JPA")
-
+    @RepeatedTest(3)
+    @Order(2)
+    fun benchmarkJPA() {
         // warm up
 
         withTransaction {
-            entityManager.persist(PersonEntity(0,"Andi", 58, false, "strung", 1, 1, 1, 1.0f, 1.0, mutableSetOf(), mutableSetOf(), mutableSetOf()))
+            entityManager.persist(PersonEntity(0,"Andi", 58, false, "strung", 1, 1, 1, 1.0f, 1.0, mutableSetOf()))
 
             val builder: CriteriaBuilder = entityManager.criteriaBuilder
 
@@ -160,20 +229,20 @@ internal class DORMBenchmark : AbstractTest() {
                 .select(personEntity)
                 //.where(builder.equal(attributeEntity.get<Int>("entity"), obj.id))
 
-            val result = entityManager.createQuery(criteriaQuery).resultList
+            entityManager.createQuery(criteriaQuery).resultList
         }
 
         // let's go
 
         // create some objects
 
-        val objects = 2000
+        val objects = loops
 
         // create
 
         measure("create ${objects} objects ", objects) {
             for (i in 1..objects) {
-                entityManager.persist(PersonEntity(0,"Andi", 58, false, "strung", 1, 1, 1, 1.0f, 1.0, mutableSetOf(), mutableSetOf(), mutableSetOf()))
+                entityManager.persist(PersonEntity(0,"Andi", 58, false, "strung", 1, 1, 1, 1.0f, 1.0, mutableSetOf()))
             }
         }
 
@@ -222,8 +291,6 @@ internal class DORMBenchmark : AbstractTest() {
                 .where(builder.equal(personEntity.get<Int>("name"), "Andi"))
 
             val result = entityManager.createQuery(criteriaQuery).resultList
-
-            System.err.println()
         }
 
         // update
@@ -244,11 +311,10 @@ internal class DORMBenchmark : AbstractTest() {
                 person.name = "Changed"
         }
     }
-*/
-    @Test
-    fun test() {
-        println("### DORM")
 
+    @Order(4)
+    @RepeatedTest(3)
+    fun benchmarkDORM() {
         // warm up
 
         createPerson("Andi", 58)
@@ -256,7 +322,7 @@ internal class DORMBenchmark : AbstractTest() {
 
         // create some objects
 
-        val objects = 2000
+        val objects = loops
 
         // create
 
@@ -335,4 +401,7 @@ internal class DORMBenchmark : AbstractTest() {
         }
     }
 
+    companion object {
+        val loops = 2000
+    }
 }

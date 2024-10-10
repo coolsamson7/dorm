@@ -153,7 +153,8 @@
                         <arg>-Xjsr305=strict</arg>
                     </args>
 
-                    <!-- todo what is it good for ? -->
+                    <!-- for default constructor generation -->
+
                     <compilerPlugins>
                         <plugin>spring</plugin>
                         <plugin>jpa</plugin>

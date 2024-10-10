@@ -1,16 +1,12 @@
 === TODO
 
 - admin service ausplitten + finalisieren
-
 - sql sieht komisch aus
-- doku
 - fehler join graphql?
 - string + like ( oder startsWith, endsWith, contains, like )
-- join?
-- describe
 - projektion mit id  geht nicht weil kein join!
 - zu viele sqls!
-- date -> generell & status, etc.
+- date -> generell & status, etc. graphql input
 - TODO in MVR
 
 === LATER
@@ -21,7 +17,6 @@
 
 === NOW
 
-- grapgql?
 - doku
 
 === DONE
