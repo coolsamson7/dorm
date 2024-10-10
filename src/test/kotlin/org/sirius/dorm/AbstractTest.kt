@@ -141,7 +141,7 @@ class TablePrinter {
 }
 
 @SpringBootTest(classes =[TestConfiguration::class])
-class AbstractTest {
+abstract class AbstractTest {
     @Autowired
     lateinit var objectManager : ObjectManager
     @PersistenceContext
@@ -191,6 +191,7 @@ class AbstractTest {
 
                 objectManager.type("person")
                     .add(attribute("name").type(stringType))
+                    .add(attribute("firstName").type(stringType))
                     .add(attribute("age").type(intType))
 
                     // relations

@@ -5,8 +5,9 @@
 - admin service ausplitten + finalisieren
 - angular test
 
+- sql sieht komisch aus
 - doku
-- fehler join grpahql?
+- fehler join graphql?
 - benchmark?
 - kopieren nach service :-)
 
@@ -14,7 +15,7 @@
 - join?
 - describe
 - projektion mit id  geht nicht weil kein join!
-
+- zu viele sqls!
 - date -> generell & status, etc.
 - TODO in MVR
 
@@ -26,9 +27,10 @@ angular :-) mit builder simple
 
 === DONE
 
+- date support in graphql ( scalar )
 - session überlegen
 - status
-- version counter
+- version counter & optimistic locking
 - boolean expression
 - updatePerson -> [Person]n
 - restliche filter

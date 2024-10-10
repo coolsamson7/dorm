@@ -69,6 +69,8 @@ class QLQueryTests : AbstractTest() {
     fun testParameter() {
         createPerson("Andi", 58)
 
+        printTables()
+
         withTransaction { ->
             val query = objectManager.query<DataObject>("SELECT p FROM person AS p WHERE p.age = :age")
 
@@ -85,16 +87,22 @@ class QLQueryTests : AbstractTest() {
     fun testProjection() {
         createPerson("Andi", 58)
 
-        withTransaction { ->
-            val query = objectManager.query<Array<Any>>("SELECT p.age, p.name FROM person AS p WHERE p.age = :age")
+        printTables()
 
+        withTransaction { ->
+            val query = objectManager.query<Array<Any>>("SELECT p.id, p.versionCounter, p.age, p.name FROM person AS p WHERE p.age = :age")
+
+            //  p.status
             val queryResult = query.executor()
                 .set("age", 58)
                 .execute()
                 .getResultList()
 
             Assertions.assertEquals(1, queryResult.size)
-            Assertions.assertEquals(2, queryResult[0].size)
+            Assertions.assertEquals(4, queryResult[0].size)
+
+            Assertions.assertNotNull(queryResult[0][0])
+            Assertions.assertNotNull(queryResult[0][1])
         }
     }
 
