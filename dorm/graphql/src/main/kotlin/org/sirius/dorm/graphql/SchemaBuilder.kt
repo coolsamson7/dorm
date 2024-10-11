@@ -13,6 +13,7 @@ import org.sirius.dorm.graphql.scalars.LocalDateTimeScalar
 import org.sirius.dorm.model.ObjectDescriptor
 import org.sirius.dorm.`object`.DataObject
 import org.sirius.dorm.persistence.entity.EntityStatus
+import java.time.LocalDateTime
 
 class SchemaBuilder(val objectManager: ObjectManager) {
     private val queryBuilder = QueryBuilder(objectManager)
@@ -29,6 +30,7 @@ class SchemaBuilder(val objectManager: ObjectManager) {
         val intFilter = intFilter()
         val floatFilter = floatFilter()
         val booleanFilter = booleanFilter()
+        val dateFilter = dateFilter()
 
         types.add(LocalDateTimeScalar.INSTANCE)
 
@@ -169,6 +171,7 @@ class SchemaBuilder(val objectManager: ObjectManager) {
                                 Long::class.javaObjectType -> intFilter
                                 Double::class.javaObjectType -> floatFilter
                                 Float::class.javaObjectType -> floatFilter
+                                LocalDateTime::class.javaObjectType -> dateFilter
                                 else -> {
                                     throw Error("unsupported type ${property.asAttribute().baseType()}")
                                 }
@@ -314,6 +317,11 @@ class SchemaBuilder(val objectManager: ObjectManager) {
                     .name("ne")
                     .type(Scalars.GraphQLString)
             )
+            .field(
+                GraphQLInputObjectField.newInputObjectField()
+                    .name("like")
+                    .type(Scalars.GraphQLString)
+            )
             .build()
     }
 
@@ -365,6 +373,42 @@ class SchemaBuilder(val objectManager: ObjectManager) {
                 GraphQLInputObjectField.newInputObjectField()
                     .name("ne")
                     .type(Scalars.GraphQLInt)
+            )
+            .build()
+    }
+
+    private fun dateFilter() : GraphQLInputObjectType {
+        return GraphQLInputObjectType.newInputObject()
+            .name("DateFilter")
+            .field(
+                GraphQLInputObjectField.newInputObjectField()
+                    .name("lt")
+                    .type(LocalDateTimeScalar.INSTANCE)
+            )
+            .field(
+                GraphQLInputObjectField.newInputObjectField()
+                    .name("le")
+                    .type(LocalDateTimeScalar.INSTANCE)
+            )
+            .field(
+                GraphQLInputObjectField.newInputObjectField()
+                    .name("gt")
+                    .type(LocalDateTimeScalar.INSTANCE)
+            )
+            .field(
+                GraphQLInputObjectField.newInputObjectField()
+                    .name("ge")
+                    .type(LocalDateTimeScalar.INSTANCE)
+            )
+            .field(
+                GraphQLInputObjectField.newInputObjectField()
+                    .name("eq")
+                    .type(LocalDateTimeScalar.INSTANCE)
+            )
+            .field(
+                GraphQLInputObjectField.newInputObjectField()
+                    .name("ne")
+                    .type(LocalDateTimeScalar.INSTANCE)
             )
             .build()
     }

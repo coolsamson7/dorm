@@ -3,24 +3,26 @@
 - admin service ausplitten + finalisieren
 - sql sieht komisch aus
 - fehler join graphql?
-- string + like ( oder startsWith, endsWith, contains, like )
-- projektion mit id  geht nicht weil kein join!
+- parser + like
+- projektion mit id geht nicht weil kein join!
 - zu viele sqls!
 - date -> generell & status, etc. graphql input
 - TODO in MVR
 
 === LATER
 
-- graphql benchmark?
 - kopieren nach service :-)
 - angular :-) mit builder simple
 
 === NOW
 
-- doku
+
 
 === DONE
 
+- like
+- doku
+- graphql benchmark?
 - test data?
 - default value
 - applikation

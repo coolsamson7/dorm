@@ -133,6 +133,7 @@ class QueryBuilder(val objectManager: ObjectManager) {
         return when (val predicate = filter.keys.iterator().next()) {
             "eq" -> eq(path, filter.get(predicate)!!)
             "ne" -> ne(path, filter.get(predicate)!!)
+            "like" -> like(path, filter.get(predicate)!!)
             else -> {
              throw Error("ouch")
             }

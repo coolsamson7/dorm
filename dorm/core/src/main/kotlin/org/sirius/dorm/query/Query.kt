@@ -150,7 +150,7 @@ abstract class ComparisonExpression(val path: ObjectPath) : BooleanExpression() 
 }
 
 class And(vararg expr: BooleanExpression) : BooleanExpression() {
-    val expressions = expr
+    private val expressions = expr
     override fun createWhere(
         executor: QueryExecutor<Any>,
         builder: CriteriaBuilder,
@@ -295,6 +295,22 @@ class QueryExecutor<T : Any>(val query: Query<T>, val queryManager: QueryManager
     }
 }
 
+class Like(path: ObjectPath, val value: Value) : ComparisonExpression(path) {
+    // override
+
+    override fun where(
+        executor: QueryExecutor<Any>,
+        builder: CriteriaBuilder,
+        query: AbstractQuery<*>,
+        property: Root<PropertyEntity>
+    ): Predicate {
+        return constructWhere(
+            builder, query, property,
+            builder.like(path.expression<String>(property, builder, query), value.resolve(executor, String::class.java))
+        )
+    }
+}
+
 class Query<T : Any>(val resultType: Class<T>, val queryManager: QueryManager, val objectManager: ObjectManager) {
     // instance data
 
@@ -383,4 +399,8 @@ fun gt(path: ObjectPath, value: Any): ObjectExpression {
 
 fun ge(path: ObjectPath, value: Any): ObjectExpression {
     return Ge(path, if (value is Value) value else Constant(value))
+}
+
+fun like(path: ObjectPath, value: Any): ObjectExpression {
+    return Like(path, if (value is Value) value else Constant(value))
 }
