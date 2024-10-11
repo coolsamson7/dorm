@@ -22,7 +22,7 @@ open class RelationDescriptor<T:Any>(name: String, val target: String, val multi
     // override
 
     override fun createProperty(obj: DataObject, status: Status, entity: PropertyEntity?) : Property {
-        val relation =  if ( multiplicity.mutliValued ) MultiValuedRelation(
+        val relation =  if ( multiplicity.multiValued ) MultiValuedRelation(
             this,
             status,
             obj,

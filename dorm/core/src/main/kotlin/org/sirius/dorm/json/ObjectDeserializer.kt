@@ -13,7 +13,6 @@ import org.sirius.dorm.ObjectManager
 import org.sirius.dorm.model.ObjectDescriptor
 import org.sirius.dorm.model.PropertyDescriptor
 import org.sirius.dorm.`object`.DataObject
-import org.sirius.dorm.transaction.Status
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
@@ -126,7 +125,7 @@ class JSONReader(private val objectDescriptor: ObjectDescriptor) {
             else return { node, obj, deserializer, context ->
                 val target = property.asRelation().targetDescriptor!!
 
-                if ( property.asRelation().multiplicity.mutliValued) {
+                if ( property.asRelation().multiplicity.multiValued) {
                     // multivalued
 
                     val array =  node.get(property.name)

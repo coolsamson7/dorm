@@ -63,7 +63,7 @@ class ObjectMutator(val objectManager: ObjectManager) {
                 obj[key] = coerce(input[key]!!, property.asAttribute())
 
             else {
-                if ( property.asRelation().multiplicity.mutliValued) {
+                if ( property.asRelation().multiplicity.multiValued) {
                     val array = input[key] as Collection<Map<String,Any>>
 
                     // recursion

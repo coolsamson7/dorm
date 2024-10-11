@@ -107,11 +107,11 @@ class QueryBuilder(val objectManager: ObjectManager) {
                 }
             }
             else {
-                if (!property.asRelation().multiplicity.mutliValued) {
+                //if (!property.asRelation().multiplicity.multiValued) {
                     return buildExpression(root.get(property.name) as AbstractFrom, filter.get(key) as Map<String, Any>)
-                }
-                else
-                    throw Error("NYS")
+                //}
+                //else
+                //    throw Error("NYS")
             }
         }
     }

@@ -1,7 +1,5 @@
 === TODO
 
-- admin servicefinalisieren
-
 - sql sieht komisch aus
 - parser + like
 - projektion mit id geht nicht weil kein join!
@@ -11,6 +9,7 @@
 
 === LATER
 
+- admin service CRUD
 - kopieren nach service :-)
 - angular :-) mit builder simple
 
@@ -18,6 +17,7 @@
 
 === DONE
 
+- admin service finalisieren
 - TODOs in MVR
 - join children geht, father nicht :-)
 - like

@@ -4,7 +4,7 @@ package org.sirius.dorm.model
  *
  * All rights reserved
  */
-enum class Multiplicity(val optional: Boolean, val mutliValued: Boolean) {
+enum class Multiplicity(val optional: Boolean, val multiValued: Boolean) {
     ZERO_OR_ONE(true, false),
     ONE(false, false),
     MANY(false, true),

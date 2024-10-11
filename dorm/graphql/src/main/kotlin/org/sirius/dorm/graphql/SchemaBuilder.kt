@@ -77,7 +77,7 @@ class SchemaBuilder(val objectManager: ObjectManager) {
                             .type(type4<GraphQLOutputType>(field.asAttribute().baseType(), false))
                     )
                 else {
-                    if ( field.asRelation().multiplicity.mutliValued) {
+                    if ( field.asRelation().multiplicity.multiValued) {
                         newObject.field(
                             GraphQLFieldDefinition.newFieldDefinition()
                                 .name(field.name)
@@ -114,7 +114,7 @@ class SchemaBuilder(val objectManager: ObjectManager) {
                             .type(type4<GraphQLInputType>(field.asAttribute().baseType(), true))
                     )
                 else {
-                    if ( field.asRelation().multiplicity.mutliValued) {
+                    if ( field.asRelation().multiplicity.multiValued) {
                         inputObject.field(
                             GraphQLInputObjectField.newInputObjectField()
                                 .name(field.name)
@@ -179,13 +179,13 @@ class SchemaBuilder(val objectManager: ObjectManager) {
                     )
                 }
                 else {
-                    if ( !property.asRelation().multiplicity.mutliValued) {
+                    //if ( !property.asRelation().multiplicity.multiValued) {
                         filterBuilder.field(
                             GraphQLInputObjectField.newInputObjectField()
                                 .name(property.name)
                                 .type(GraphQLTypeReference.typeRef("${property.asRelation().target}Filter"))
                         )
-                    }
+                    //}
                 }
             }
 

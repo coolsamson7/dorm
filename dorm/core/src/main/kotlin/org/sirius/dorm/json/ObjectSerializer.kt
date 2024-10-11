@@ -125,7 +125,7 @@ class JSONWriter(private val objectDescriptor: ObjectDescriptor) {
                     }
                 }
             else {
-                if ( property.asRelation().multiplicity.mutliValued) {
+                if ( property.asRelation().multiplicity.multiValued) {
                     return { serializer, jsonGenerator, obj, context ->
                         val value = obj.relation(property.index)
 
