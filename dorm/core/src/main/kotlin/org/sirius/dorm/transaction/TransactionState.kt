@@ -12,6 +12,7 @@ import org.sirius.dorm.`object`.DataObject
 import org.sirius.dorm.`object`.Relation
 import org.sirius.dorm.persistence.DataObjectMapper
 import org.sirius.dorm.persistence.entity.EntityEntity
+import org.sirius.dorm.persistence.entity.EntitySchemaEntity
 import org.sirius.dorm.persistence.entity.EntityStatus
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.TransactionDefinition
@@ -261,6 +262,20 @@ class TransactionState(val objectManager: ObjectManager, val transactionManager:
     // callbacks
 
     fun onPrePersist(entityEntity: EntityEntity) {
+        val status = entityEntity.status!!
+
+        status.created = timestamp
+        status.createdBy = objectManager.sessionContext.getUser()
+    }
+
+    fun onPreUpdate(entityEntity: EntitySchemaEntity) {
+        val status = entityEntity.status!!
+
+        status.modified = timestamp
+        status.modifiedBy = objectManager.sessionContext.getUser()
+    }
+
+    fun onPrePersist(entityEntity: EntitySchemaEntity) {
         val status = entityEntity.status!!
 
         status.created = timestamp

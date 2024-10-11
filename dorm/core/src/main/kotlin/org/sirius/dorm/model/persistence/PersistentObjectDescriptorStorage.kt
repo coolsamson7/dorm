@@ -11,6 +11,7 @@ import org.sirius.dorm.model.ObjectDescriptorStorage
 import org.sirius.dorm.persistence.entity.EntitySchemaEntity
 import jakarta.persistence.EntityManager
 import jakarta.persistence.PersistenceContext
+import org.sirius.dorm.persistence.entity.EntityStatus
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 
@@ -30,7 +31,7 @@ class PersistentObjectDescriptorStorage : ObjectDescriptorStorage {
 
     override fun store(objectDescriptor: ObjectDescriptor) {
         val json = objectMapper.writeValueAsString(objectDescriptor)
-        entityManager.persist(EntitySchemaEntity(objectDescriptor.name, json))
+        entityManager.persist(EntitySchemaEntity(objectDescriptor.name, 0, EntityStatus.NEW, json))
     }
 
     override fun findByName(name: String) : ObjectDescriptor? {

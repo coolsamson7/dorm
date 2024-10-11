@@ -7,24 +7,7 @@ package org.sirius.dorm.persistence.entity
 
 import jakarta.persistence.*
 import org.sirius.dorm.transaction.TransactionState
-import java.time.LocalDateTime
 import java.util.ArrayList
-
-@Embeddable
-data class EntityStatus(var created: LocalDateTime, var createdBy: String, var modified: LocalDateTime, var modifiedBy: String) {
-    companion object {
-        val NEW = EntityStatus( LocalDateTime.now(), "",  LocalDateTime.now(),"")
-
-        fun from(status: EntityStatus) : EntityStatus {
-            return EntityStatus(
-                status.created,
-                status.createdBy,
-                status.modified,
-                status.modifiedBy,
-            )
-        }
-    }
-}
 
 
 @Entity

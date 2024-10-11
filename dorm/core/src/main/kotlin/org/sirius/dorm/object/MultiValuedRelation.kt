@@ -145,9 +145,9 @@ class MultiValuedRelation(relation: RelationDescriptor<*>, status: Status, val o
     }
 
     override fun remove(element: DataObject): Boolean {
-        markDirty()
-
         return if (objects!!.remove(element)) {
+            markDirty()
+
             // take care of inverse
 
             val inverse = inverseRelation(element)
@@ -165,9 +165,8 @@ class MultiValuedRelation(relation: RelationDescriptor<*>, status: Status, val o
         get() = objects!!.size
 
     override fun clear() {
-        markDirty() // TODO
-
-        return objects!!.clear()
+        for (element in this.objects!!)
+            remove(element)
     }
 
     override fun isEmpty(): Boolean {
@@ -187,14 +186,20 @@ class MultiValuedRelation(relation: RelationDescriptor<*>, status: Status, val o
     }
 
     override fun retainAll(elements: Collection<DataObject>): Boolean {
-        markDirty()
+        var result = false
+        for ( element in objects!!)
+            if ( !elements.contains(element))
+                result = remove(element)
 
-        return objects!!.retainAll(elements)
+        return result
     }
 
     override fun removeAll(elements: Collection<DataObject>): Boolean {
-        markDirty()
+        var result = false
+        for ( element in elements)
+            if (remove(element))
+                result = true
 
-        return objects!!.removeAll(elements)
+        return result
     }
 }
