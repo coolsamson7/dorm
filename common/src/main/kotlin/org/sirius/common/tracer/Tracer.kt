@@ -17,7 +17,7 @@ class Tracer(private val trace: org.sirius.common.tracer.Trace, layout : String 
     private val traceLevels = HashMap<String, TraceLevel>()
     private val cachedTraceLevels = HashMap<String, TraceLevel>()
     private var modifications = 0
-    var formatter = org.sirius.common.tracer.TraceFormatter(layout)
+    var formatter = TraceFormatter(layout)
     
     init {
         instance = this
