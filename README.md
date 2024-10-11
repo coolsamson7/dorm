@@ -288,12 +288,14 @@ input PersonInput {
 }
 
 input PersonFilter {
-  age: IntFilter
   and: [PersonFilter]
-  father: PersonFilter
+  or: [PersonFilter]
+
   id: IntFilter
   name: StringFilter
-  or: [PersonFilter]
+  age: IntFilter
+ 
+  father: PersonFilter
 }
 
 type Query {
