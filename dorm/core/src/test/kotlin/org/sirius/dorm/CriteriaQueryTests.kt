@@ -41,7 +41,7 @@ class CriteriaQueryTests : AbstractTest() {
     }
 
     @Test
-    fun testJoin() {
+    fun testJoinONE2N() {
         objectManager.begin()
         try {
             val person = objectManager.create(personDescriptor!!)
@@ -69,10 +69,51 @@ class CriteriaQueryTests : AbstractTest() {
             // no where
 
             val query = queryManager
-                .create(Array<Any>::class.java)
+                .create()
                 .select(person)
                 .from(person)
                 .where(eq(children.get("name"), "Nika"))
+
+            val result = query.execute().getResultList()
+
+            assertEquals(1, result.size)
+        }
+
+    }
+
+    @Test
+    fun testJoinNTOONE() {
+        objectManager.begin()
+        try {
+            val person = objectManager.create(personDescriptor!!)
+
+            person["name"] = "Andi"
+
+            val child = objectManager.create(personDescriptor!!)
+
+            child["name"] = "Nika"
+
+            person.relation("children").add(child)
+
+        }
+        finally {
+            objectManager.commit()
+        }
+
+        printTables()
+
+        withTransaction { ->
+            val queryManager = objectManager.queryManager()
+            val person = queryManager.from(personDescriptor!!)
+            val father = person.join("father")
+
+            // no where
+
+            val query = queryManager
+                .create()
+                .select(person)
+                .from(person)
+                .where(eq(father.get("name"), "Andi"))
 
             val result = query.execute().getResultList()
 

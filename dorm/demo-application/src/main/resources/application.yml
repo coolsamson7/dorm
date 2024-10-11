@@ -1,12 +1,4 @@
-graphql:
-  graphiql:
-    mapping: /graphiql
-    enabled: true
-    pageTitle: GraphiQL
 spring:
-  graphql:
-    graphiql:
-      enabled: true
   application:
     name: dorm
   h2:

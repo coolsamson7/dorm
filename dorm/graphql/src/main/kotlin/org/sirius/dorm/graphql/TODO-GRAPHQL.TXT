@@ -1,3 +1,38 @@
+===
+
+select
+        pe1_0.ATTRIBUTE,
+        pe1_0.ENTITY,
+        pe1_0.DOUBLE_VALUE,
+        pe1_0.INT_VALUE,
+        pe1_0.STRING_VALUE,
+        pe1_0.TYPE
+    from
+        PROPERTY pe1_0
+    where
+        pe1_0.ENTITY in ((select
+            distinct pe2_0.ENTITY
+        from
+            PROPERTY pe2_0
+        join
+            RELATIONS t1_0
+                on pe2_0.ATTRIBUTE=t1_0.FROM_ATTR
+                and pe2_0.ENTITY=t1_0.FROM_ENTITY
+                and pe2_0.ATTRIBUTE=?
+        join
+            ENTITY e3_0
+                on e3_0.ID=t1_0.TO_ENTITY
+        join
+            PROPERTY p1_0
+                on e3_0.ID=p1_0.ENTITY
+        where
+            p1_0.ATTRIBUTE=?
+            and p1_0.STRING_VALUE=?))
+    order by
+        pe1_0.ENTITY
+
+
+
 === TODO
 
 - admin service ausplitten + finalisieren
@@ -20,6 +55,7 @@
 
 === DONE
 
+- join children geht, father nicht :-)
 - like
 - doku
 - graphql benchmark?

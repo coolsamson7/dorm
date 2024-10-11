@@ -79,7 +79,7 @@ class JoinFrom(root: FromRoot, val property: String) : AbstractFrom(root) {
             val parentPath = this.parent?.expression<T>(root, builder, query)!! as From<*, *>
 
             resolvedPath = parentPath
-                .join<PropertyEntity, PropertyEntity>("targets")
+                .join<PropertyEntity, PropertyEntity>(if ( relationship.isOwner()) "targets" else "sources")
                 .on(builder.equal(parentPath.get<Long>("attribute"), property))
                 // ugly, since we already know the entity id TODO
                 .join<PropertyEntity, PropertyEntity>("entity")
