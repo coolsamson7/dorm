@@ -27,9 +27,8 @@ open class ObjectDescriptorSerializer : StdSerializer<ObjectDescriptor>(ObjectDe
             else {
                 jsonGenerator.writeStringField("target", property.asRelation().target)
                 jsonGenerator.writeStringField("inverse", property.asRelation().inverse)
-                jsonGenerator.writeBooleanField("owner", property.asRelation().owner)
-                if (property.asRelation().cascade !== null)
-                    jsonGenerator.writeStringField("cascade", property.asRelation().cascade!!.name)
+                jsonGenerator.writeBooleanField("cascadeDelete", property.asRelation().cascadeDelete)
+                jsonGenerator.writeBooleanField("removeOrphans", property.asRelation().removeOrphans)
                 jsonGenerator.writeObjectField("multiplicity", property.asRelation().multiplicity.name)
 
                 property.asRelation()

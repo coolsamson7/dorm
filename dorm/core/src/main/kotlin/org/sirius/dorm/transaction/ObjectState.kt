@@ -6,8 +6,9 @@ package org.sirius.dorm.transaction
  */
 
 import org.sirius.dorm.`object`.DataObject
+import java.util.*
 
-class ObjectState(val obj: DataObject, var status: Status) {
+class ObjectState(val obj: DataObject, vararg status: Status) : BitSet(4) {
     // instance data
 
     var snapshot: List<Any>? = null
@@ -15,21 +16,34 @@ class ObjectState(val obj: DataObject, var status: Status) {
     // init
 
     init {
-        obj.state = this
+        for ( value in status)
+            set(value)
     }
 
     // public
+
+    fun set(status: Status) {
+        super.set(status.intValue)
+    }
+
+    fun clear(status: Status) {
+        super.clear(status.intValue)
+    }
+
+    fun isSet(status: Status) : Boolean {
+        return this[status.intValue]
+    }
 
     fun rollback() {
         //TODO RELATION for ( i in 0..obj.values.size-1)
         //    obj.values[i] = snapshot!![i]
 
         snapshot = null
-        status = Status.MANAGED
+        set(Status.MANAGED)
     }
 
     fun isDirty() : Boolean {
-        if (status != Status.MANAGED)
+        if (!isSet(Status.MANAGED))
             return false
 
         if (snapshot !== null) {
@@ -42,7 +56,28 @@ class ObjectState(val obj: DataObject, var status: Status) {
     }
 
     fun takeSnapshot(obj: DataObject) {
-      if ( status == Status.MANAGED && snapshot == null)
+      if ( isSet(Status.MANAGED) && snapshot == null)
             snapshot = obj.snapshot()
+    }
+
+    // override Object
+
+    override fun toString(): String {
+        val builder = StringBuilder("${obj.type.name} {")
+
+        var first = true
+        for ( value in Status.values()) {
+            if (isSet(value)) {
+                if ( !first)
+                    builder.append(", ")
+
+                builder.append(value.toString())
+                first = false
+            }
+        }
+
+        builder.append("}")
+
+        return builder.toString()
     }
 }

@@ -13,23 +13,23 @@ import org.sirius.dorm.`object`.SingleValuedRelation
 import org.sirius.dorm.persistence.entity.PropertyEntity
 import org.sirius.dorm.transaction.Status
 
-open class RelationDescriptor<T:Any>(name: String, val target: String, val multiplicity: Multiplicity, val cascade: Cascade?, val inverse: String?, val owner: Boolean) : PropertyDescriptor<T>(name, false) {
+open class RelationDescriptor<T:Any>(name: String, val target: String, val multiplicity: Multiplicity, val cascadeDelete: Boolean, val removeOrphans: Boolean, val inverse: String?) : PropertyDescriptor<T>(name, false) {
     // instance data
 
+    var owner : Boolean? = null
     var targetDescriptor: ObjectDescriptor? = null
     var inverseRelation : RelationDescriptor<*>? = null
 
     // override
 
-    override fun createProperty(obj: DataObject, status: Status, entity: PropertyEntity?) : Property {
+    override fun createProperty(obj: DataObject, entity: PropertyEntity?) : Property {
         val relation =  if ( multiplicity.multiValued ) MultiValuedRelation(
             this,
-            status,
             obj,
             entity,
             targetDescriptor!!
         )
-        else SingleValuedRelation(this, status, obj, entity, targetDescriptor!!)
+        else SingleValuedRelation(this, obj, entity, targetDescriptor!!)
 
         return relation
     }
@@ -55,11 +55,22 @@ open class RelationDescriptor<T:Any>(name: String, val target: String, val multi
     }
 
     fun isOwner() : Boolean {
-        return owner
+        return if ( owner == null ) computeOwner() else owner!!
+    }
+
+    // private
+
+    protected fun fqn() : String {
+        return  "${targetDescriptor?.name}.${name}"
+    }
+
+    private fun computeOwner() : Boolean {
+        owner = fqn().compareTo(inverseRelation!!.fqn()) < 0
+        return owner!!
     }
 
     // override Object
     override fun toString(): String {
-        return "${this.name}"
+        return fqn()
     }
 }

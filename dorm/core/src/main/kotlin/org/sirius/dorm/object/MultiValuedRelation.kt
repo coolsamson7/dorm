@@ -6,21 +6,17 @@ package org.sirius.dorm.`object`
  */
 
 import org.sirius.dorm.ObjectManager
-import org.sirius.dorm.model.Cascade
 import org.sirius.dorm.model.ObjectDescriptor
 import org.sirius.dorm.model.PropertyDescriptor
 import org.sirius.dorm.model.RelationDescriptor
 import org.sirius.dorm.persistence.entity.PropertyEntity
-import org.sirius.dorm.transaction.AddToRelation
-import org.sirius.dorm.transaction.RemoveFromRelation
-import org.sirius.dorm.transaction.Status
-import org.sirius.dorm.transaction.TransactionState
+import org.sirius.dorm.transaction.*
 import java.util.HashMap
 
-class MultiValuedRelation(relation: RelationDescriptor<*>, status: Status, val obj: DataObject, property: PropertyEntity?, targetDescriptor: ObjectDescriptor) : Relation(relation, targetDescriptor, property), MutableSet<DataObject> {
+class MultiValuedRelation(relation: RelationDescriptor<*>, val obj: DataObject, property: PropertyEntity?, targetDescriptor: ObjectDescriptor) : Relation(relation, targetDescriptor, property), MutableSet<DataObject> {
     // instance data
 
-    private var objects : HashSet<DataObject>? = if ( status == Status.CREATED) HashSet() else null
+    private var objects : HashSet<DataObject>? = if ( obj.state.isSet(Status.CREATED)) HashSet() else null
 
     // private
 
@@ -104,12 +100,12 @@ class MultiValuedRelation(relation: RelationDescriptor<*>, status: Status, val o
             for (deleted in targetMap.values) {
                 relations.remove(deleted)
 
-                if ( relation.cascade == Cascade.DELETE) {
+                if ( relation.cascadeDelete) {
                     // TODO: check cascading
                     deleted.entity.id
                 }
 
-                if ( !this.relation.owner) {
+                if ( !this.relation.isOwner()) {
                     deleted.targets.remove(this.property)
                 }
             } // if

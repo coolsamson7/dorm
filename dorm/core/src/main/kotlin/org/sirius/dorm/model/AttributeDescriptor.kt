@@ -21,7 +21,7 @@ class AttributeDescriptor<T:Any>(name: String, val type: Type<*>, readOnly: Bool
 
     // override
 
-    override fun createProperty(obj: DataObject, status: Status, entity: PropertyEntity?) : Property {
+    override fun createProperty(obj: DataObject, entity: PropertyEntity?) : Property {
         return Attribute(entity, defaultValue()!!)
     }
 

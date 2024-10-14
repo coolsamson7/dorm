@@ -5,7 +5,6 @@ package org.sirius.dorm.`object`
  * All rights reserved
  */
 import org.sirius.dorm.ObjectManager
-import org.sirius.dorm.model.Cascade
 import org.sirius.dorm.model.ObjectDescriptor
 import org.sirius.dorm.model.PropertyDescriptor
 import org.sirius.dorm.persistence.entity.EntityEntity
@@ -13,21 +12,22 @@ import org.sirius.dorm.transaction.ObjectState
 import org.sirius.dorm.transaction.Status
 
 
-class DataObject(val type: ObjectDescriptor, status: Status, var state : ObjectState?) {
+class DataObject(val type: ObjectDescriptor, vararg status: Status) {
     // instance data
 
+    val state = ObjectState(this, *status)
     var entity: EntityEntity? = null
-    val values  = type.createValues(this, status)
+    val values  = type.createValues(this)
 
     // public
 
     fun delete() {
-        state?.status = Status.DELETED
+        state.set(Status.DELETED)
 
         var i = 0
         for (property in type.properties) {
             if (!property.isAttribute()) {
-                if (property.asRelation().cascade == Cascade.DELETE) {
+                if (property.asRelation().cascadeDelete) {
                     if ((values[i] as Relation).isLoaded())
                         (values[i] as Relation).deleted()
                 }
@@ -103,6 +103,6 @@ class DataObject(val type: ObjectDescriptor, status: Status, var state : ObjectS
     }
 
     companion object {
-        val NONE = DataObject(ObjectDescriptor("none", arrayOf()), Status.CREATED, null)
+        val NONE = DataObject(ObjectDescriptor("none", arrayOf()), Status.CREATED)
     }
 }

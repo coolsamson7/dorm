@@ -64,7 +64,7 @@ class RelationTests: AbstractTest() {
         withTransaction {
             objectManager.type("pp")
                 .add(attribute("name").type(string()))
-                .add(relation("children").target("pp").multiplicity(Multiplicity.ZERO_OR_MANY).inverse("father").owner())
+                .add(relation("children").target("pp").multiplicity(Multiplicity.ZERO_OR_MANY).inverse("father"))
                 .add(relation("father").target("pp").multiplicity(Multiplicity.ZERO_OR_ONE).inverse("children"))
                 .register()
         }
@@ -156,7 +156,7 @@ class RelationTests: AbstractTest() {
         withTransaction {
              objectManager.type("p")
                 .add(attribute("name").type(string()))
-                .add(relation("children").target("p").multiplicity(Multiplicity.ZERO_OR_MANY).inverse("father").owner())
+                .add(relation("children").target("p").multiplicity(Multiplicity.ZERO_OR_MANY).inverse("father"))
                 .add(relation("father").target("p").multiplicity(Multiplicity.ZERO_OR_ONE).inverse("children"))
                 .register()
         }
@@ -240,7 +240,7 @@ class RelationTests: AbstractTest() {
         withTransaction {
             objectManager.type("product")
                 .add(attribute("name").type(string()))
-                .add(relation("parts").target("part").multiplicity(Multiplicity.ZERO_OR_MANY).inverse("product").cascade(Cascade.DELETE).owner())
+                .add(relation("parts").target("part").multiplicity(Multiplicity.ZERO_OR_MANY).inverse("product").cascadeDelete())
                 .register()
 
             objectManager.type("part")
@@ -332,7 +332,7 @@ class RelationTests: AbstractTest() {
         withTransaction {
              objectManager.type("p1")
                 .add(attribute("name").type(string()))
-                .add(relation("parent").target("p1").multiplicity(Multiplicity.ZERO_OR_ONE).inverse("children").owner())
+                .add(relation("parent").target("p1").multiplicity(Multiplicity.ZERO_OR_ONE).inverse("children"))
                 .add(relation("children").target("p1").multiplicity(Multiplicity.ZERO_OR_MANY).inverse("parent"))
                 .register()
         }

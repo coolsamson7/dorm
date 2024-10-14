@@ -73,9 +73,9 @@ class RelationBuilder() : PropertyBuilder() {
 
     private var target = ""
     private var multiplicity : Multiplicity? = null
-    private var cascade : Cascade? = null
+    private var cascadeDelete = false
+    private var removeOrphans = false
     private var inverse : String? = null
-    private var owner = false
 
     // fluent
 
@@ -103,14 +103,14 @@ class RelationBuilder() : PropertyBuilder() {
         return this
     }
 
-    fun cascade(cascade: Cascade) : RelationBuilder {
-        this.cascade = cascade
+    fun removeOrphans() : RelationBuilder {
+        this.removeOrphans = true
 
         return this
     }
 
-    fun owner() : RelationBuilder {
-        this.owner = true
+    fun cascadeDelete() : RelationBuilder {
+        this.cascadeDelete = true
 
         return this
     }
@@ -118,7 +118,7 @@ class RelationBuilder() : PropertyBuilder() {
     // build
 
     override fun build() : RelationDescriptor<Any> {
-        return RelationDescriptor(name, target, multiplicity!!, cascade, inverse, owner)
+        return RelationDescriptor(name, target, multiplicity!!, cascadeDelete, removeOrphans,  inverse)
     }
 }
 

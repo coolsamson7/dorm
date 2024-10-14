@@ -4,8 +4,55 @@
 - parser + like
 - projektion mit id geht nicht weil kein join!
 - zu viele sqls!
-- date -> generell & status, etc. graphql input
-- cascade delete bei relation remove!
+
+- Dokka
+
+=== DELETE
+
+delete object
+  -> gehe relarionen druch
+  -> alle cascade delete
+     -> loaded: for all
+     -> non loaded: read ids from db
+
+ProbLEM:
+ wenn das ganze über mehrere stufen geht ( geladen oder nicht geladen )
+===
+
+Neuer Modus:  Orphan removal
+vor commit
+   Delete object ( rekursive Objekte markiert? ) no
+   Aus einer 1:n Relation raus ( mit orphan )
+   In neue rein…oder auch nicht
+
+  Es muss Dirty sein!
+
+Commit
+
+   For all dirty
+     New
+     Modified
+     Deleted ( kann rekursiv sein ) ich muss nicht laden!
+
+
+
+Ich weiß aber, dass die inverse null oder nonnull ist! Muss geladen sein!
+
+
+was ist mit create & delete :-)
+
+Zuerst create
+Markiere orphans
+Dann delete + recursion
+Dann modified kann löschen
+
+was ist ein orphan
+
+ich bin modified und habe eine
+
+ich habe eine eingehende relation ( oder relation inverse.removeOrpahn == true... ) && = value = null!
+
+product ->> part
 
 === LATER
 
@@ -15,8 +62,14 @@
 
 === NOW
 
+- cascade delete?
+- orphan removal
+
 === DONE
 
+- state = BitSet
+- owner
+- cascadeDelete & removeOrphans
 - admin service finalisieren
 - TODOs in MVR
 - join children geht, father nicht :-)

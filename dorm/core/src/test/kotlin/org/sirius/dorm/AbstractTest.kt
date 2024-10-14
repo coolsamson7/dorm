@@ -201,7 +201,7 @@ abstract class AbstractTest {
                     // relations
 
                     .add(relation("father").target("person").multiplicity(Multiplicity.ZERO_OR_ONE).inverse("children"))
-                    .add(relation("children").target("person").multiplicity(Multiplicity.ZERO_OR_MANY).inverse("father").owner())
+                    .add(relation("children").target("person").multiplicity(Multiplicity.ZERO_OR_MANY).inverse("father"))
 
                     .add(attribute("boolean").type(boolean()))
                     .add(attribute("string").type(string()))
@@ -218,7 +218,7 @@ abstract class AbstractTest {
                     // relations
 
                     .add(relation("father").target("other-person").multiplicity(Multiplicity.ZERO_OR_ONE).inverse("children"))
-                    .add(relation("children").target("other-person").multiplicity(Multiplicity.ZERO_OR_MANY).inverse("father").owner())
+                    .add(relation("children").target("other-person").multiplicity(Multiplicity.ZERO_OR_MANY).inverse("father"))
                     .register()
 
             }

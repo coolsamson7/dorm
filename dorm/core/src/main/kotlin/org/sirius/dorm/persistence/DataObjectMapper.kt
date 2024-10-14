@@ -17,7 +17,6 @@ import jakarta.persistence.EntityManager
 import jakarta.persistence.LockModeType
 import jakarta.persistence.PersistenceContext
 import org.sirius.dorm.ObjectManager
-import org.sirius.dorm.persistence.entity.EntityStatus
 import org.sirius.dorm.transaction.Status
 import org.springframework.stereotype.Component
 import java.util.concurrent.ConcurrentHashMap

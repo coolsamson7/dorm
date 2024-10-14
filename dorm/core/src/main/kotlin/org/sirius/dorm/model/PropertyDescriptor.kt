@@ -13,7 +13,7 @@ import org.sirius.dorm.transaction.Status
 abstract class PropertyDescriptor<T:Any>(val name: String, val readOnly: Boolean) {
     var index = 0
 
-    abstract fun createProperty(obj: DataObject, status: Status, entity: PropertyEntity?) : Property
+    abstract fun createProperty(obj: DataObject, entity: PropertyEntity?) : Property
 
     abstract fun defaultValue() : Any?
 

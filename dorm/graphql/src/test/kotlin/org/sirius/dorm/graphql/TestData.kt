@@ -59,7 +59,7 @@ class TestData(val objectManager: ObjectManager) {
                 // relations
 
                 .add(relation("father").target("Human").multiplicity(Multiplicity.ZERO_OR_ONE).inverse("children"))
-                .add(relation("children").target("Human").multiplicity(Multiplicity.ZERO_OR_MANY).inverse("father").owner())
+                .add(relation("children").target("Human").multiplicity(Multiplicity.ZERO_OR_MANY).inverse("father"))
 
                 // done
 

@@ -6,7 +6,6 @@ package org.sirius.dorm.transaction
  */
 
 import org.sirius.dorm.ObjectManager
-import org.sirius.dorm.model.Cascade
 import org.sirius.dorm.model.ObjectDescriptor
 import org.sirius.dorm.`object`.DataObject
 import org.sirius.dorm.`object`.Relation
@@ -18,7 +17,6 @@ import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.TransactionDefinition
 import org.springframework.transaction.TransactionStatus
 import org.springframework.transaction.support.DefaultTransactionDefinition
-import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
 import kotlin.collections.ArrayList
@@ -107,8 +105,8 @@ class TransactionState(val objectManager: ObjectManager, val transactionManager:
     }
 
     // TODO do it in waves
-    fun processDeletedObjects() {
-        val objects = states.values.filter { state -> state.status == Status.DELETED }
+    private fun processDeletedObjects() {
+        val objects = states.values.filter { state -> state.isSet(Status.DELETED) }
 
         // this is the set of deleted objects
 
@@ -124,18 +122,18 @@ class TransactionState(val objectManager: ObjectManager, val transactionManager:
                 if (states.containsKey(id)) {
                     val obj = states[id]!!.obj
 
-                    obj.state?.status = Status.DELETED
+                    obj.state.set(Status.DELETED)
 
                     var i = 0
                     for (property in obj.type.properties) {
-                        if (!property.isAttribute() && property.asRelation().cascade == Cascade.DELETE) {
+                        if (!property.isAttribute() && property.asRelation().cascadeDelete) {
                             val relation = obj.relation(i)
 
                             if (relation.isLoaded()) {
                                 for (r in relation.relations())
                                     queue.add(r.entity.id)
                             }
-                            else {
+                            else { // TODO
                                 objectManager.jdbcTemplate.query<Long>("SELECT DISTINCT TO_ENTITY FROM RELATIONS WHERE FROM_ENTITY = ${id} AND FROM_ATTR='${property.name}'") { rs, _ ->
                                     rs.getLong("TO_ENTITY")
                                 }.forEach { id -> queue.add(id) }
@@ -172,16 +170,17 @@ class TransactionState(val objectManager: ObjectManager, val transactionManager:
             // commit changes
 
             for (state in states.values) {
-                when (state.status) {
-                    Status.CREATED -> mapper.create(this, state.obj)
-                    Status.DELETED -> { /* already processed */
-                    }//mapper.delete(this, state.obj)
-                    Status.MANAGED -> {
-                        if (state.isDirty())
-                            mapper.update(this, state.obj)
-                    }
+                if ( state.isSet(Status.CREATED))
+                    mapper.create(this, state.obj)
+
+                else if ( state.isSet(Status.DELETED)) {
+                    // already processed?
                 }
-            }
+
+                else if ( state.isSet(Status.MANAGED))
+                    if (state.isDirty())
+                        mapper.update(this, state.obj)
+            } // for
 
             // execute pending operations
 
@@ -200,10 +199,8 @@ class TransactionState(val objectManager: ObjectManager, val transactionManager:
 
     fun rollback(mapper: DataObjectMapper) {
         for (state in states.values) {
-            when ( state.status) {
-                Status.MANAGED -> if ( state.isDirty()) state.rollback()
-
-                else  -> {} ; // noop
+            if ( state.isSet(Status.MANAGED)) {
+                if ( state.isDirty()) state.rollback()
             }
         }
 
@@ -213,7 +210,7 @@ class TransactionState(val objectManager: ObjectManager, val transactionManager:
     // public
 
     fun retrieve(id: Long, ifMissing: () -> DataObject) : DataObject {
-        return states.getOrPut(id) { ObjectState(ifMissing(), Status.MANAGED) }.obj
+        return states.getOrPut(id) { ifMissing().state }.obj
     }
 
     fun register(state: ObjectState) {
@@ -229,15 +226,15 @@ class TransactionState(val objectManager: ObjectManager, val transactionManager:
     }
 
     fun create(obj: DataObject) : DataObject {
-        val state = ObjectState(obj, Status.CREATED)
-
         obj.entity = EntityEntity(0, obj.type.name, 0, createState(), ArrayList())
 
         this.objectManager.entityManager.persist(obj.entity)
 
         obj["id"] = obj.entity!!.id
+        obj["versionCounter"] = obj.entity!!.versionCounter
+        obj["status"] = obj.entity!!.status
 
-        states.put(obj.id, state)
+        states.put(obj.id, obj.state)
 
         return obj
     }
@@ -245,15 +242,17 @@ class TransactionState(val objectManager: ObjectManager, val transactionManager:
     fun flush(objectDescriptor: ObjectDescriptor) {
         for ( state in states.values) {
             if ( state.obj.type == objectDescriptor) {
-                when ( state.status) {
-                    Status.CREATED ->  objectManager.mapper.create(this, state.obj)
-                    Status.DELETED -> objectManager.mapper.delete(this, state.obj)
-                    Status.MANAGED -> {
-                        if ( state.isDirty())
-                            objectManager.mapper.update(this, state.obj)
+                if ( state.isSet(Status.CREATED))
+                    objectManager.mapper.create(this, state.obj)
+
+                else if ( state.isSet(Status.DELETED))
+                    objectManager.mapper.delete(this, state.obj)
+
+                else if ( state.isSet(Status.MANAGED)) {
+                    if ( state.isDirty())
+                        objectManager.mapper.update(this, state.obj)
                     }
                 }
-            }
         } // for
 
         executeOperations()

@@ -11,15 +11,12 @@ import org.sirius.dorm.model.ObjectDescriptor
 import org.sirius.dorm.model.PropertyDescriptor
 import org.sirius.dorm.model.RelationDescriptor
 import org.sirius.dorm.persistence.entity.PropertyEntity
-import org.sirius.dorm.transaction.AddToRelation
-import org.sirius.dorm.transaction.RemoveFromRelation
-import org.sirius.dorm.transaction.Status
-import org.sirius.dorm.transaction.TransactionState
+import org.sirius.dorm.transaction.*
 
-class SingleValuedRelation(relation: RelationDescriptor<*>, status: Status, val obj: DataObject, property: PropertyEntity?, targetDescriptor: ObjectDescriptor) : Relation(relation, targetDescriptor, property) {
+class SingleValuedRelation(relation: RelationDescriptor<*>, val obj: DataObject, property: PropertyEntity?, targetDescriptor: ObjectDescriptor) : Relation(relation, targetDescriptor, property) {
     // instance data
 
-    var target: DataObject? = if ( status == Status.CREATED ) null else DataObject.NONE
+    var target: DataObject? = if ( obj.state.isSet(Status.CREATED) ) null else DataObject.NONE
 
     // implement Relation
 
@@ -31,12 +28,12 @@ class SingleValuedRelation(relation: RelationDescriptor<*>, status: Status, val 
        if ( property !== null) {
            // start with the persistent state
 
-            if ( relations().size == 1) {
-                val targetProperty = relations().first()
-                target = objectManager.mapper.read(TransactionState.current(), targetDescriptor, targetProperty.entity)
-            }
-            else
-                target = null
+           target = if ( relations().size == 1) {
+               val targetProperty = relations().first()
+               objectManager.mapper.read(TransactionState.current(), targetDescriptor, targetProperty.entity)
+           }
+           else
+               null
 
            // redo anything related to me
 
