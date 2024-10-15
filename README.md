@@ -137,13 +137,13 @@ finally {
 The solution is pretty straight forward. Entities are stored as a combination of three technical tables
 * `ENTITY` a table referencing the entity definition and a generated primary key
 * `PROPERTY` a table that will store single attributes of an entity
-* `RELATION` a bridge table expressing object relations
+* `RELATIONS` a bridge table expressing object relations
 
 The property table defines the columns
 
 * `TYPE` the id of the entity structure
 * `ENTITY` the id of the corresponding entity
-* `PROPERTY` the property name
+* `NAME` the property name
 
 and a number of columns that are able to store payload data with respect to the supported low-level data types
 * `STRING_VALUE` a string value
@@ -189,7 +189,7 @@ select
                from PROPERTY p2_0 
               where
                     p2_0.TYPE="person" 
-                    and p2_0.ATTRIBUTE="age" 
+                    and p2_0.NAME="age" 
                     and p2_0.INT_VALUE=58)) 
     order by
         p1_0.ENTITY
