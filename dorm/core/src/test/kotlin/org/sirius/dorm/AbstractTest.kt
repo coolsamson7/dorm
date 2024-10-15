@@ -252,7 +252,7 @@ abstract class AbstractTest {
 
             // no where
 
-            val query = queryManager.create().from(person) // object query
+            val query = queryManager.query().from(person) // object query
             val queryResult = query.execute().getResultList()
 
             for (result in queryResult)
@@ -287,7 +287,7 @@ abstract class AbstractTest {
         // no where
 
         val query = queryManager
-            .create()
+            .query()
             .select(person)
             .from(person)
 

@@ -27,11 +27,11 @@ class QueryManager(val objectManager: ObjectManager, private val entityManager: 
         return FromRoot(objectDescriptor)
     }
 
-    fun create() : Query<DataObject> {
+    fun query() : Query<DataObject> {
         return Query(DataObject::class.java, this, objectManager)
     }
 
-    fun <T : Any> create(result: Class<T>) : Query<T> {
+    fun <T : Any> query(result: Class<T>) : Query<T> {
         return Query(result, this, objectManager)
     }
 

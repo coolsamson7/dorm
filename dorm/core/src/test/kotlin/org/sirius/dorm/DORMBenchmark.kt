@@ -133,7 +133,7 @@ internal class DORMBenchmark : AbstractTest() {
             // no where
 
             val query = queryManager
-                .create()
+                .query()
                 .select(person)
                 .from(person)
 
@@ -150,7 +150,7 @@ internal class DORMBenchmark : AbstractTest() {
             // no where
 
             val query = queryManager
-                .create()
+                .query()
                 .select(person)
                 .from(person)
                 .where(eq(person.get("name"), "Andi"))
@@ -168,7 +168,7 @@ internal class DORMBenchmark : AbstractTest() {
             // no where
 
             val query = queryManager
-                .create()
+                .query()
                 .select(person.get("name"))
                 .from(person)
                 .where(eq(person.get("name"), "Andi"))
@@ -184,7 +184,7 @@ internal class DORMBenchmark : AbstractTest() {
             // no where
 
             val query = queryManager
-                .create()
+                .query()
                 .select(person)
                 .from(person)
 
@@ -344,7 +344,7 @@ internal class DORMBenchmark : AbstractTest() {
             // no where
 
             val query = queryManager
-                .create()
+                .query()
                 .select(person)
                 .from(person)
 
@@ -360,7 +360,7 @@ internal class DORMBenchmark : AbstractTest() {
             // no where
 
             val query = queryManager
-                .create()
+                .query()
                 .select(person)
                 .from(person)
                 .where(eq(person.get("name"), "Andi"))
@@ -377,7 +377,7 @@ internal class DORMBenchmark : AbstractTest() {
             // no where
 
             val query = queryManager
-                .create()
+                .query()
                 .select(person.get("name"), person.get("age"))
                 .from(person)
                 .where(eq(person.get("name"), "Andi"))
@@ -392,7 +392,7 @@ internal class DORMBenchmark : AbstractTest() {
             // no where
 
             val query = queryManager
-                .create()
+                .query()
                 .select(person)
                 .from(person)
 

@@ -5,7 +5,6 @@ package org.sirius.dorm.query.parser
  * All rights reserved
  */
 
-import org.sirius.dorm.`object`.DataObject
 import org.sirius.dorm.query.*
 import org.antlr.v4.runtime.Parser
 import org.antlr.v4.runtime.TokenStream
@@ -99,7 +98,7 @@ open class SELECT() {
         val from = alias.get(root.alias)
 
         val query = queryManager
-            .create() // object query
+            .query() // object query
             .select(*select.map { path -> path.buildPath(alias) }.toTypedArray())
             .from(from!!)
 

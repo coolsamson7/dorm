@@ -30,7 +30,7 @@ class CriteriaQueryTests : AbstractTest() {
             // no where
 
             val query = queryManager
-                .create(Array<Any>::class.java)
+                .query(Array<Any>::class.java)
                 .select(person)
                 .from(person)
 
@@ -69,7 +69,7 @@ class CriteriaQueryTests : AbstractTest() {
             // no where
 
             val query = queryManager
-                .create()
+                .query()
                 .select(person)
                 .from(person)
                 .where(eq(children.get("name"), "Nika"))
@@ -110,7 +110,7 @@ class CriteriaQueryTests : AbstractTest() {
             // no where
 
             val query = queryManager
-                .create()
+                .query()
                 .select(person)
                 .from(person)
                 .where(eq(father.get("name"), "Andi"))
@@ -133,7 +133,7 @@ class CriteriaQueryTests : AbstractTest() {
             // no where
 
             val query = queryManager
-                .create()
+                .query()
                 .select(person)
                 .from(person)
 
@@ -148,7 +148,7 @@ class CriteriaQueryTests : AbstractTest() {
             // no where
 
             val idQuery = queryManager
-                .create()
+                .query()
                 .select(person)
                 .from(person)
                 .where(eq(person.get("id"), id))
@@ -173,7 +173,7 @@ class CriteriaQueryTests : AbstractTest() {
             // no where
 
             val query = queryManager
-                .create(Array<Any>::class.java)
+                .query(Array<Any>::class.java)
                 .select(person.get("age"))
                 .from(person)
 
@@ -195,7 +195,7 @@ class CriteriaQueryTests : AbstractTest() {
             // no where
 
             val query = queryManager
-                .create()
+                .query()
                 .select(person)
                 .from(person)
                 .where(eq(person.get("age"), 58))
@@ -219,7 +219,7 @@ class CriteriaQueryTests : AbstractTest() {
             // no where
 
             val query = queryManager
-                .create()
+                .query()
                 .select(person)
                 .from(person)
 
@@ -258,7 +258,7 @@ class CriteriaQueryTests : AbstractTest() {
             // no where
 
             val query = queryManager
-                .create()
+                .query()
                 .select(person)
                 .from(person)
 
@@ -285,7 +285,7 @@ class CriteriaQueryTests : AbstractTest() {
             // no where
 
             val query = queryManager
-                .create()
+                .query()
                 .select(person)
                 .from(person)
                 .where(and(

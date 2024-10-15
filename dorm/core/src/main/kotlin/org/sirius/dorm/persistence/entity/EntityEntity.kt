@@ -28,7 +28,7 @@ data class EntityEntity(
     @Embedded
     var status: EntityStatus? = null,
 
-    @OneToMany(mappedBy = "entity", cascade = [CascadeType.ALL], orphanRemoval = true)
+    @OneToMany(mappedBy = "entity", cascade = [CascadeType.REMOVE]) // PERSIST
     var properties : MutableList<PropertyEntity> = ArrayList()
 ) {
     // listeners

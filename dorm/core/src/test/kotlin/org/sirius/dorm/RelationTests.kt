@@ -274,6 +274,8 @@ class RelationTests: AbstractTest() {
             caughtError = true
         }
 
+        printTables()
+
         assertEquals(true, caughtError)
 
         // now really
@@ -307,21 +309,15 @@ class RelationTests: AbstractTest() {
             val product = objectManager.findById(productDescriptor, id)!!
 
             for ( part in product.relation("parts"))
-                if ( part["name"] == "Something")
+                if ( part["name"] == "Something") {
                     part["product"] = null
-        }
-
-        // try delete
-
-        withTransaction {
-            val product = objectManager.findById(productDescriptor, id)!!
-
-            objectManager.delete(product)
+                    break
+                }
         }
 
         printTables()
 
-        // check
+        // try delete
 
         withTransaction {
             val queryManager = objectManager.queryManager()
@@ -330,7 +326,33 @@ class RelationTests: AbstractTest() {
             // no where
 
             val query = queryManager
-                .create()
+                .query()
+                .select(part)
+                .from(part)
+
+            val result = query.executor()
+                .execute()
+                .getResultList()
+
+            assertEquals(1, result.size)
+
+            val product = objectManager.findById(productDescriptor, id)!!
+
+            objectManager.delete(product)
+        }
+
+        printTables()
+
+        // check cascading delete
+
+        withTransaction {
+            val queryManager = objectManager.queryManager()
+            val part = queryManager.from(partDescriptor)
+
+            // no where
+
+            val query = queryManager
+                .query()
                 .select(part)
                 .from(part)
 

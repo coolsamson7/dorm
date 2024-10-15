@@ -21,7 +21,6 @@ import java.time.LocalDateTime
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
-import kotlin.collections.HashSet
 
 
 abstract class Operation() {
@@ -132,6 +131,8 @@ class TransactionState(val objectManager: ObjectManager, val transactionManager:
             .toMutableSet()
 
         val queue : MutableList<EntityEntity> = entities.toMutableList()
+        entities.clear()
+
         while (queue.isNotEmpty()) {
             val entity = queue.removeAt(0);
 
@@ -181,8 +182,26 @@ class TransactionState(val objectManager: ObjectManager, val transactionManager:
         // finally delete
 
         val entityManager = objectManager.entityManager
-        for ( entity in entities)
+        for ( entity in entities) {
+            for ( property in entity.properties) {
+                if ( property.targets.size > 0 ) {
+
+                    for ( target in property.targets)
+                        target.sources.remove(property)
+
+                    property.targets.clear()
+                }
+
+                if ( property.sources.size > 0 ) {
+                    for ( target in property.sources)
+                        target.targets.remove(property)
+
+                    property.sources.clear()
+                }
+            }
+
             entityManager.remove(entity)
+        }
     }
 
     // TX

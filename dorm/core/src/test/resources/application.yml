@@ -17,7 +17,7 @@ spring:
       hibernate:
         format_sql: true
         generate_statistics: false
-    show-sql: false
+    show-sql: true
     defer-datasource-initialization: true
     hibernate:
       ddl-auto: update
@@ -28,7 +28,9 @@ spring:
 logging:
   level:
     org:
-      xhibernate:
+      hibernate:
+        event:
+          internal: trace
         sql: debug
         orm:
           jdbc:

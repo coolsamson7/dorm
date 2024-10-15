@@ -16,7 +16,7 @@ class QueryBuilder(val objectManager: ObjectManager) {
     // public
 
     fun buildQuery(descriptor: ObjectDescriptor, filter: Any?) : Query<DataObject> {
-        val query = queryManager.create()
+        val query = queryManager.query()
         val type = queryManager.from(descriptor)
 
         query
