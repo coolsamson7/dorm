@@ -33,10 +33,8 @@ class MultiValuedRelation(relation: RelationDescriptor<*>, val obj: DataObject, 
         }
     }
 
-    private fun markDirty() {
-        if ( obj.state !== null)
-            if ( obj.state?.snapshot == null)
-                obj.state?.takeSnapshot(obj)
+    protected fun markDirty() {
+        obj.state.modified()
     }
 
     // implement Relation
@@ -100,11 +98,6 @@ class MultiValuedRelation(relation: RelationDescriptor<*>, val obj: DataObject, 
             for (deleted in targetMap.values) {
                 relations.remove(deleted)
 
-                if ( relation.cascadeDelete) {
-                    // TODO: check cascading
-                    deleted.entity.id
-                }
-
                 if ( !this.relation.isOwner()) {
                     deleted.targets.remove(this.property)
                 }
@@ -119,6 +112,8 @@ class MultiValuedRelation(relation: RelationDescriptor<*>, val obj: DataObject, 
 
         return if (objects!!.add(element)) {
             // take care of inverse
+
+            element.state.modified()
 
             val inverse = inverseRelation(element)
             if ( inverse !== null)
@@ -143,6 +138,8 @@ class MultiValuedRelation(relation: RelationDescriptor<*>, val obj: DataObject, 
     override fun remove(element: DataObject): Boolean {
         return if (objects!!.remove(element)) {
             markDirty()
+
+            element.state.modified()
 
             // take care of inverse
 

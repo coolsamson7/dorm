@@ -23,18 +23,6 @@ class DataObject(val type: ObjectDescriptor, vararg status: Status) {
 
     fun delete() {
         state.set(Status.DELETED)
-
-        var i = 0
-        for (property in type.properties) {
-            if (!property.isAttribute()) {
-                if (property.asRelation().cascadeDelete) {
-                    if ((values[i] as Relation).isLoaded())
-                        (values[i] as Relation).deleted()
-                }
-            }
-
-            i++
-        }
     }
 
     var objectManager: ObjectManager
@@ -79,10 +67,7 @@ class DataObject(val type: ObjectDescriptor, vararg status: Status) {
     operator fun set(name: String, value: Any?) {
         val property = property(name)
 
-        // take snapshot in any case
-
-        if ( state !== null )
-            state!!.takeSnapshot(this)
+        state.modified()
 
         // set raw value
 

@@ -55,6 +55,11 @@ class ObjectState(val obj: DataObject, vararg status: Status) : BitSet(4) {
         return false
     }
 
+    fun modified() {
+        set(Status.MODIFIED)
+        takeSnapshot(obj)
+    }
+
     fun takeSnapshot(obj: DataObject) {
       if ( isSet(Status.MANAGED) && snapshot == null)
             snapshot = obj.snapshot()

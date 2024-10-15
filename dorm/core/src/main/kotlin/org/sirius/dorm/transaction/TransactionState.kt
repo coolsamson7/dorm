@@ -46,7 +46,7 @@ class RemoveFromRelation(val obj: DataObject) : UpdateRelation() {
     }
 }
 class Redo() {
-    val operations = LinkedList<UpdateRelation>()
+    private val operations = LinkedList<UpdateRelation>()
 
     fun add(update: UpdateRelation) {
         operations.add(update)
@@ -104,87 +104,117 @@ class TransactionState(val objectManager: ObjectManager, val transactionManager:
 
     }
 
-    // TODO do it in waves
+    private fun markOrphans() {
+        val objects = states.values.filter { state -> state.isSet(Status.MODIFIED) && !state.isSet(Status.CREATED) }
+
+        for ( state in objects) {
+            val obj = state.obj
+            for ( property in obj.type.properties)
+                if ( property.isRelation()) {
+                    val relation = property.asRelation()
+
+                    if (relation.inverseRelation!!.removeOrphans) {
+                        val target = obj.value<Any>(relation.index)
+
+                        if ( target === null)
+                            state.set(Status.DELETED)
+                    } // if
+                } // if
+        } // for
+    }
+
     private fun processDeletedObjects() {
-        val objects = states.values.filter { state -> state.isSet(Status.DELETED) }
+        // this is the set of initially deleted objects
 
-        // this is the set of deleted objects
+        val entities = states.values
+            .filter { state -> state.isSet(Status.DELETED) }
+            .map { state -> state.obj.entity!! }
+            .toMutableSet()
 
-        val ids = HashSet<Long>()
+        val queue : MutableList<EntityEntity> = entities.toMutableList()
+        while (queue.isNotEmpty()) {
+            val entity = queue.removeAt(0);
 
-        val queue : MutableList<Long> = objects.map { state -> state.obj.id}.toMutableList()
-        while ( queue.isNotEmpty()) {
-            val id = queue.removeAt(0);
+            if (!entities.contains(entity)) {
+                entities.add(entity)
 
-            if (!ids.contains(id)) {
-                ids.add(id)
+                if (states.containsKey(entity.id)) {
+                    // mark it as deleted anyway
 
-                if (states.containsKey(id)) {
-                    val obj = states[id]!!.obj
+                    val state = states[entity.id]!!
 
-                    obj.state.set(Status.DELETED)
+                    state.set(Status.DELETED)
+
+                    // check cascading relations
+
+                    val obj = state.obj
 
                     var i = 0
                     for (property in obj.type.properties) {
-                        if (!property.isAttribute() && property.asRelation().cascadeDelete) {
+                        if (property.isRelation() && property.asRelation().cascadeDelete) {
                             val relation = obj.relation(i)
 
-                            if (relation.isLoaded()) {
-                                for (r in relation.relations())
-                                    queue.add(r.entity.id)
-                            }
-                            else { // TODO
-                                objectManager.jdbcTemplate.query<Long>("SELECT DISTINCT TO_ENTITY FROM RELATIONS WHERE FROM_ENTITY = ${id} AND FROM_ATTR='${property.name}'") { rs, _ ->
-                                    rs.getLong("TO_ENTITY")
-                                }.forEach { id -> queue.add(id) }
-                            }
+                            for (target in relation.relations())
+                                queue.add(target.entity)
                         } // if
 
                         i++
                     } // for
-                } // if
+                }
+                else {
+                    // object is not loaded, rely on the db only
+
+                    val type = objectManager.getDescriptor(entity.type)
+
+                    for (property in type.properties) {
+                        if (property.isRelation() && property.asRelation().cascadeDelete) {
+                            val propertyEntity = entity.properties.first { propertyEntity -> propertyEntity.attribute == property.name }
+
+                            for ( targetProperty in if ( property.asRelation().isOwner()) propertyEntity.targets else propertyEntity.sources)
+                                queue.add(targetProperty.entity)
+                        } // if
+                    } // for
+                }
             } // if
         } // while
 
         // finally delete
 
         val entityManager = objectManager.entityManager
-
-        val criteriaBuilder = entityManager.getCriteriaBuilder()
-
-        val criteriaQuery = criteriaBuilder.createQuery(EntityEntity::class.java)
-
-        val entity = criteriaQuery.from(EntityEntity::class.java)
-        criteriaQuery.where( criteriaBuilder.isTrue(entity.get<Long>("id").`in`(*ids.toTypedArray())))
-
-         for ( e in entityManager.createQuery(criteriaQuery).resultList)
-             entityManager.remove(e)
+        for ( entity in entities)
+            entityManager.remove(entity)
     }
 
     // TX
 
     fun commit(mapper: DataObjectMapper) {
         try {
+            // mark orphans first
+
+            markOrphans()
+
+            // recursively delete objects...
+
             processDeletedObjects()
 
             // commit changes
 
             for (state in states.values) {
-                if ( state.isSet(Status.CREATED))
-                    mapper.create(this, state.obj)
-
-                else if ( state.isSet(Status.DELETED)) {
-                    // already processed?
+                if ( state.isSet(Status.DELETED)) {
+                    // noop!
                 }
 
-                else if ( state.isSet(Status.MANAGED))
+                else if ( state.isSet(Status.CREATED))
+                    mapper.create(this, state.obj)
+
+                else if ( state.isSet(Status.MODIFIED))
                     if (state.isDirty())
                         mapper.update(this, state.obj)
             } // for
 
             // execute pending operations
 
-            executeOperations()
+            executeOperations() // TODO deleted!
 
             // and commit tx
 

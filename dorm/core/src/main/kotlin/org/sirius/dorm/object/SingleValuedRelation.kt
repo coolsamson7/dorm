@@ -103,6 +103,8 @@ class SingleValuedRelation(relation: RelationDescriptor<*>, val obj: DataObject,
             load(objectManager)
 
         if ( value !== this.target) {
+            obj.state.modified()
+
             var inverse = inverseRelation(this.target)
             if ( inverse !== null)
                 inverse.removedFromInverse(this.obj)
@@ -112,6 +114,8 @@ class SingleValuedRelation(relation: RelationDescriptor<*>, val obj: DataObject,
             this.target = value as DataObject?
 
             if ( this.target !== null) {
+                this.target!!.state.modified()
+
                 inverse = inverseRelation(this.target)
                 if ( inverse !== null)
                     inverse.addedToInverse(this.obj)

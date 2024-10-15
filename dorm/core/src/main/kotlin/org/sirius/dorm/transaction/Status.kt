@@ -9,5 +9,6 @@ package org.sirius.dorm.transaction
 enum class Status(val intValue: Int) {
     MANAGED(1 shl 0),
     CREATED(1 shl 1),
-    DELETED(1 shl 2)
+    DELETED(1 shl 2),
+    MODIFIED(1 shl 3)
 }

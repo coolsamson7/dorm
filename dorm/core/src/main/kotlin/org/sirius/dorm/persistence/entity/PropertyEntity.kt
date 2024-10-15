@@ -29,7 +29,7 @@ data class PropertyEntity(
 
     @Column(name = "ATTRIBUTE")
     @Id
-    var attribute : String,
+    var attribute : String, // TODO: rename to name
 
     @Column(name = "TYPE")
     var type : String,

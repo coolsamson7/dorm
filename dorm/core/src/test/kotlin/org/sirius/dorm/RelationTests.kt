@@ -240,7 +240,7 @@ class RelationTests: AbstractTest() {
         withTransaction {
             objectManager.type("product")
                 .add(attribute("name").type(string()))
-                .add(relation("parts").target("part").multiplicity(Multiplicity.ZERO_OR_MANY).inverse("product").cascadeDelete())
+                .add(relation("parts").target("part").multiplicity(Multiplicity.ZERO_OR_MANY).inverse("product").cascadeDelete().removeOrphans())
                 .register()
 
             objectManager.type("part")
@@ -270,6 +270,7 @@ class RelationTests: AbstractTest() {
             }
         }
         catch(exception: ObjectManagerError) {
+            // it should throw since the relation is mandatory!!!
             caughtError = true
         }
 
@@ -289,10 +290,26 @@ class RelationTests: AbstractTest() {
 
             part["product"] = product
 
+            val part2 = objectManager.create(partDescriptor)
+
+            part2["name"] = "Something"
+
+            part2["product"] = product
+
             id = product.id
         }
 
         printTables()
+
+        // check orphan removal
+
+        withTransaction {
+            val product = objectManager.findById(productDescriptor, id)!!
+
+            for ( part in product.relation("parts"))
+                if ( part["name"] == "Something")
+                    part["product"] = null
+        }
 
         // try delete
 

@@ -23,6 +23,10 @@ abstract class PropertyDescriptor<T:Any>(val name: String, val readOnly: Boolean
         return false
     }
 
+    open fun isRelation() : Boolean {
+        return !isAttribute()
+    }
+
     open fun asAttribute() :AttributeDescriptor<T> {
         throw Error("${name} is a relation")
     }
