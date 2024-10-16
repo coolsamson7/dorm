@@ -105,10 +105,13 @@
                 <artifactId>dokka-maven-plugin</artifactId>
                 <version>1.9.0</version>
                 <configuration>
-                    <sourceDirectories>
+                    <!--sourceDirectories>
                         <sourceDirectory>${project.basedir}/common/src/main/kotlin</sourceDirectory>
                         <sourceDirectory>${project.basedir}/dorm/core/src/main/kotlin</sourceDirectory>
                         <sourceDirectory>${project.basedir}/dorm/graphql/src/main/kotlin</sourceDirectory>
+                    </sourceDirectories-->
+                    <sourceDirectories>
+                        <dir>${project.basedir}/src/main/kotlin</dir>
                     </sourceDirectories>
                 </configuration>
 
